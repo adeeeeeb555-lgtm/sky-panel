@@ -39,10 +39,11 @@ STYLE = """
 
 :root {
   --bg: #050816;
-  --panel: rgba(14, 23, 48, .92);
+  --panel: rgba(14, 23, 48, .94);
   --line: rgba(120, 170, 255, .18);
   --blue: #64caff;
   --purple: #9b8cff;
+  --gold: #f0b429;
   --text: #f4f7ff;
   --muted: #9baaca;
 }
@@ -55,7 +56,7 @@ body {
     radial-gradient(ellipse at 85% 35%, rgba(110, 49, 180, .20), transparent 36%),
     radial-gradient(ellipse at 50% 100%, rgba(18, 105, 165, .19), transparent 43%),
     var(--bg);
-  overflow-x: hidden;
+  overflow-x: hidden; padding-bottom: 90px;
 }
 body:before {
   content: ""; position: fixed; inset: 0; pointer-events: none; z-index: -1;
@@ -105,6 +106,9 @@ a { color: inherit; text-decoration: none; }
 .btn-primary {
   color: #06101f; background: linear-gradient(115deg, #73dcff, #a6a0ff);
   box-shadow: 0 8px 28px #58baff28;
+}
+.btn-gold {
+  color: #06101f; background: var(--gold); font-weight: 900;
 }
 .btn-secondary {
   color: #e5edff; border-color: var(--line); background: #ffffff08;
@@ -219,22 +223,22 @@ h1 {
 }
 .empty span { display: block; font-size: 40px; margin-bottom: 12px; }
 
-/* القائمة في اليمين والمحتوى في اليسار تماماً كما طلبت */
+/* القائمة في اليسار والمحتوى الواسع في اليمين تماماً مثل طلبك */
 .dashboard-layout {
-  display: grid; grid-template-columns: 1fr 310px; gap: 30px;
-  width: min(1450px, 97%); margin: 40px auto 70px; align-items: start;
+  display: grid; grid-template-columns: 310px 1fr; gap: 30px;
+  width: min(1480px, 97%); margin: 40px auto 70px; align-items: start;
 }
 .sidebar {
   background: linear-gradient(155deg, #121c38dd, #080d1fff);
   border: 1px solid var(--line); border-radius: 24px; padding: 26px;
   display: flex; flex-direction: column; gap: 18px; backdrop-filter: blur(16px);
-  position: sticky; top: 25px; order: 2;
+  position: sticky; top: 25px; order: 1;
 }
 .content-panel {
   background: linear-gradient(155deg, #15203acc, #0c1327dd);
   border: 1px solid var(--line); border-radius: 24px; padding: 40px;
   backdrop-filter: blur(16px); min-height: 700px;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.4); order: 1;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.4); order: 2;
 }
 
 .sidebar-header { text-align: center; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
@@ -254,20 +258,20 @@ h1 {
 .menu-item:hover, .menu-item.active {
   background: linear-gradient(115deg, #5bbfff1a, #8f82ff1a);
   color: var(--text); border-color: #7acbff50;
-  box-shadow: 0 4px 18px #58baff15; transform: translateX(3px);
+  box-shadow: 0 4px 18px #58baff15; transform: translateX(-3px);
 }
 .menu-item span { font-size: 18px; }
 
 .form-group { margin-bottom: 22px; }
-.form-group label { display: block; font-size: 14px; font-weight: 700; color: #cedbfa; margin-bottom: 8px; }
+.form-group label { display: block; font-size: 14px; font-weight: 700; color: #cedbfa; margin-bottom: 8px; text-align: right; }
 .form-control {
   width: 100%; padding: 12px 16px; border-radius: 12px;
   background: #060a17; border: 1px solid var(--line); color: var(--text);
   font-family: inherit; font-size: 14px; outline: none; transition: border-color .2s;
+  text-align: right;
 }
 .form-control:focus { border-color: var(--blue); box-shadow: 0 0 15px #64baff30; }
 
-/* تنسيق القوائم المنسدلة النظيفة التي تفتح وتغلق */
 select.form-control {
   appearance: none;
   -webkit-appearance: none;
@@ -279,7 +283,45 @@ select.form-control {
   cursor: pointer;
 }
 
-/* بطاقات الحماية والسجلات */
+/* بطاقات Sections بتصميم فخم ومنظم */
+.settings-section-card {
+  background: #080d1fe6; border: 1px solid var(--line); border-radius: 18px;
+  padding: 26px; margin-bottom: 24px; box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+}
+.settings-section-header {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--line);
+}
+.settings-section-title { font-size: 16px; font-weight: 800; color: #e4eeff; display: flex; align-items: center; gap: 10px; }
+
+/* شريط الحفظ العائم السفلي الذي يظهر عند التعديل */
+.floating-save-bar {
+  position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%) translateY(100px);
+  background: rgba(10, 16, 35, 0.95); border: 1px solid #7acbff60; border-radius: 16px;
+  padding: 14px 28px; display: flex; align-items: center; gap: 24px;
+  box-shadow: 0 15px 45px rgba(0,0,0,0.6); backdrop-filter: blur(16px);
+  z-index: 1000; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.floating-save-bar.visible { transform: translateX(-50%) translateY(0); }
+.save-bar-info { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 700; color: #e4eeff; }
+.save-dot { width: 10px; height: 10px; background: #f0b429; border-radius: 50%; box-shadow: 0 0 10px #f0b429; animation: pulse 1.5s infinite; }
+@keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
+
+/* زر التفعيل السريع (Switch) */
+.switch {
+  position: relative; display: inline-block; width: 48px; height: 26px;
+}
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider {
+  position: absolute; cursor: pointer; inset: 0;
+  background-color: #1a2748; transition: .3s; border-radius: 34px; border: 1px solid var(--line);
+}
+.slider:before {
+  position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 3px;
+  background-color: white; transition: .3s; border-radius: 50%;
+}
+input:checked + .slider { background: linear-gradient(115deg, #64caff, #9b8cff); }
+input:checked + .slider:before { transform: translateX(22px); }
+
 .cards-grid-3 {
   display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 25px;
 }
@@ -298,24 +340,8 @@ select.form-control {
   padding: 22px; display: flex; justify-content: space-between; align-items: center;
   margin-bottom: 15px; box-shadow: 0 8px 25px rgba(0,0,0,0.25);
 }
-.security-info h3 { margin: 0 0 5px; font-size: 16px; color: #e4eeff; }
-.security-info p { margin: 0; font-size: 13px; color: var(--muted); }
-
-/* زر التفعيل السريع (Switch) */
-.switch {
-  position: relative; display: inline-block; width: 48px; height: 26px;
-}
-.switch input { opacity: 0; width: 0; height: 0; }
-.slider {
-  position: absolute; cursor: pointer; inset: 0;
-  background-color: #1a2748; transition: .3s; border-radius: 34px; border: 1px solid var(--line);
-}
-.slider:before {
-  position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 3px;
-  background-color: white; transition: .3s; border-radius: 50%;
-}
-input:checked + .slider { background: linear-gradient(115deg, #64caff, #9b8cff); }
-input:checked + .slider:before { transform: translateX(22px); }
+.security-info h3 { margin: 0 0 5px; font-size: 16px; color: #e4eeff; text-align: right; }
+.security-info p { margin: 0; font-size: 13px; color: var(--muted); text-align: right; }
 
 .btn-edit {
   background: #152242; border: 1px solid var(--line); color: var(--blue);
@@ -324,16 +350,11 @@ input:checked + .slider:before { transform: translateX(22px); }
 }
 .btn-edit:hover { background: #20356b; }
 
-/* أزرار الحفظ وإعادة الضبط */
-.save-bar {
-  display: flex; gap: 12px; margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--line);
-}
-
 .footer { text-align: center; color: #7785a5; font-size: 12px; padding: 30px; border-top: 1px solid #ffffff0c; }
 @media(max-width: 1050px) {
   .dashboard-layout { grid-template-columns: 1fr; }
-  .sidebar { position: static; order: 1; }
-  .content-panel { order: 2; }
+  .sidebar { position: static; order: 2; }
+  .content-panel { order: 1; }
   .cards-grid-3 { grid-template-columns: 1fr; }
   .hero { grid-template-columns: 1fr; padding-top: 50px; gap: 15px; }
   .space-art { min-height: 310px; grid-row: 1; }
@@ -343,6 +364,22 @@ input:checked + .slider:before { transform: translateX(22px); }
   .nav { padding: 15px 5%; }
 }
 </style>
+<script>
+function triggerChange() {
+  const bar = document.getElementById('saveBar');
+  if (bar) bar.classList.add('visible');
+}
+function hideBar() {
+  const bar = document.getElementById('saveBar');
+  if (bar) bar.classList.remove('visible');
+}
+window.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('input, select, textarea').forEach(el => {
+    el.addEventListener('input', triggerChange);
+    el.addEventListener('change', triggerChange);
+  });
+});
+</script>
 </head>
 <body>
 <header class="nav">
@@ -409,33 +446,19 @@ def home():
           <div class="eyebrow"><span class="dot"></span> عالمك، إدارتك، تحكمك</div>
           <h1>ارتقِ بسيرفرك<br><span class="gradient-text">إلى عالم آخر.</span></h1>
           <p class="subtitle">
-            مرحباً بك في Sky Universe، لوحة تحكم متطورة مع قوائم منسدلة ذكية وأزرار حفظ وإعادة ضبط.
+            مرحباً بك في Sky Universe، لوحة تحكم متطورة مرتبة بقوائم في اليسار وشريط حفظ ذكي.
           </p>
           <div class="actions">{actions}</div>
           <div class="features">
-            <div class="feature"><b>✦</b> القائمة في اليمين</div>
-            <div class="feature"><b>✦</b> قوائم منسدلة سلسة</div>
-            <div class="feature"><b>✦</b> حماية متكاملة وعقوبات</div>
+            <div class="feature"><b>✦</b> القائمة في اليسار</div>
+            <div class="feature"><b>✦</b> حفظ عائم عند التعديل</div>
+            <div class="feature"><b>✦</b> ترحيب وتذاكر متقدمة</div>
           </div>
         </div>
         <div class="space-art">
           <div class="orbit"><div class="planet"></div></div>
           <div class="float-card card-top"><strong>🌌 Sky Universe</strong><small>رحلتك تبدأ هنا</small></div>
           <div class="float-card card-bottom"><strong>⚡ تحكم أذكى</strong><small>كل شيء في مكان واحد</small></div>
-        </div>
-      </section>
-      <section class="section">
-        <div class="section-heading">
-          <h2>كل أدواتك في <span class="gradient-text">مكان واحد</span></h2>
-          <p>إدارة مجتمعك بتصميم عصري مرتب.</p>
-        </div>
-        <div class="feature-grid">
-          <div class="feature-box"><div class="feature-icon">🛡️</div>
-            <h3>الحماية الشاملة</h3><p>كشف السبام، الكلمات السيئة، والفلترة المتقدمة.</p></div>
-          <div class="feature-box"><div class="feature-icon">🎫</div>
-            <h3>نظام التذاكر</h3><p>تخصيص كامل للرسائل والأزرار والصور.</p></div>
-          <div class="feature-box"><div class="feature-icon">📊</div>
-            <h3>السجلات (Logs)</h3><p>لوق خاص لكل حدث بنظام شبكي مرتب.</p></div>
         </div>
       </section>
     </main>
@@ -614,11 +637,11 @@ def render_server_page(guild_id, active_tab, tab_content_html):
       </div>
       <div class="menu-list">
         <a class="menu-item {'active' if active_tab=='settings' else ''}" href="/server/{guild_id}/settings"><span>⚙️</span> الإعدادات العامة</a>
+        <a class="menu-item {'active' if active_tab=='welcome' else ''}" href="/server/{guild_id}/welcome"><span>👋</span> نظام الترحيب</a>
         <a class="menu-item {'active' if active_tab=='security' else ''}" href="/server/{guild_id}/security"><span>🛡️</span> الحماية والأمان</a>
         <a class="menu-item {'active' if active_tab=='commands' else ''}" href="/server/{guild_id}/commands"><span>🤖</span> أوامر الإشراف</a>
         <a class="menu-item {'active' if active_tab=='logs' else ''}" href="/server/{guild_id}/logs"><span>📊</span> السجلات (Logs)</a>
         <a class="menu-item {'active' if active_tab=='tickets' else ''}" href="/server/{guild_id}/tickets"><span>🎫</span> نظام التذاكر</a>
-        <a class="menu-item {'active' if active_tab=='welcome' else ''}" href="/server/{guild_id}/welcome"><span>👋</span> نظام الترحيب</a>
       </div>
       <div style="margin-top: auto; padding-top: 15px; border-top: 1px solid var(--line);">
         <a class="btn btn-secondary" style="width: 100%; text-align: center;" href="/dashboard">← عودة لقائمة السيرفرات</a>
@@ -626,13 +649,29 @@ def render_server_page(guild_id, active_tab, tab_content_html):
     </aside>
     """
     
+    floating_bar = f"""
+    <div id="saveBar" class="floating-save-bar">
+      <div class="save-bar-info">
+        <span class="save-dot"></span>
+        <span>تم اكتشاف تغييرات! يرجى الحفظ أو الإلغاء.</span>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <button type="submit" form="mainForm" class="btn btn-gold" style="padding: 8px 20px;">حفظ</button>
+        <button type="reset" form="mainForm" onclick="hideBar()" class="btn btn-secondary" style="padding: 8px 18px;">إلغاء</button>
+      </div>
+    </div>
+    """
+    
     layout_content = f"""
     <div class="dashboard-layout">
-      <main class="content-panel">
-        {tab_content_html}
-      </main>
       {sidebar_html}
+      <main class="content-panel">
+        <form id="mainForm" method="POST">
+          {tab_content_html}
+        </form>
+      </main>
     </div>
+    {floating_bar}
     """
     return page(f"إدارة {guild_name}", layout_content)
 
@@ -642,25 +681,84 @@ def s_settings(guild_id):
     <div class="page-head" style="margin-bottom:25px;">
       <div><h1>⚙️ إعدادات السيرفر واللغة</h1><p>اختر لغة البوت الأساسية وبادئة الأوامر.</p></div>
     </div>
-    <form method="POST">
-      <div class="form-group">
-        <label>لغة البوت (Bot Language)</label>
-        <select class="form-control" name="bot_lang">
-          <option value="ar">العربية (Arabic) 🇸🇦</option>
-          <option value="en">الإنجليزية (English) 🇺🇸</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>بادئة الأوامر (Prefix)</label>
-        <input type="text" class="form-control" name="prefix" value="!">
-      </div>
-      <div class="save-bar">
-        <button type="submit" class="btn btn-primary">حفظ</button>
-        <button type="reset" class="btn btn-danger">إعادة ضبط</button>
-      </div>
-    </form>
+    <div class="form-group">
+      <label>لغة البوت (Bot Language)</label>
+      <select class="form-control" name="bot_lang">
+        <option value="ar">العربية (Arabic) 🇸🇦</option>
+        <option value="en">الإنجليزية (English) 🇺🇸</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>بادئة الأوامر (Prefix)</label>
+      <input type="text" class="form-control" name="prefix" value="!">
+    </div>
     """
     return render_server_page(guild_id, "settings", html)
+
+@app.route("/server/<guild_id>/welcome", methods=["GET", "POST"])
+def s_welcome(guild_id):
+    _, channels, _ = get_server_context(guild_id)
+    ch_options = "".join([f'<option value="{c["id"]}">#{c["name"]}</option>' for c in channels])
+
+    html = f"""
+    <div class="page-head" style="margin-bottom:25px;">
+      <div><h1>👋 إعدادات الترحيب</h1><p>قم بتكوين رسائل الترحيب وصور الترحيب المخصصة للأعضاء الجدد المنضمين إلى سيرفرك.</p></div>
+    </div>
+
+    <!-- بطاقة رسالة الترحيب -->
+    <div class="settings-section-card">
+      <div class="settings-section-header">
+        <div class="settings-section-title"><span>💬</span> رسالة الترحيب</div>
+        <label class="switch">
+          <input type="checkbox" name="welcome_msg_enabled" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="form-group">
+        <label>نص رسالة الترحيب (استخدم {{user}} للإشارة إلى العضو)</label>
+        <textarea class="form-control" name="welcome_msg" style="min-height: 90px;">مرحباً بك {{user}} في خادمنا الرائع! 🌸</textarea>
+      </div>
+      <div class="form-group">
+        <label>طريقة التوصيل</label>
+        <div style="display: flex; gap: 20px; margin-top: 8px;">
+          <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer;">
+            <input type="radio" name="welcome_delivery" value="dm"> إرسال كرسالة خاصة 👑 <span style="font-size:11px; color:var(--gold);">ميزة بريميوم</span>
+          </label>
+          <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer;">
+            <input type="radio" name="welcome_delivery" value="channel" checked> إرسال إلى روم
+          </label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>اختر الروم</label>
+        <select class="form-control" name="welcome_channel">
+          <option value="">اختر الرومات...</option>
+          {ch_options if ch_options else '<option value="">لا توجد رومات متاحة</option>'}
+        </select>
+      </div>
+    </div>
+
+    <!-- بطاقة مصمم صورة الترحيب -->
+    <div class="settings-section-card">
+      <div class="settings-section-header">
+        <div class="settings-section-title"><span>🎨</span> مصمم صورة الترحيب</div>
+        <label class="switch">
+          <input type="checkbox" name="welcome_img_enabled" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div style="background:#050816; border:1px solid var(--line); border-radius:14px; padding:40px 20px; text-align:center; margin-bottom:20px;">
+        <div style="width:85px; height:85px; border-radius:50%; background:#5865F2; margin:0 auto 12px; display:grid; place-items:center; font-size:36px; box-shadow:0 0 25px rgba(88,101,242,0.4);">💬</div>
+        <div style="font-size:18px; font-weight:800; color:#fff;">Welcome to the server</div>
+        <div style="font-size:15px; color:var(--muted);">Username</div>
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <button type="button" class="btn btn-secondary">إعادة التعيين إلى الافتراضي ↺</button>
+        <button type="button" class="btn btn-primary">رفع خلفية 🖼️</button>
+      </div>
+    </div>
+    """
+    return render_server_page(guild_id, "welcome", html)
 
 @app.route("/server/<guild_id>/security", methods=["GET", "POST"])
 def s_security(guild_id):
@@ -668,9 +766,7 @@ def s_security(guild_id):
         ("كشف الكلمات السيئة", "bad_words", "كشف ومعالجة الرسائل التي تحتوي على كلمات أو عبارات سيئة محددة"),
         ("كشف السبام", "spam", "تحديد ومعالجة رسائل السبام بناءً على التكرار والمحتوى"),
         ("فلترة الروابط", "links", "فلترة وإدارة الرسائل التي تحتوي على روابط، مع خيارات للنطاقات المسموحة"),
-        ("سبام المنشن", "mention_spam", "كشف ومعالجة الرسائل التي تحتوي على منشنات مفرطة للمستخدمين"),
-        ("كشف الأحرف الكبيرة المفرطة", "caps", "تحديد وإدارة الرسائل التي تحتوي على كمية مفرطة من الأحرف الكبيرة"),
-        ("فلترة دعوات ديسكورد", "discord_inv", "تحديد وإدارة الرسائل التي تحتوي على روابط دعوة سيرفرات ديسكورد")
+        ("سبام المنشن", "mention_spam", "كشف ومعالجة الرسائل التي تحتوي على منشنات مفرطة للمستخدمين")
     ]
 
     list_html = ""
@@ -695,13 +791,7 @@ def s_security(guild_id):
     <div class="page-head" style="margin-bottom:25px;">
       <div><h1>🛡️ الحماية والأمان</h1><p>أنظمة الحماية المتقدمة لحماية سيرفرك وتأمينه ضد التخريب والسبام.</p></div>
     </div>
-    <form method="POST">
-      {list_html}
-      <div class="save-bar">
-        <button type="submit" class="btn btn-primary">حفظ التغييرات</button>
-        <button type="reset" class="btn btn-danger">إعادة ضبط</button>
-      </div>
-    </form>
+    {list_html}
     """
     return render_server_page(guild_id, "security", html)
 
@@ -713,41 +803,31 @@ def s_security_edit(guild_id, sec_key):
 
     html = f"""
     <div class="page-head" style="margin-bottom:25px;">
-      <div><h1>✎ تخصيص حماية: {sec_key}</h1><p>تحديد الاستثناءات من رومات ورتب، واختيار إجراءات العقوبة (باند، تايم آوت، تحذير).</p></div>
+      <div><h1>✎ تخصيص حماية: {sec_key}</h1><p>تحديد الاستثناءات من رومات ورتب، واختيار إجراءات العقوبة.</p></div>
       <a class="btn btn-secondary" href="/server/{guild_id}/security">← عودة</a>
     </div>
-    <form method="POST">
-      <div class="form-group">
-        <label>الرومات المستثناة (اضغط للاختيار من القائمة المنسدلة)</label>
-        <select class="form-control" name="excluded_channels">
-          <option value="">اختر الروم المستثنى...</option>
-          {ch_options if ch_options else '<option value="">لا توجد رومات متاحة</option>'}
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>الرتب المستثناة (اضغط للاختيار من القائمة المنسدلة)</label>
-        <select class="form-control" name="excluded_roles">
-          <option value="">اختر الرتبة المستثناة...</option>
-          {role_options if role_options else '<option value="">لا توجد رتب متاحة</option>'}
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>إجراءات العقوبة التلقائية</label>
-        <select class="form-control" name="punishment_action">
-          <option value="warn">إرسال تحذير (Warn)</option>
-          <option value="timeout">إسكات مؤقت - تايم آوت (Timeout)</option>
-          <option value="ban">حظر نهائي - باند (Ban)</option>
-          <option value="delete">حظر الرسالة فقط دون عقوبة</option>
-        </select>
-      </div>
-
-      <div class="save-bar">
-        <button type="submit" class="btn btn-primary">حفظ</button>
-        <button type="reset" class="btn btn-danger">إعادة ضبط</button>
-      </div>
-    </form>
+    <div class="form-group">
+      <label>الرومات المستثناة</label>
+      <select class="form-control" name="excluded_channels">
+        <option value="">اختر الروم المستثنى...</option>
+        {ch_options if ch_options else '<option value="">لا توجد رومات متاحة</option>'}
+      </select>
+    </div>
+    <div class="form-group">
+      <label>الرتب المستثناة</label>
+      <select class="form-control" name="excluded_roles">
+        <option value="">اختر الرتبة المستثناة...</option>
+        {role_options if role_options else '<option value="">لا توجد رتب متاحة</option>'}
+      </select>
+    </div>
+    <div class="form-group">
+      <label>إجراءات العقوبة التلقائية</label>
+      <select class="form-control" name="punishment_action">
+        <option value="warn">إرسال تحذير (Warn)</option>
+        <option value="timeout">إسكات مؤقت - تايم آوت (Timeout)</option>
+        <option value="ban">حظر نهائي - باند (Ban)</option>
+      </select>
+    </div>
     """
     return render_server_page(guild_id, "security", html)
 
@@ -755,13 +835,8 @@ def s_security_edit(guild_id, sec_key):
 def s_commands(guild_id):
     cmds = [
         ("ban/", "حظر عضو من السيرفر"), ("unban/", "إلغاء حظر عضو"), ("clear/", "مسح الرسائل في روم"),
-        ("hide/", "إخفاء روم عن الأعضاء"), ("show/", "إظهار روم مخفي"), ("lock/", "قفل روم لمنع الرسائل"),
-        ("unlock/", "فتح روم"), ("move/", "نقل الأعضاء بين رومات الصوت"), ("role/", "إضافة أو إزالة الرتب لعضو"),
-        ("setnick/", "تعيين لقب لعضو"), ("timeout/", "إسكات عضو مؤقتاً"), ("untimeout/", "إزالة الإسكات عن عضو"),
-        ("vkick/", "طرد عضو من روم صوتي"), ("warn/", "تحذير عضو"), ("unwarn/", "إزالة إنذار عن عضو"),
-        ("warns/", "عرض تحذيرات عضو"), ("vmute/", "كتم عضو في الصوت")
+        ("hide/", "إخفاء روم عن الأعضاء"), ("show/", "إظهار روم مخفي"), ("lock/", "قفل روم لمنع الرسائل")
     ]
-    
     cards_html = ""
     for cmd, desc in cmds:
         cards_html += f"""
@@ -773,23 +848,14 @@ def s_commands(guild_id):
               <span class="slider"></span>
             </label>
           </div>
-          <div style="font-size: 13px; color: var(--muted);">{desc}</div>
+          <div style="font-size: 13px; color: var(--muted); text-align: right;">{desc}</div>
         </div>
         """
-        
     html = f"""
     <div class="page-head" style="margin-bottom:25px;">
       <div><h1>🤖 أوامر الإشراف</h1><p>تفعيل، تعطيل، وإعداد أوامر الإشراف.</p></div>
     </div>
-    <form method="POST">
-      <div class="cards-grid-3">
-        {cards_html}
-      </div>
-      <div class="save-bar">
-        <button type="submit" class="btn btn-primary">حفظ</button>
-        <button type="reset" class="btn btn-danger">إعادة ضبط</button>
-      </div>
-    </form>
+    <div class="cards-grid-3">{cards_html}</div>
     """
     return render_server_page(guild_id, "commands", html)
 
@@ -804,30 +870,24 @@ def s_command_edit(guild_id, cmd_name):
       <div><h1>✎ تعديل أمر: {cmd_name}/</h1><p>إعداد الأسماء البديلة، الرتب المسموحة، والرومات المفعلة.</p></div>
       <a class="btn btn-secondary" href="/server/{guild_id}/commands">← عودة</a>
     </div>
-    <form method="POST">
-      <div class="form-group">
-        <label>الأسماء البديلة للأمر</label>
-        <input type="text" class="form-control" value="{cmd_name}">
-      </div>
-      <div class="form-group">
-        <label>الرتب المفعلة لاستخدام الأمر</label>
-        <select class="form-control" name="allowed_roles">
-          <option value="">اختر الرتبة المسموحة...</option>
-          {role_options if role_options else '<option value="">لا توجد رتب</option>'}
-        </select>
-      </div>
-      <div class="form-group">
-        <label>الرومات المفعلة لاستخدام الأمر</label>
-        <select class="form-control" name="allowed_channels">
-          <option value="">اختر الروم المسموح...</option>
-          {ch_options if ch_options else '<option value="">لا توجد رومات</option>'}
-        </select>
-      </div>
-      <div class="save-bar">
-        <button type="submit" class="btn btn-primary">حفظ</button>
-        <button type="reset" class="btn btn-danger">إعادة ضبط</button>
-      </div>
-    </form>
+    <div class="form-group">
+      <label>الأسماء البديلة للأمر</label>
+      <input type="text" class="form-control" value="{cmd_name}">
+    </div>
+    <div class="form-group">
+      <label>الرتب المفعلة لاستخدام الأمر</label>
+      <select class="form-control" name="allowed_roles">
+        <option value="">اختر الرتبة المسموحة...</option>
+        {role_options if role_options else '<option value="">لا توجد رتب</option>'}
+      </select>
+    </div>
+    <div class="form-group">
+      <label>الرومات المفعلة لاستخدام الأمر</label>
+      <select class="form-control" name="allowed_channels">
+        <option value="">اختر الروم المسموح...</option>
+        {ch_options if ch_options else '<option value="">لا توجد رومات</option>'}
+      </select>
+    </div>
     """
     return render_server_page(guild_id, "commands", html)
 
@@ -839,13 +899,8 @@ def s_logs(guild_id):
 
     logs_list = [
         ("حظر عضو", "log_ban"), ("مهلة عضو", "log_timeout"), ("طرد عضو", "log_kick"),
-        ("إنضمام عضو", "log_join"), ("مغادرة عضو", "log_leave"), ("إلغاء حظر عضو", "log_unban"),
-        ("إعطاء رتبه", "log_role_give"), ("إزالة رتبه", "log_role_take"), ("تغيير اللقب", "log_name_change"),
-        ("إنشاء روم", "log_channel_create"), ("حذف روم", "log_channel_delete"), ("تعديل روم", "log_channel_update"),
-        ("ميوت صوتي", "log_voice_mute"), ("دفن صوتي", "log_voice_deaf"), ("طرد صوتي", "log_voice_disc"),
-        ("حذف رسالة", "log_msg_delete"), ("تعديل رسالة", "log_msg_update"), ("فك المهلة", "log_untimeout")
+        ("إنضمام عضو", "log_join"), ("مغادرة عضو", "log_leave"), ("إعطاء رتبه", "log_role_give")
     ]
-
     cards_html = ""
     for title, prefix in logs_list:
         cards_html += f"""
@@ -858,27 +913,18 @@ def s_logs(guild_id):
             </label>
           </div>
           <div style="display: flex; flex-direction: column; gap: 6px;">
-            <label style="color:var(--muted); font-size:12px;"># الروم</label>
+            <label style="color:var(--muted); font-size:12px; text-align:right;"># الروم</label>
             <select class="form-control" name="{prefix}_channel" style="padding: 10px 14px; font-size: 13px;">
               {empty_ch}
             </select>
           </div>
         </div>
         """
-
     html = f"""
     <div class="page-head" style="margin-bottom:25px;">
       <div><h1>📊 سجلات السيرفر (Logs)</h1><p>تكوين رومات التسجيل والأحداث المختلفة.</p></div>
     </div>
-    <form method="POST">
-      <div class="cards-grid-3">
-        {cards_html}
-      </div>
-      <div class="save-bar">
-        <button type="submit" class="btn btn-primary">حفظ</button>
-        <button type="reset" class="btn btn-danger">إعادة ضبط</button>
-      </div>
-    </form>
+    <div class="cards-grid-3">{cards_html}</div>
     """
     return render_server_page(guild_id, "logs", html)
 
@@ -888,49 +934,16 @@ def s_tickets(guild_id):
     <div class="page-head" style="margin-bottom:25px;">
       <div><h1>🎫 نظام التذاكر المتقدم</h1><p>تخصيص رسالة التذاكر، الأزرار، والخيارات.</p></div>
     </div>
-    <form method="POST">
-      <div class="form-group">
-        <label>رسالة التذاكر</label>
-        <textarea class="form-control" name="ticket_msg">اضغط على الزر أدناه لفتح تذاكر الدعم الفني والمساعدة.</textarea>
-      </div>
-      <div class="form-group">
-        <label>رابط صورة التذاكر</label>
-        <input type="url" class="form-control" name="ticket_img" placeholder="https://...">
-      </div>
-      <div class="save-bar">
-        <button type="submit" class="btn btn-primary">حفظ</button>
-        <button type="reset" class="btn btn-danger">إعادة ضبط</button>
-      </div>
-    </form>
+    <div class="form-group">
+      <label>رسالة التذاكر</label>
+      <textarea class="form-control" name="ticket_msg">اضغط على الزر أدناه لفتح تذاكر الدعم الفني والمساعدة.</textarea>
+    </div>
+    <div class="form-group">
+      <label>رابط صورة التذاكر</label>
+      <input type="url" class="form-control" name="ticket_img" placeholder="https://...">
+    </div>
     """
     return render_server_page(guild_id, "tickets", html)
-
-@app.route("/server/<guild_id>/welcome", methods=["GET", "POST"])
-def s_welcome(guild_id):
-    _, channels, _ = get_server_context(guild_id)
-    ch_options = "".join([f'<option value="{c["id"]}">#{c["name"]}</option>' for c in channels])
-    html = f"""
-    <div class="page-head" style="margin-bottom:25px;">
-      <div><h1>👋 نظام الترحيب</h1><p>استقبل أعضاءك برسائل وصور مخصصة.</p></div>
-    </div>
-    <form method="POST">
-      <div class="form-group">
-        <label>روم الترحيب</label>
-        <select class="form-control" name="welcome_channel">
-          {ch_options if ch_options else '<option value="">لا توجد رومات</option>'}
-        </select>
-      </div>
-      <div class="form-group">
-        <label>رسالة الترحيب</label>
-        <textarea class="form-control" name="welcome_msg">مرحباً بك {{user}} في السيرفر!</textarea>
-      </div>
-      <div class="save-bar">
-        <button type="submit" class="btn btn-primary">حفظ</button>
-        <button type="reset" class="btn btn-danger">إعادة ضبط</button>
-      </div>
-    </form>
-    """
-    return render_server_page(guild_id, "welcome", html)
 
 @app.route("/logout")
 def logout():
