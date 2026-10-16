@@ -459,7 +459,6 @@ function doDrag(e) {
   let x = e.clientX - offsetX;
   let y = e.clientY - offsetY;
   
-  // قيود صارمة بحيث لا يخرج العنصر أبداً خارج حدود القائمة/الصندوق
   if (x < 0) x = 0;
   if (y < 0) y = 0;
   if (x > parent.clientWidth - activeDrag.clientWidth) x = parent.clientWidth - activeDrag.clientWidth;
@@ -593,12 +592,12 @@ def home():
           <div class="eyebrow"><span class="dot"></span> عالمك، إدارتك، تحكمك</div>
           <h1>ارتقِ بسيرفرك<br><span class="gradient-text">إلى عالم آخر.</span></h1>
           <p class="subtitle">
-            مرحباً بك في Sky Universe، لوحة تحكم متطورة مرتبة بقوائم في اليسار مع تحكم دقيق بمقاسات ومواضع الترحيب.
+            مرحباً بك في Sky Universe، لوحة تحكم متطورة مرتبة بقوائم في اليسار مع نظام تذاكر متقدم وصلاحيات المسؤولين والمستخدمين.
           </p>
           <div class="actions">{actions}</div>
           <div class="features">
             <div class="feature"><b>✦</b> القائمة في اليسار</div>
-            <div class="feature"><b>✦</b> تصغير وتكبير صورة العضو</div>
+            <div class="feature"><b>✦</b> نظام التذاكر المتكامل والصلاحيات</div>
             <div class="feature"><b>✦</b> زر دعم ديسكورد مباشر</div>
           </div>
         </div>
@@ -858,10 +857,10 @@ def s_welcome(guild_id):
     <div class="variable-box">
       <div style="font-weight:800; color:#fff; margin-bottom:6px;">✨ الاختصارات المتاحة لاستخدامها في الرسائل:</div>
       <div>
-        <span class="variable-tag">{{user}}</span> لإشارة (منشن) العضو الجديد.<br>
-        <span class="variable-tag">{{username}}</span> لكتابة اسم العضو نصياً.<br>
-        <span class="variable-tag">{{server}}</span> لكتابة اسم السيرفر تلقائياً.<br>
-        <span class="variable-tag">{{membercount}}</span> لطباعة عدد أعضاء السيرفر.
+        <span class="variable-tag">{{user}}</span> لإشارة (منشن) العضو الجديد[cite: 17].<br>
+        <span class="variable-tag">{{username}}</span> لكتابة اسم العضو نصياً[cite: 17].<br>
+        <span class="variable-tag">{{server}}</span> لكتابة اسم السيرفر تلقائياً[cite: 17].<br>
+        <span class="variable-tag">{{membercount}}</span> لطباعة عدد أعضاء السيرفر[cite: 17].
       </div>
     </div>
 
@@ -898,7 +897,7 @@ def s_welcome(guild_id):
       </div>
     </div>
 
-    <!-- بطاقة مصمم صورة الترحيب المطور مع التحكم بالحجم والسحب -->
+    <!-- بطاقة مصمم صورة الترحيب التفاعلي -->
     <div class="settings-section-card">
       <div class="settings-section-header">
         <div class="settings-section-title"><span>🎨</span> مصمم صورة الترحيب التفاعلي (تصغير، تكبير، وسحب)</div>
@@ -1131,17 +1130,90 @@ def s_logs(guild_id):
 
 @app.route("/server/<guild_id>/tickets", methods=["GET", "POST"])
 def s_tickets(guild_id):
+    _, channels, roles = get_server_context(guild_id)
+    ch_options = "".join([f'<option value="{c["id"]}">#{c["name"]}</option>' for c in channels])
+    role_options = "".join([f'<option value="{r["id"]}">@{r["name"]}</option>' for r in roles])
+
     html = f"""
     <div class="page-head" style="margin-bottom:25px;">
-      <div><h1>🎫 نظام التذاكر المتقدم</h1><p>تخصيص رسالة التذاكر والأزرار والخيارات.</p></div>
+      <div><h1>🎫 نظام التذاكر المتقدم</h1><p>إدارة فئات التذاكر، صلاحيات المسؤولين والمستخدمين، وإعدادات التضمين.</p></div>
     </div>
-    <div class="form-group">
-      <label>رسالة التذاكر</label>
-      <textarea class="form-control" name="ticket_msg" style="min-height: 90px;">اضغط على الزر أدناه لفتح تذاكر الدعم الفني والمساعدة.</textarea>
+
+    <!-- بطاقة فئات التذاكر -->
+    <div class="settings-section-card">
+      <div class="settings-section-header">
+        <div class="settings-section-title"><span>📂</span> فئات التذاكر (Categories)</div>
+      </div>
+      <div class="form-group">
+        <label>اسم الفئة (مثل: الدعم الفني، الشكاوي)</label>
+        <input type="text" class="form-control" name="ticket_category_name" placeholder="أدخل اسم الفئة...">
+      </div>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+        <div class="form-group">
+          <label>روم السجل (Log Channel)</label>
+          <select class="form-control" name="ticket_log_channel">
+            <option value="">اختر الروم...</option>
+            {ch_options if ch_options else '<option value="">لا توجد رومات</option>'}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>رتب المسؤولين (Staff Roles)</label>
+          <select class="form-control" name="ticket_staff_role">
+            <option value="">اختر الرتبة...</option>
+            {role_options if role_options else '<option value="">لا توجد رتب</option>'}
+          </select>
+        </div>
+      </div>
     </div>
-    <div class="form-group">
-      <label>رابط صورة التذاكر</label>
-      <input type="url" class="form-control" name="ticket_img" placeholder="https://...">
+
+    <!-- بطاقة صلاحيات المسؤولين والمستخدمين -->
+    <div class="settings-section-card">
+      <div class="settings-section-header">
+        <div class="settings-section-title"><span>🛡️</span> صلاحيات التحكم داخل التذكرة</div>
+      </div>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div>
+          <h4 style="color:var(--blue); margin-bottom:12px;">صلاحيات المسؤولين</h4>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <span>إغلاق التذكرة</span>
+            <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <span>حذف التذكرة</span>
+            <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <span>نسخ وتصدير محادثة التذكرة</span>
+            <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+          </div>
+        </div>
+        <div>
+          <h4 style="color:var(--purple); margin-bottom:12px;">صلاحيات المستخدمين</h4>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <span>إغلاق التذكرة الخاصة به</span>
+            <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <span>إضافة مستخدمين آخرين</span>
+            <label class="switch"><input type="checkbox"><span class="slider"></span></label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- بطاقة صور الخلفية والخطوط للتذاكر -->
+    <div class="settings-section-card">
+      <div class="settings-section-header">
+        <div class="settings-section-title"><span>🖼️</span> صور الخلفية والخطوط المخصصة للتذاكر</div>
+      </div>
+      <div class="form-group">
+        <label>صورة خلفية إعداد التذكرة (1920x1080 مقترح)</label>
+        <input type="file" class="form-control" accept="image/*">
+      </div>
+      <div class="form-group">
+        <label>صورة خط الفاصل لتذاكر الدعم</label>
+        <input type="file" class="form-control" accept="image/*">
+      </div>
     </div>
     """
     return render_server_page(guild_id, "tickets", html)
