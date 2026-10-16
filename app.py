@@ -10,10 +10,10 @@ app.secret_key = os.environ.get("SESSION_SECRET", "dev-only-change-this-secret")
 CLIENT_ID = os.environ.get("DISCORD_CLIENT_ID", "").strip()
 CLIENT_SECRET = os.environ.get("DISCORD_CLIENT_SECRET", "").strip()
 
-# تم ضبط الرابط هنا ليكون مطابقاً لرابط الـ Redirect الذي أرسلته تماماً
+# تم ضبط الرابط هنا ليكون منتهيًا بـ /callback تمامًا
 REDIRECT_URI = os.environ.get(
     "DISCORD_REDIRECT_URI",
-    "https://sky-panel-z0b2.onrender.com/"
+    "https://sky-panel-z0b2.onrender.com/callback"
 ).strip()
 BOT_TOKEN = os.environ.get("DISCORD_TOKEN", "").strip()
 
@@ -415,7 +415,6 @@ def dashboard():
         if bot_res and bot_res.status_code == 200:
             bot_guilds = {g["id"] for g in bot_res.json()}
 
-    # فلترة السيرفرات: (أنت أدمن فيها أو مالكها) + (البوت موجود فيها فعلياً)
     valid_guilds = [
         g for g in user_guilds
         if ((int(g.get("permissions", 0)) & 0x8) == 0x8 or g.get("owner", False))
