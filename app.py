@@ -339,7 +339,7 @@ input:checked + .slider:before { transform: translateX(22px); }
 }
 .footer-links { display: flex; gap: 16px; align-items: center; }
 
-/* مصمم الصورة القابل للسحب بالماوس (Interactive DragCanvas) */
+/* مصمم الصورة القابل للسحب بالماوس مع قيود داخل الصندوق */
 .canvas-container {
   width: 100%; height: 260px; background: #050816; border: 2px dashed var(--blue);
   border-radius: 16px; position: relative; overflow: hidden; margin-bottom: 20px;
@@ -375,7 +375,6 @@ input:checked + .slider:before { transform: translateX(22px); }
 }
 </style>
 <script>
-// حفظ المواضع الأصلية قبل السحب لإعادتها إذا لم يتم الحفظ
 let initialPositions = {};
 
 function triggerChange() {
@@ -386,6 +385,7 @@ function triggerChange() {
 function saveState() {
   const avatarLeft = document.getElementById('avatar_left');
   const avatarTop = document.getElementById('avatar_top');
+  const avatarSize = document.getElementById('avatar_size');
   const textLeft = document.getElementById('text_left');
   const textTop = document.getElementById('text_top');
   const bgUrl = document.getElementById('bg_url_input');
@@ -394,6 +394,7 @@ function saveState() {
     initialPositions = {
       avatarLeft: avatarLeft.value,
       avatarTop: avatarTop.value,
+      avatarSize: avatarSize ? avatarSize.value : '85',
       textLeft: textLeft.value,
       textTop: textTop.value,
       bgUrl: bgUrl ? bgUrl.value : ''
@@ -408,6 +409,10 @@ function resetPositions() {
   if (initialPositions.avatarLeft !== undefined) {
     document.getElementById('avatar_left').value = initialPositions.avatarLeft;
     document.getElementById('avatar_top').value = initialPositions.avatarTop;
+    if (document.getElementById('avatar_size')) {
+      document.getElementById('avatar_size').value = initialPositions.avatarSize;
+      changeAvatarSize(initialPositions.avatarSize);
+    }
     document.getElementById('text_left').value = initialPositions.textLeft;
     document.getElementById('text_top').value = initialPositions.textTop;
 
@@ -454,6 +459,7 @@ function doDrag(e) {
   let x = e.clientX - offsetX;
   let y = e.clientY - offsetY;
   
+  // قيود صارمة بحيث لا يخرج العنصر أبداً خارج حدود القائمة/الصندوق
   if (x < 0) x = 0;
   if (y < 0) y = 0;
   if (x > parent.clientWidth - activeDrag.clientWidth) x = parent.clientWidth - activeDrag.clientWidth;
@@ -485,7 +491,21 @@ function updateBg(url) {
   }
 }
 
-// معاينة صورة مرفوعة من جهازك
+function changeAvatarSize(size) {
+  const avCircle = document.getElementById('avatarCircle');
+  if (avCircle) {
+    avCircle.style.width = size + 'px';
+    avCircle.style.height = size + 'px';
+    if (size < 60) {
+      avCircle.style.fontSize = '20px';
+    } else if (size < 90) {
+      avCircle.style.fontSize = '32px';
+    } else {
+      avCircle.style.fontSize = '44px';
+    }
+  }
+}
+
 function previewLocalImage(input) {
   if (input.files && input.files[0]) {
     const reader = new FileReader();
@@ -573,12 +593,12 @@ def home():
           <div class="eyebrow"><span class="dot"></span> عالمك، إدارتك، تحكمك</div>
           <h1>ارتقِ بسيرفرك<br><span class="gradient-text">إلى عالم آخر.</span></h1>
           <p class="subtitle">
-            مرحباً بك في Sky Universe، لوحة تحكم متطورة مرتبة بقوائم في اليسار مع مصمم ترحب بالسحب بالماوس.
+            مرحباً بك في Sky Universe، لوحة تحكم متطورة مرتبة بقوائم في اليسار مع تحكم دقيق بمقاسات ومواضع الترحيب.
           </p>
           <div class="actions">{actions}</div>
           <div class="features">
             <div class="feature"><b>✦</b> القائمة في اليسار</div>
-            <div class="feature"><b>✦</b> رفع ملفات مباشرة والسحب بالماوس</div>
+            <div class="feature"><b>✦</b> تصغير وتكبير صورة العضو</div>
             <div class="feature"><b>✦</b> زر دعم ديسكورد مباشر</div>
           </div>
         </div>
@@ -878,21 +898,21 @@ def s_welcome(guild_id):
       </div>
     </div>
 
-    <!-- بطاقة مصمم صورة الترحيب المطور مع السحب بالماوس ورفع الملفات -->
+    <!-- بطاقة مصمم صورة الترحيب المطور مع التحكم بالحجم والسحب -->
     <div class="settings-section-card">
       <div class="settings-section-header">
-        <div class="settings-section-title"><span>🎨</span> مصمم صورة الترحيب التفاعلي (احرك بالماوس)</div>
+        <div class="settings-section-title"><span>🎨</span> مصمم صورة الترحيب التفاعلي (تصغير، تكبير، وسحب)</div>
         <label class="switch">
           <input type="checkbox" name="welcome_img_enabled" checked>
           <span class="slider"></span>
         </label>
       </div>
-      <div class="field-desc">ملاحظة: يمكنك سحب الصورة والنص بالماوس مباشرة لتغيير أماكنهم! ولن تتغير الأماكن نهائياً حتى تضغط حفظ.</div>
+      <div class="field-desc">يمكنك سحب العناصر بالماوس (بضمن الحدود المخصصة للقائمة) وتعديل حجم صورة العضو بكل سهولة!</div>
 
       <!-- لوحة المعاينة والسحب بالماوس -->
       <div id="canvasPreview" class="canvas-container">
         <div id="dragAvatar" class="draggable-item" style="left: 40px; top: 40px;" onmousedown="startDrag(event, 'dragAvatar')">
-          <div style="width:85px; height:85px; border-radius:50%; background:#5865F2; display:grid; place-items:center; font-size:32px; box-shadow:0 0 20px rgba(88,101,242,0.5);">👤</div>
+          <div id="avatarCircle" style="width:85px; height:85px; border-radius:50%; background:#5865F2; display:grid; place-items:center; font-size:32px; box-shadow:0 0 20px rgba(88,101,242,0.5);">👤</div>
         </div>
         <div id="dragText" class="draggable-item" style="left: 150px; top: 60px;" onmousedown="startDrag(event, 'dragText')">
           <div style="font-size:22px; font-weight:900; color:#fff;">Welcome to the server</div>
@@ -911,6 +931,10 @@ def s_welcome(guild_id):
       </div>
 
       <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+        <div class="form-group">
+          <label>حجم صورة العضو (بالبكسل - تصغير/تكبير)</label>
+          <input type="number" id="avatar_size" class="form-control" name="avatar_size" value="85" min="40" max="180" oninput="changeAvatarSize(this.value)">
+        </div>
         <div class="form-group">
           <label>موضع صورة العضو (Left)</label>
           <input type="number" id="avatar_left" class="form-control" name="avatar_left" value="40">
