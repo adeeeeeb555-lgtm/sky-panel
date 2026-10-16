@@ -218,7 +218,7 @@ h1 {
 }
 .empty span { display: block; font-size: 40px; margin-bottom: 12px; }
 
-/* تصميم الواحة الواسعة والمنظمة للمدير */
+/* تصميم لوحة التحكم الواسعة والمنظمة */
 .dashboard-layout {
   display: grid; grid-template-columns: 310px 1fr; gap: 30px;
   width: min(1350px, 95%); margin: 40px auto 70px; align-items: start;
@@ -267,6 +267,33 @@ h1 {
 textarea.form-control { resize: vertical; min-height: 120px; }
 select.form-control { cursor: pointer; }
 
+/* بطاقات اللوق المستقلة لكل حدث */
+.log-card {
+  background: #080d1ff5; border: 1px solid var(--line); border-radius: 16px;
+  padding: 20px; margin-bottom: 18px; display: flex; flex-direction: column; gap: 14px;
+}
+.log-card-header {
+  display: flex; justify-content: space-between; align-items: center;
+}
+.log-card-title { font-size: 16px; font-weight: 800; color: #e4eeff; display: flex; align-items: center; gap: 10px; }
+.log-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 15px; align-items: center; }
+
+/* تصميم زر التفعيل (Switch) الفضائي الفخم */
+.switch {
+  position: relative; display: inline-block; width: 54px; height: 28px;
+}
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider {
+  position: absolute; cursor: pointer; inset: 0;
+  background-color: #1a2748; transition: .3s; border-radius: 34px; border: 1px solid var(--line);
+}
+.slider:before {
+  position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 3px;
+  background-color: white; transition: .3s; border-radius: 50%;
+}
+input:checked + .slider { background: linear-gradient(115deg, #64caff, #9b8cff); }
+input:checked + .slider:before { transform: translateX(26px); }
+
 .footer { text-align: center; color: #7785a5; font-size: 12px; padding: 30px; border-top: 1px solid #ffffff0c; }
 @media(max-width: 950px) {
   .dashboard-layout { grid-template-columns: 1fr; }
@@ -277,6 +304,7 @@ select.form-control { cursor: pointer; }
   .planet { width: 110px; height: 110px; }
   .feature-grid { grid-template-columns: 1fr; }
   .nav { padding: 15px 5%; }
+  .log-grid { grid-template-columns: 1fr; }
 }
 </style>
 </head>
@@ -350,9 +378,9 @@ def home():
           </p>
           <div class="actions">{actions}</div>
           <div class="features">
-            <div class="feature"><b>✦</b> إدارة دقيقة</div>
-            <div class="feature"><b>✦</b> لوحات واسعة</div>
-            <div class="feature"><b>✦</b> تصميم فضائي فاخر</div>
+            <div class="feature"><b>✦</b> تحكم مستقل لكل لوق</div>
+            <div class="feature"><b>✦</b> لوحات واسعة وفخمة</div>
+            <div class="feature"><b>✦</b> تصميم فضائي دقيق</div>
           </div>
         </div>
         <div class="space-art">
@@ -372,7 +400,7 @@ def home():
           <div class="feature-box"><div class="feature-icon">🎫</div>
             <h3>نظام التذاكر</h3><p>نظّم طلبات الدعم برسائل، صور، وأزرار احترافية.</p></div>
           <div class="feature-box"><div class="feature-icon">📊</div>
-            <h3>السجلات الدقيقة</h3><p>رصد دقيق لكافة أحداث السيرفر (رومات، رتب، باند، رسائل).</p></div>
+            <h3>السجلات المستقلة</h3><p>تفعيل أو إيقاف وتخصيص روم لكل حدث بدقة تامة.</p></div>
         </div>
       </section>
     </main>
@@ -697,55 +725,57 @@ def s_commands(guild_id):
 def s_logs(guild_id):
     _, channels = get_server_context(guild_id)
     ch_options = "".join([f'<option value="{c["id"]}">#{c["name"]}</option>' for c in channels])
-    
+    empty_ch = '<option value="">اختر الروم...</option>' + ch_options
+
+    def render_log_box(title, prefix):
+        return f"""
+        <div class="log-card">
+          <div class="log-card-header">
+            <div class="log-card-title"><span>📊</span> {title}</div>
+            <label class="switch">
+              <input type="checkbox" name="{prefix}_enabled" value="yes" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="log-grid">
+            <label style="color:var(--muted); font-size:13px; margin:0;">روم السجل المخصص:</label>
+            <select class="form-control" name="{prefix}_channel">
+              {empty_ch}
+            </select>
+          </div>
+        </div>
+        """
+
     html = f"""
     <div class="page-head" style="margin-bottom:25px;">
-      <div><h1>📊 السجلات الدقيقة (Logs System)</h1><p>تخصيص ورصد دقيق لكل حدث داخل السيرفر مع التفاصيل الكاملة.</p></div>
+      <div><h1>📊 السجلات المستقلة والدقيقة (Logs System)</h1><p>فعّل أو أوقف كل حدث على حدة، وحدد روم السجل الخاص به مع تفاصيل كاملة.</p></div>
     </div>
     <form method="POST">
-      <div class="form-group">
-        <label>📁 روم لوق الرومات (إنشاء روم، حذف روم، تعديل روم مع التفاصيل)</label>
-        <select class="form-control" name="log_channels">
-          {ch_options if ch_options else '<option value="">لا توجد رومات</option>'}
-        </select>
-      </div>
+      {render_log_box("لوق إنشاء الرومات (مع اسم الروم، نوعه، ومن أنشأه)", "log_channel_create")}
+      {render_log_box("لوق حذف الرومات (مع اسم الروم ومن حذفه)", "log_channel_delete")}
+      {render_log_box("لوق تعديل الرومات (تغيير الاسم، الصلاحيات مع التفاصيل)", "log_channel_update")}
       
-      <div class="form-group">
-        <label>👑 روم لوق الرتب والأدوار (إعطاء رتبه، سحب رتبه، تعديل رتبه مع التفاصيل)</label>
-        <select class="form-control" name="log_roles">
-          {ch_options if ch_options else '<option value="">لا توجد رومات</option>'}
-        </select>
-      </div>
+      {render_log_box("لوق إعطاء الرتب (اسم الرتبة، العضو، ومن أعطاها)", "log_role_give")}
+      {render_log_box("لوق سحب الرتب (اسم الرتبة، العضو، ومن سحبها)", "log_role_take")}
+      {render_log_box("لوق إنشاء وتعديل وحذف الرتب (التفاصيل الكاملة)", "log_role_changes")}
       
-      <div class="form-group">
-        <label>🔨 روم لوق العقوبات (باند، فك باند، طرد، تايم آوت، فك تايم مع التفاصيل)</label>
-        <select class="form-control" name="log_punishments">
-          {ch_options if ch_options else '<option value="">لا توجد رومات</option>'}
-        </select>
-      </div>
+      {render_log_box("لوق الباند (العضو، السبب، ومن أعطى الباند)", "log_ban")}
+      {render_log_box("لوق فك الباند (العضو، ومن فك عنه الباند)", "log_unban")}
+      {render_log_box("لوق الطرد - Kick (العضو، السبب، ومن طرده)", "log_kick")}
       
-      <div class="form-group">
-        <label>🔇 روم لوق الميوت والدفن والطرد من الروم مع التفاصيل</label>
-        <select class="form-control" name="log_voice_punishments">
-          {ch_options if ch_options else '<option value="">لا توجد رومات</option>'}
-        </select>
-      </div>
+      {render_log_box("لوق التايم آوت - Timeout (المدة، السبب، ومن أعطاه)", "log_timeout")}
+      {render_log_box("لوق فك التايم آوت (العضو، ومن فك عنه)", "log_untimeout")}
       
-      <div class="form-group">
-        <label>✏️ روم لوق تغيير الأسماء والبروفايل مع التفاصيل</label>
-        <select class="form-control" name="log_names">
-          {ch_options if ch_options else '<option value="">لا توجد رومات</option>'}
-        </select>
-      </div>
+      {render_log_box("لوق تغيير الأسماء - Nicknames & Usernames (الاسم القديم والجديد)", "log_name_change")}
       
-      <div class="form-group">
-        <label>💬 روم لوق الرسائل (حذف رسالة، تعديل رسالة مع التفاصيل)</label>
-        <select class="form-control" name="log_messages">
-          {ch_options if ch_options else '<option value="">لا توجد رومات</option>'}
-        </select>
-      </div>
+      {render_log_box("لوق الميوت الصوتي (Mute)", "log_voice_mute")}
+      {render_log_box("لوق الدفن / السجن الصوتي (Deafen)", "log_voice_deaf")}
+      {render_log_box("لوق طرد من الروم الصوتي (Disconnect)", "log_voice_disconnect")}
       
-      <button type="submit" class="btn btn-primary" style="margin-top: 10px;">حفظ إعدادات السجلات الدقيقة ✦</button>
+      {render_log_box("لوق حذف الرسائل (محتوى الرسالة، صاحبها، والروم)", "log_message_delete")}
+      {render_log_box("لوق تعديل الرسائل (المحتوى القديم والجديد)", "log_message_update")}
+
+      <button type="submit" class="btn btn-primary" style="margin-top: 20px; width: 100%;">حفظ إعدادات السجلات المستقلة ✦</button>
     </form>
     """
     return render_server_page(guild_id, "logs", html)
