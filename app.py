@@ -39,7 +39,7 @@ STYLE = """
 
 :root {
   --bg: #050816;
-  --panel: rgba(14, 23, 48, .85);
+  --panel: rgba(14, 23, 48, .88);
   --line: rgba(120, 170, 255, .22);
   --blue: #64caff;
   --purple: #9b8cff;
@@ -75,7 +75,7 @@ a { color: inherit; text-decoration: none; }
   display: flex; justify-content: space-between; align-items: center;
   gap: 18px; padding: 20px clamp(24px, 5vw, 60px);
   border-bottom: 1px solid var(--line);
-  background: rgba(5, 8, 22, .85);
+  background: rgba(5, 8, 22, .88);
   backdrop-filter: blur(18px); position: relative; z-index: 2;
 }
 .brand { display: flex; align-items: center; gap: 14px; }
@@ -98,10 +98,10 @@ a { color: inherit; text-decoration: none; }
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   padding: 13px 24px; border-radius: 14px; text-decoration: none;
   font-family: inherit; font-size: 15px; font-weight: 800;
-  transition: transform .2s, box-shadow .2s, border-color .2s;
+  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
   border: 1px solid transparent; cursor: pointer;
 }
-.btn:hover { transform: translateY(-3px); }
+.btn:hover { transform: translateY(-2px); }
 .btn-primary {
   color: #06101f; background: linear-gradient(115deg, #73dcff, #a6a0ff);
   box-shadow: 0 8px 28px #58baff28;
@@ -218,17 +218,24 @@ h1 {
 }
 .empty span { display: block; font-size: 40px; margin-bottom: 12px; }
 
-/* تصميم لوحة التحكم الواسعة والمنظمة */
+/* تصميم لوحة التحكم مع جعل القائمة في اليمين والمحتوى في اليسار وبسرعة فائقة */
 .dashboard-layout {
-  display: grid; grid-template-columns: 310px 1fr; gap: 30px;
-  width: min(1350px, 95%); margin: 40px auto 70px; align-items: start;
+  display: grid; grid-template-columns: 1fr 310px; gap: 30px;
+  width: min(1380px, 96%); margin: 40px auto 70px; align-items: start;
 }
 .sidebar {
   background: linear-gradient(155deg, #121c38dd, #080d1fff);
   border: 1px solid var(--line); border-radius: 24px; padding: 28px;
   display: flex; flex-direction: column; gap: 22px; backdrop-filter: blur(16px);
-  position: sticky; top: 25px;
+  position: sticky; top: 25px; order: 2;
 }
+.content-panel {
+  background: linear-gradient(155deg, #15203acc, #0c1327dd);
+  border: 1px solid var(--line); border-radius: 24px; padding: 45px;
+  backdrop-filter: blur(16px); min-height: 700px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.4); order: 1;
+}
+
 .sidebar-header { text-align: center; padding-bottom: 20px; border-bottom: 1px solid var(--line); }
 .sidebar-icon {
   width: 95px; height: 95px; border-radius: 28px; object-fit: cover;
@@ -241,21 +248,15 @@ h1 {
 .menu-item {
   display: flex; align-items: center; gap: 14px; padding: 14px 18px;
   border-radius: 14px; color: var(--muted); font-weight: 700; font-size: 15px;
-  transition: all .2s; border: 1px solid transparent;
+  transition: all .15s ease; border: 1px solid transparent;
 }
 .menu-item:hover, .menu-item.active {
   background: linear-gradient(115deg, #5bbfff1a, #8f82ff1a);
   color: var(--text); border-color: #7acbff50;
-  box-shadow: 0 6px 22px #58baff18; transform: translateX(-3px);
+  box-shadow: 0 6px 22px #58baff18; transform: translateX(3px);
 }
 .menu-item span { font-size: 20px; }
 
-.content-panel {
-  background: linear-gradient(155deg, #15203acc, #0c1327dd);
-  border: 1px solid var(--line); border-radius: 24px; padding: 40px;
-  backdrop-filter: blur(16px); min-height: 650px;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.4);
-}
 .form-group { margin-bottom: 25px; }
 .form-group label { display: block; font-size: 14px; font-weight: 700; color: #cedbfa; margin-bottom: 10px; }
 .form-control {
@@ -267,7 +268,7 @@ h1 {
 textarea.form-control { resize: vertical; min-height: 120px; }
 select.form-control { cursor: pointer; }
 
-/* بطاقات اللوق المستقلة لكل حدث */
+/* بطاقات اللوق المستقلة ودقيقة التفاصيل */
 .log-card {
   background: #080d1ff5; border: 1px solid var(--line); border-radius: 16px;
   padding: 20px; margin-bottom: 18px; display: flex; flex-direction: column; gap: 14px;
@@ -297,7 +298,8 @@ input:checked + .slider:before { transform: translateX(26px); }
 .footer { text-align: center; color: #7785a5; font-size: 12px; padding: 30px; border-top: 1px solid #ffffff0c; }
 @media(max-width: 950px) {
   .dashboard-layout { grid-template-columns: 1fr; }
-  .sidebar { position: static; }
+  .sidebar { position: static; order: 1; }
+  .content-panel { order: 2; }
   .hero { grid-template-columns: 1fr; padding-top: 50px; gap: 15px; }
   .space-art { min-height: 310px; grid-row: 1; }
   .orbit { width: 260px; }
@@ -373,14 +375,14 @@ def home():
           <div class="eyebrow"><span class="dot"></span> عالمك، إدارتك، تحكمك</div>
           <h1>ارتقِ بسيرفرك<br><span class="gradient-text">إلى عالم آخر.</span></h1>
           <p class="subtitle">
-            مرحباً بك في Sky Universe، لوحة تحكم تجمع أدوات إدارة
-            مجتمعك في تجربة واسعة، أنيقة، ومستلهمة من جمال الفضاء.
+            مرحباً بك في Sky Universe، لوحة تحكم فائقة السرعة وواسعة
+            لتدير مجتمعك بكل احترافية ودقة.
           </p>
           <div class="actions">{actions}</div>
           <div class="features">
-            <div class="feature"><b>✦</b> تحكم مستقل لكل لوق</div>
-            <div class="feature"><b>✦</b> لوحات واسعة وفخمة</div>
-            <div class="feature"><b>✦</b> تصميم فضائي دقيق</div>
+            <div class="feature"><b>✦</b> قائمة في اليمين</div>
+            <div class="feature"><b>✦</b> سرعة فائقة</div>
+            <div class="feature"><b>✦</b> لوقات مستقلة بدقة</div>
           </div>
         </div>
         <div class="space-art">
@@ -392,15 +394,15 @@ def home():
       <section class="section">
         <div class="section-heading">
           <h2>كل أدواتك في <span class="gradient-text">مكان واحد</span></h2>
-          <p>إدارة مجتمعك بتصميم عصري واسع ومريح.</p>
+          <p>إدارة مجتمعك بتصميم عصري سريع ومرتب.</p>
         </div>
         <div class="feature-grid">
           <div class="feature-box"><div class="feature-icon">🛡️</div>
-            <h3>الحماية والإدارة</h3><p>جهّز سيرفرك لإدارة أكثر تنظيماً مع أنظمة حماية ولغات مخصصة.</p></div>
+            <h3>الحماية والإدارة</h3><p>لغات البوت، الأوامر، وحمايات السيرفر المتقدمة.</p></div>
           <div class="feature-box"><div class="feature-icon">🎫</div>
-            <h3>نظام التذاكر</h3><p>نظّم طلبات الدعم برسائل، صور، وأزرار احترافية.</p></div>
+            <h3>نظام التذاكر</h3><p>تخصيص كامل للرسائل والأزرار والصور.</p></div>
           <div class="feature-box"><div class="feature-icon">📊</div>
-            <h3>السجلات المستقلة</h3><p>تفعيل أو إيقاف وتخصيص روم لكل حدث بدقة تامة.</p></div>
+            <h3>السجلات المستقلة</h3><p>لوق خاص لكل حدث مع إمكانية التفعيل والإيقاف الفردي.</p></div>
         </div>
       </section>
     </main>
@@ -570,7 +572,7 @@ def render_server_page(guild_id, active_tab, tab_content_html):
       <div class="sidebar-header">
         <img class="sidebar-icon" src="{icon_url}" alt="Server Icon">
         <h3>{guild_name}</h3>
-        <p>لوحة تحكم البوت الشاملة</p>
+        <p>لوحة التحكم الشاملة</p>
       </div>
       <div class="menu-list">
         <a class="menu-item {'active' if active_tab=='settings' else ''}" href="/server/{guild_id}/settings"><span>⚙️</span> الإعدادات واللغة</a>
@@ -588,10 +590,10 @@ def render_server_page(guild_id, active_tab, tab_content_html):
     
     layout_content = f"""
     <div class="dashboard-layout">
-      {sidebar_html}
       <main class="content-panel">
         {tab_content_html}
       </main>
+      {sidebar_html}
     </div>
     """
     return page(f"إدارة {guild_name}", layout_content)
@@ -748,16 +750,16 @@ def s_logs(guild_id):
 
     html = f"""
     <div class="page-head" style="margin-bottom:25px;">
-      <div><h1>📊 السجلات المستقلة والدقيقة (Logs System)</h1><p>فعّل أو أوقف كل حدث على حدة، وحدد روم السجل الخاص به مع تفاصيل كاملة.</p></div>
+      <div><h1>📊 السجلات الدقيقة والمستقلة تماماً (Logs System)</h1><p>كل لوق مستقل بحاله تماماً مع زر تفعيل وروم مخصص وتفاصيل دقيقة.</p></div>
     </div>
     <form method="POST">
-      {render_log_box("لوق إنشاء الرومات (مع اسم الروم، نوعه، ومن أنشأه)", "log_channel_create")}
-      {render_log_box("لوق حذف الرومات (مع اسم الروم ومن حذفه)", "log_channel_delete")}
-      {render_log_box("لوق تعديل الرومات (تغيير الاسم، الصلاحيات مع التفاصيل)", "log_channel_update")}
+      {render_log_box("لوق إنشاء الرومات (اسم الروم، نوعه، ومن أنشأه مع التفاصيل)", "log_channel_create")}
+      {render_log_box("لوق حذف الرومات (اسم الروم، ومن حذفه مع التفاصيل)", "log_channel_delete")}
+      {render_log_box("لوق تعديل الرومات (تغيير الاسم، الصلاحيات والتفاصيل)", "log_channel_update")}
       
-      {render_log_box("لوق إعطاء الرتب (اسم الرتبة، العضو، ومن أعطاها)", "log_role_give")}
-      {render_log_box("لوق سحب الرتب (اسم الرتبة، العضو، ومن سحبها)", "log_role_take")}
-      {render_log_box("لوق إنشاء وتعديل وحذف الرتب (التفاصيل الكاملة)", "log_role_changes")}
+      {render_log_box("لوق إعطاء الرتب لحاله (العضو، الرتبة المعطاة، ومن أعطاها)", "log_role_give")}
+      {render_log_box("لوق سحب الرتب لحاله (العضو، الرتبة المسحوبة، ومن سحبها)", "log_role_take")}
+      {render_log_box("لوق تعديل الرتب لحاله (اسم الرتبة، التعديلات الكاملة)", "log_role_update")}
       
       {render_log_box("لوق الباند (العضو، السبب، ومن أعطى الباند)", "log_ban")}
       {render_log_box("لوق فك الباند (العضو، ومن فك عنه الباند)", "log_unban")}
@@ -766,16 +768,16 @@ def s_logs(guild_id):
       {render_log_box("لوق التايم آوت - Timeout (المدة، السبب، ومن أعطاه)", "log_timeout")}
       {render_log_box("لوق فك التايم آوت (العضو، ومن فك عنه)", "log_untimeout")}
       
-      {render_log_box("لوق تغيير الأسماء - Nicknames & Usernames (الاسم القديم والجديد)", "log_name_change")}
+      {render_log_box("لوق تغيير الأسماء (الاسم القديم والجديد للعضو)", "log_name_change")}
       
-      {render_log_box("لوق الميوت الصوتي (Mute)", "log_voice_mute")}
-      {render_log_box("لوق الدفن / السجن الصوتي (Deafen)", "log_voice_deaf")}
+      {render_log_box("لوق إعطاء الميوت الصوتي (Mute)", "log_voice_mute")}
+      {render_log_box("لوق إعطاء الدفن الصوتي (Deafen)", "log_voice_deaf")}
       {render_log_box("لوق طرد من الروم الصوتي (Disconnect)", "log_voice_disconnect")}
       
       {render_log_box("لوق حذف الرسائل (محتوى الرسالة، صاحبها، والروم)", "log_message_delete")}
-      {render_log_box("لوق تعديل الرسائل (المحتوى القديم والجديد)", "log_message_update")}
+      {render_log_box("لوق تعديل الرسائل (المحتوى القديم والجديد مع التفاصيل)", "log_message_update")}
 
-      <button type="submit" class="btn btn-primary" style="margin-top: 20px; width: 100%;">حفظ إعدادات السجلات المستقلة ✦</button>
+      <button type="submit" class="btn btn-primary" style="margin-top: 20px; width: 100%;">حفظ إعدادات السجلات بدقة ✦</button>
     </form>
     """
     return render_server_page(guild_id, "logs", html)
