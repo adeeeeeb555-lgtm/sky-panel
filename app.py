@@ -1,148 +1,470 @@
+
 import os
 import requests
+from urllib.parse import urlencode
 from flask import Flask, redirect, request, session, render_template_string
+from markupsafe import escape
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("SESSION_SECRET", "sky_secret_key_123")
+app.secret_key = os.environ.get("SESSION_SECRET", "dev-only-change-this-secret")
 
 CLIENT_ID = os.environ.get("DISCORD_CLIENT_ID", "").strip()
 CLIENT_SECRET = os.environ.get("DISCORD_CLIENT_SECRET", "").strip()
-# تم ضبط الرابط هنا مباشرة ليتطابق مع رابط موقعك الجديد
-REDIRECT_URI = os.environ.get("DISCORD_REDIRECT_URI", "https://sky-panel-z0b2.onrender.com/callback").strip()
+REDIRECT_URI = os.environ.get(
+    "DISCORD_REDIRECT_URI",
+    "https://sky-panel-z0b2.onrender.com/callback"
+).strip()
 BOT_TOKEN = os.environ.get("DISCORD_TOKEN", "").strip()
 
-BOT_INVITE_URL = f"https://discord.com/oauth2/authorize?client_id={CLIENT_ID}&permissions=8&integration_type=0&scope=bot"
 API_ENDPOINT = "https://discord.com/api/v10"
+BOT_INVITE_URL = (
+    "https://discord.com/oauth2/authorize?"
+    + urlencode({
+        "client_id": CLIENT_ID,
+        "permissions": "8",
+        "integration_type": "0",
+        "scope": "bot"
+    })
+)
+
+STYLE = """
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ page_title }} | Sky Universe</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap');
+
+:root {
+  --bg: #050816;
+  --panel: rgba(14, 23, 48, .78);
+  --line: rgba(120, 170, 255, .18);
+  --blue: #64caff;
+  --purple: #9b8cff;
+  --text: #f4f7ff;
+  --muted: #9baaca;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; min-height: 100vh; color: var(--text);
+  font-family: 'Cairo', Tahoma, sans-serif;
+  background:
+    radial-gradient(ellipse at 15% 15%, rgba(46, 80, 180, .27), transparent 38%),
+    radial-gradient(ellipse at 85% 35%, rgba(110, 49, 180, .20), transparent 36%),
+    radial-gradient(ellipse at 50% 100%, rgba(18, 105, 165, .19), transparent 43%),
+    var(--bg);
+  overflow-x: hidden;
+}
+body:before {
+  content: ""; position: fixed; inset: 0; pointer-events: none; z-index: -1;
+  background-image:
+    radial-gradient(2px 2px at 12% 22%, #ffffffa8 50%, transparent 100%),
+    radial-gradient(1px 1px at 35% 72%, #b5d9ff 50%, transparent 100%),
+    radial-gradient(2px 2px at 78% 18%, #ffffffa0 50%, transparent 100%),
+    radial-gradient(1px 1px at 91% 67%, #c6c4ff 50%, transparent 100%),
+    radial-gradient(1px 1px at 62% 43%, #ffffffb0 50%, transparent 100%),
+    radial-gradient(2px 2px at 24% 88%, #8ccfff90 50%, transparent 100%);
+  background-size: 290px 260px, 340px 310px, 400px 350px,
+                   320px 300px, 270px 330px, 370px 290px;
+  opacity: .75;
+}
+a { color: inherit; }
+.nav {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 18px; padding: 17px clamp(18px, 5vw, 70px);
+  border-bottom: 1px solid var(--line);
+  background: rgba(5, 8, 22, .76);
+  backdrop-filter: blur(18px); position: relative; z-index: 2;
+}
+.brand { display: flex; align-items: center; gap: 12px; }
+.logo {
+  width: 46px; height: 46px; display: grid; place-items: center;
+  border-radius: 15px; font-size: 24px;
+  background: linear-gradient(135deg, #53caff, #8271ff);
+  box-shadow: 0 0 30px #4c9fff38;
+}
+.brand h2 { margin: 0; font-size: 20px; font-weight: 900; }
+.brand small { color: var(--muted); font-size: 11px; display: block; }
+.nav-right { display: flex; align-items: center; gap: 12px; }
+.user-pill {
+  display: flex; align-items: center; gap: 9px; padding: 6px 13px;
+  background: #ffffff08; border: 1px solid var(--line); border-radius: 50px;
+  font-size: 13px;
+}
+.user-pill img { width: 34px; height: 34px; border-radius: 50%; }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 12px 21px; border-radius: 12px; text-decoration: none;
+  font-family: inherit; font-size: 14px; font-weight: 800;
+  transition: transform .2s, box-shadow .2s, border-color .2s;
+  border: 1px solid transparent; cursor: pointer;
+}
+.btn:hover { transform: translateY(-3px); }
+.btn-primary {
+  color: #06101f; background: linear-gradient(115deg, #73dcff, #a6a0ff);
+  box-shadow: 0 8px 28px #58baff28;
+}
+.btn-primary:hover { box-shadow: 0 10px 34px #58baff50; }
+.btn-secondary {
+  color: #e5edff; border-color: var(--line); background: #ffffff08;
+}
+.btn-secondary:hover { border-color: #7bcaff80; }
+.hero {
+  width: min(1100px, 92%); margin: auto; padding: 78px 0 65px;
+  display: grid; grid-template-columns: 1.15fr .85fr;
+  align-items: center; gap: 45px; min-height: 580px;
+}
+.eyebrow {
+  display: inline-flex; align-items: center; gap: 9px; padding: 7px 13px;
+  color: #b6dfff; border: 1px solid #67bfff35; background: #57baff0c;
+  border-radius: 50px; font-size: 12px; font-weight: 800;
+}
+.dot { width: 7px; height: 7px; background: #72e5ba; border-radius: 50%; }
+h1 {
+  font-size: clamp(37px, 5.1vw, 65px); line-height: 1.35;
+  letter-spacing: -.8px; margin: 22px 0 14px; font-weight: 900;
+}
+.gradient-text {
+  background: linear-gradient(100deg, #71ddff, #9b9aff 60%, #d6b5ff);
+  color: transparent; background-clip: text; -webkit-background-clip: text;
+}
+.subtitle { color: var(--muted); font-size: 16px; line-height: 2.1; max-width: 530px; }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+.features { display: flex; flex-wrap: wrap; gap: 20px; margin-top: 32px; color: #b8c6e2; font-size: 12px; }
+.feature { display: flex; align-items: center; gap: 7px; }
+.feature b { color: #76e3c0; }
+.space-art {
+  min-height: 360px; position: relative; display: grid; place-items: center;
+}
+.orbit {
+  width: min(340px, 75vw); aspect-ratio: 1; border-radius: 50%;
+  border: 1px solid #7b9bff35; display: grid; place-items: center;
+  transform: rotate(-18deg); position: relative;
+  box-shadow: 0 0 90px #5a7dff0b, inset 0 0 60px #618aff0b;
+}
+.orbit:before, .orbit:after {
+  content: ""; position: absolute; border: 1px solid #80baff30;
+  border-radius: 50%; inset: 25px;
+}
+.orbit:after { inset: 55px; border-color: #b4a0ff35; }
+.planet {
+  width: 145px; height: 145px; border-radius: 50%;
+  background:
+    radial-gradient(circle at 30% 25%, #c2edff, transparent 16%),
+    radial-gradient(circle at 35% 30%, #7bd8ff, #526de2 42%, #34215f 76%, #10142f);
+  box-shadow: inset -20px -15px 35px #030718b5,
+              0 0 75px #637dff52;
+  position: relative; z-index: 1;
+}
+.planet:after {
+  content: ""; position: absolute; width: 190px; height: 35px;
+  border: 7px solid #9bb8ff9c; border-left-color: #c2a9ff;
+  border-right-color: #6ad8ff; border-radius: 50%; top: 55px; left: -25px;
+  transform: rotate(-25deg); box-shadow: 0 0 22px #6dafff38;
+}
+.float-card {
+  position: absolute; padding: 13px 17px; border: 1px solid var(--line);
+  border-radius: 14px; background: #101a33d9; backdrop-filter: blur(12px);
+  box-shadow: 0 15px 40px #0003; font-size: 12px;
+}
+.float-card strong { display: block; font-size: 14px; margin-bottom: 3px; }
+.float-card small { color: var(--muted); }
+.card-top { top: 13%; right: 0; }
+.card-bottom { bottom: 12%; left: 0; }
+.section { width: min(1100px, 92%); margin: 0 auto 70px; }
+.section-heading { text-align: center; margin-bottom: 28px; }
+.section-heading h2 { font-size: 25px; margin: 0 0 8px; }
+.section-heading p { color: var(--muted); margin: 0; font-size: 13px; }
+.feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.feature-box {
+  padding: 25px; border-radius: 18px; border: 1px solid var(--line);
+  background: linear-gradient(145deg, #15203a99, #0c1327bb);
+  transition: transform .2s, border-color .2s;
+}
+.feature-box:hover { transform: translateY(-4px); border-color: #7acbff60; }
+.feature-icon {
+  width: 46px; height: 46px; border-radius: 14px; display: grid;
+  place-items: center; font-size: 22px; background: #6bbfff14; margin-bottom: 15px;
+}
+.feature-box h3 { margin: 0 0 7px; font-size: 16px; }
+.feature-box p { color: var(--muted); font-size: 13px; line-height: 1.9; margin: 0; }
+.page { width: min(1150px, 92%); margin: 40px auto 70px; }
+.page-head { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 28px; }
+.page-head h1 { font-size: 27px; margin: 0 0 5px; }
+.page-head p { color: var(--muted); margin: 0; font-size: 13px; }
+.server-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(235px, 1fr)); gap: 19px; }
+.server-card {
+  padding: 26px 20px; text-align: center; border-radius: 20px;
+  border: 1px solid var(--line);
+  background: linear-gradient(155deg, #182441c9, #0b1227db);
+  box-shadow: 0 12px 35px #0002; transition: transform .22s, border-color .22s;
+}
+.server-card:hover { transform: translateY(-5px); border-color: #75caff80; }
+.server-icon {
+  width: 82px; height: 82px; border-radius: 24px; object-fit: cover;
+  border: 2px solid #80cfff80; box-shadow: 0 0 25px #64baff20;
+}
+.server-card h3 { margin: 14px 0 4px; font-size: 16px; overflow-wrap: anywhere; }
+.status { color: #78e3bc; font-size: 11px; }
+.server-card .btn { margin-top: 15px; width: 100%; }
+.empty {
+  padding: 45px 20px; text-align: center; border: 1px dashed #7b9dca40;
+  background: #ffffff04; border-radius: 18px; color: var(--muted);
+}
+.empty span { display: block; font-size: 35px; margin-bottom: 12px; }
+.footer { text-align: center; color: #7785a5; font-size: 11px; padding: 25px; border-top: 1px solid #ffffff0c; }
+@media(max-width: 760px) {
+  .hero { grid-template-columns: 1fr; padding-top: 50px; gap: 15px; }
+  .space-art { min-height: 310px; grid-row: 1; }
+  .orbit { width: 260px; }
+  .planet { width: 110px; height: 110px; }
+  .planet:after { width: 145px; height: 27px; left: -17px; top: 42px; }
+  .feature-grid { grid-template-columns: 1fr; }
+  .nav { padding: 13px 5%; }
+  .brand h2 { font-size: 16px; }
+  .brand small { display: none; }
+  .nav-right { gap: 7px; }
+  .user-pill { padding: 5px; }
+  .user-pill span { display: none; }
+  .nav .btn { padding: 9px 12px; font-size: 12px; }
+  .page-head { align-items: flex-start; flex-direction: column; }
+  .card-top { right: -3px; }
+  .card-bottom { left: -3px; }
+}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="brand">
+    <div class="logo">✦</div>
+    <div><h2>Sky Universe</h2><small>DISCORD BOT CONTROL PANEL</small></div>
+  </div>
+  <div class="nav-right">{{ header_auth|safe }}</div>
+</header>
+{{ content|safe }}
+<footer class="footer">✦ SKY UNIVERSE · لوحة تحكم البوت ✦</footer>
+</body>
+</html>
+"""
+
+def page(title, content, header_auth=""):
+    return render_template_string(
+        STYLE, page_title=title, content=content, header_auth=header_auth
+    )
+
+def discord_get(path, token, token_type="Bearer"):
+    try:
+        return requests.get(
+            f"{API_ENDPOINT}{path}",
+            headers={"Authorization": f"{token_type} {token}"},
+            timeout=15
+        )
+    except requests.RequestException:
+        return None
 
 @app.route("/")
 def home():
-    user = session.get('user')
-    
+    user = session.get("user")
     if user:
-        avatar_url = f"https://cdn.discordapp.com/avatars/{user['id']}/{user['avatar']}.png" if user.get('avatar') else "https://cdn.discordapp.com/embed/avatars/0.png"
-        header_auth = f'''
-        <div style="display:flex; align-items:center; gap:12px; background:#1e293b; padding:8px 16px; border-radius:30px; border:1px solid #334155;">
-            <img src="{avatar_url}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">
-            <span style="font-weight:bold; color:#f8fafc;">{user['username']}</span>
-        </div>
-        '''
-        center_buttons = f'''
-        <a href="/dashboard" style="background:#10b981; color:white; padding:14px 30px; text-decoration:none; border-radius:8px; font-weight:bold; font-size:16px;">تحكم في البوت ⚙️</a>
-        <a href="{BOT_INVITE_URL}" target="_blank" style="background:#38bdf8; color:#0b0f19; padding:14px 30px; text-decoration:none; border-radius:8px; font-weight:bold; font-size:16px;">دعوة البوت للسيرفر 🤖</a>
-        '''
-    else:
-        header_auth = '<a href="/login" style="background:#38bdf8; color:#0b0f19; padding:10px 22px; text-decoration:none; border-radius:8px; font-weight:bold;">تسجيل الدخول 🚀</a>'
-        center_buttons = f'''
-        <a href="/login" style="background:#38bdf8; color:#0b0f19; padding:14px 35px; text-decoration:none; border-radius:8px; font-weight:bold; font-size:16px;">تسجيل الدخول عبر Discord 🚀</a>
-        <a href="{BOT_INVITE_URL}" target="_blank" style="background:#1e293b; color:#38bdf8; padding:14px 35px; text-decoration:none; border-radius:8px; font-weight:bold; font-size:16px; border:1px solid #38bdf8;">دعوة البوت للسيرفر 🤖</a>
-        '''
+        uid = escape(str(user.get("id", "")))
+        username = escape(str(user.get("username", "Discord User")))
+        avatar = user.get("avatar")
+        if avatar:
+            avatar_url = f"https://cdn.discordapp.com/avatars/{uid}/{escape(str(avatar))}.png"
+        else:
+            avatar_url = "https://cdn.discordapp.com/embed/avatars/0.png"
 
-    return render_template_string(f'''
-    <html lang="ar" dir="rtl">
-    <head><meta charset="UTF-8"><title>Sky Universe | لوحة التحكم</title></head>
-    <body style="background:#0b0f19; color:white; font-family:Tahoma; margin:0; height:100vh; display:flex; flex-direction:column;">
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:20px 40px; background:#111827; border-bottom:1px solid #1f2937;">
-            <h2 style="color:#38bdf8; margin:0;">✨ Sky Bot Panel</h2>
-            <div>{header_auth}</div>
+        header_auth = f"""
+        <div class="user-pill">
+          <img src="{avatar_url}" alt="Avatar">
+          <span>{username}</span>
         </div>
-        <div style="flex:1; display:flex; justify-content:center; align-items:center;">
-            <div style="background:#1e293b; padding:50px; border-radius:16px; text-align:center; border:1px solid #334155; max-width:550px; width:100%;">
-                <h1 style="color:#38bdf8; margin-top:0; font-size:28px;">أهلاً بك في لوحة تحكم بوت Sky</h1>
-                <p style="color:#9ca3af; line-height:1.6; margin-bottom:35px;">قم بإدارة سيرفرك، الحماية، التذاكر، وأنظمة الترحيب بكل احترافية.</p>
-                <div style="display:flex; justify-content:center; gap:15px; flex-wrap:wrap;">{center_buttons}</div>
-            </div>
+        """
+        actions = """
+        <a class="btn btn-primary" href="/dashboard">⚙️ لوحة التحكم</a>
+        <a class="btn btn-secondary" href="/invite">🤖 أضف البوت</a>
+        """
+    else:
+        header_auth = '<a class="btn btn-secondary" href="/login">تسجيل الدخول ↗</a>'
+        actions = """
+        <a class="btn btn-primary" href="/login">🚀 تسجيل الدخول عبر Discord</a>
+        <a class="btn btn-secondary" href="/invite">🤖 دعوة البوت</a>
+        """
+
+    content = f"""
+    <main>
+      <section class="hero">
+        <div>
+          <div class="eyebrow"><span class="dot"></span> عالمك، إدارتك، تحكمك</div>
+          <h1>ارتقِ بسيرفرك<br><span class="gradient-text">إلى عالم آخر.</span></h1>
+          <p class="subtitle">
+            مرحباً بك في Sky Universe، لوحة تحكم تجمع أدوات إدارة
+            مجتمعك في تجربة سهلة، أنيقة، ومستلهمة من جمال الفضاء.
+          </p>
+          <div class="actions">{actions}</div>
+          <div class="features">
+            <div class="feature"><b>✦</b> إدارة سهلة</div>
+            <div class="feature"><b>✦</b> تجربة سلسة</div>
+            <div class="feature"><b>✦</b> تصميم فضائي</div>
+          </div>
         </div>
-    </body>
-    </html>
-    ''')
+        <div class="space-art">
+          <div class="orbit"><div class="planet"></div></div>
+          <div class="float-card card-top"><strong>🌌 Sky Universe</strong><small>رحلتك تبدأ هنا</small></div>
+          <div class="float-card card-bottom"><strong>⚡ تحكم أذكى</strong><small>كل شيء في مكان واحد</small></div>
+        </div>
+      </section>
+      <section class="section">
+        <div class="section-heading">
+          <h2>كل أدواتك في <span class="gradient-text">مكان واحد</span></h2>
+          <p>إدارة مجتمعك بتصميم عصري مستوحى من المجرات.</p>
+        </div>
+        <div class="feature-grid">
+          <div class="feature-box"><div class="feature-icon">🛡️</div>
+            <h3>الحماية والإدارة</h3><p>جهّز سيرفرك لإدارة أكثر تنظيماً، مع مساحة مخصصة لأدوات الحماية.</p></div>
+          <div class="feature-box"><div class="feature-icon">🎫</div>
+            <h3>نظام التذاكر</h3><p>نظّم طلبات الدعم واجعل تجربة التواصل مع فريقك أوضح.</p></div>
+          <div class="feature-box"><div class="feature-icon">👋</div>
+            <h3>الترحيب بالأعضاء</h3><p>استقبل أعضاء مجتمعك وامنحهم بداية جميلة في السيرفر.</p></div>
+        </div>
+      </section>
+    </main>
+    """
+    return page("الرئيسية", content, header_auth)
+
+@app.route("/invite")
+def invite():
+    if not CLIENT_ID:
+        return "يرجى ضبط DISCORD_CLIENT_ID في متغيرات البيئة.", 500
+    return redirect(BOT_INVITE_URL)
 
 @app.route("/login")
 def login():
-    return redirect(f"https://discord.com/api/oauth2/authorize?client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}&response_type=code&scope=identify%20guilds")
+    if not CLIENT_ID or not CLIENT_SECRET:
+        return "يرجى ضبط DISCORD_CLIENT_ID و DISCORD_CLIENT_SECRET.", 500
+
+    params = urlencode({
+        "client_id": CLIENT_ID,
+        "redirect_uri": REDIRECT_URI,
+        "response_type": "code",
+        "scope": "identify guilds"
+    })
+    return redirect(f"https://discord.com/oauth2/authorize?{params}")
 
 @app.route("/callback")
 def callback():
-    code = request.args.get('code')
-    error = request.args.get('error')
-    
-    if error:
-        return f"<h3 style='color:red; font-family:Tahoma; direction:rtl;'>❌ خطأ من ديسكورد: {error}</h3>"
-    
-    if not code:
-        return "<h3 style='color:orange; font-family:Tahoma; direction:rtl;'>⚠️ لم يتم استلام كود التحقق من ديسكورد.</h3>"
+    error = request.args.get("error")
+    code = request.args.get("code")
 
-    data = {
-        'client_id': CLIENT_ID,
-        'client_secret': CLIENT_SECRET,
-        'grant_type': 'authorization_code',
-        'code': code,
-        'redirect_uri': REDIRECT_URI
-    }
-    headers = {'Content-Type': 'application/x-www-form-urlencoded'}
-    r = requests.post(f"{API_ENDPOINT}/oauth2/token", data=data, headers=headers)
-    
-    if r.status_code != 200:
-        return f"<h3 style='color:red; font-family:Tahoma; direction:rtl;'>❌ فشل الاتصال بديسكورد (كود الخطأ: {r.status_code})<br>التفاصيل: {r.text}</h3>"
-        
-    token_data = r.json()
-    access_token = token_data.get('access_token')
-    
-    user_res = requests.get(f"{API_ENDPOINT}/users/@me", headers={"Authorization": f"Bearer {access_token}"})
-    if user_res.status_code == 200:
-        session['user'] = user_res.json()
-        session['token'] = access_token
+    if error:
+        return "تم إلغاء تسجيل الدخول أو رفضه من Discord.", 400
+    if not code:
+        return "لم يتم استلام كود التحقق من Discord.", 400
+
+    try:
+        r = requests.post(
+            f"{API_ENDPOINT}/oauth2/token",
+            data={
+                "client_id": CLIENT_ID,
+                "client_secret": CLIENT_SECRET,
+                "grant_type": "authorization_code",
+                "code": code,
+                "redirect_uri": REDIRECT_URI
+            },
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+            timeout=15
+        )
+        if r.status_code != 200:
+            return "فشل تسجيل الدخول. تحقق من إعدادات OAuth2 وحاول مجدداً.", 502
+
+        access_token = r.json().get("access_token")
+        if not access_token:
+            return "لم يتم استلام رمز الدخول.", 502
+
+        user_res = discord_get("/users/@me", access_token)
+        if not user_res or user_res.status_code != 200:
+            return "تعذر جلب بيانات حساب Discord.", 502
+
+        session.clear()
+        session["user"] = user_res.json()
+        session["token"] = access_token
         return redirect("/")
-    else:
-        return f"<h3 style='color:red; font-family:Tahoma; direction:rtl;'>❌ تعذر جلب بيانات المستخدم (كود: {user_res.status_code})</h3>"
+
+    except (requests.RequestException, ValueError):
+        return "تعذر الاتصال بـ Discord حالياً. حاول مجدداً.", 502
 
 @app.route("/dashboard")
 def dashboard():
-    token = session.get('token')
+    token = session.get("token")
     if not token:
-        return redirect("/")
-    
-    headers = {"Authorization": f"Bearer {token}"}
-    guilds_res = requests.get(f"{API_ENDPOINT}/users/@me/guilds", headers=headers)
-    user_guilds = guilds_res.json() if guilds_res.status_code == 200 else []
+        return redirect("/login")
 
-    bot_headers = {"Authorization": f"Bot {BOT_TOKEN}"}
-    bot_guilds_res = requests.get(f"{API_ENDPOINT}/users/@me/guilds", headers=bot_headers)
-    bot_guilds = {g['id'] for g in bot_guilds_res.json()} if bot_guilds_res.status_code == 200 else set()
+    user_res = discord_get("/users/@me/guilds", token)
+    if not user_res or user_res.status_code != 200:
+        session.clear()
+        return redirect("/login")
 
-    valid_guilds = [g for g in user_guilds if (int(g.get('permissions', 0)) & 0x8) == 0x8 or g.get('owner', False)]
+    user_guilds = user_res.json()
+    bot_guilds = set()
 
-    cards_html = ""
+    if BOT_TOKEN:
+        bot_res = discord_get("/users/@me/guilds", BOT_TOKEN, "Bot")
+        if bot_res and bot_res.status_code == 200:
+            bot_guilds = {g["id"] for g in bot_res.json()}
+
+    valid_guilds = [
+        g for g in user_guilds
+        if (int(g.get("permissions", 0)) & 0x8) == 0x8
+        or g.get("owner", False)
+    ]
+
+    cards = []
     for g in valid_guilds:
-        has_bot = g['id'] in bot_guilds
-        icon_url = f"https://cdn.discordapp.com/icons/{g['id']}/{g['icon']}.png" if g['icon'] else "https://cdn.discordapp.com/embed/avatars/0.png"
-        
-        if has_bot:
-            btn_action = f"<a href='/server/{g['id']}' style='background:#10b981; color:white; padding:8px 18px; text-decoration:none; border-radius:6px; display:inline-block; margin-top:12px; font-weight:bold;'>إدارة السيرفر ⚙️</a>"
+        gid = str(g.get("id", ""))
+        name = escape(str(g.get("name", "سيرفر Discord")))
+        icon = g.get("icon")
+        if icon:
+            icon_url = f"https://cdn.discordapp.com/icons/{gid}/{escape(str(icon))}.png"
         else:
-            btn_action = f"<a href='{BOT_INVITE_URL}' target='_blank' style='background:#38bdf8; color:#0b0f19; padding:8px 18px; text-decoration:none; border-radius:6px; display:inline-block; margin-top:12px; font-weight:bold;'>إضافة البوت 🤖</a>"
+            icon_url = "https://cdn.discordapp.com/embed/avatars/0.png"
 
-        cards_html += f'''
-        <div style="background:#1e293b; padding:25px; border-radius:12px; width:240px; text-align:center; border:1px solid #334155;">
-            <img src="{icon_url}" width="85" height="85" style="border-radius:50%; object-fit:cover; border:3px solid #38bdf8;">
-            <h3 style="color:white; margin:15px 0 5px 0; font-size:16px;">{g['name']}</h3>
-            {btn_action}
-        </div>
-        '''
+        if gid in bot_guilds:
+            action = f'<a class="btn btn-primary" href="/server/{gid}">⚙️ إدارة السيرفر</a>'
+            status = '<div class="status">● البوت موجود في السيرفر</div>'
+        else:
+            action = '<a class="btn btn-secondary" href="/invite">＋ إضافة البوت</a>'
+            status = '<div class="status" style="color:#f6c979">○ البوت غير موجود</div>'
 
-    return render_template_string(f'''
-    <html lang="ar" dir="rtl">
-    <head><meta charset="UTF-8"><title>اختر السيرفر | Sky Panel</title></head>
-    <body style="background:#0b0f19; color:white; font-family:Tahoma; padding:40px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #334155; padding-bottom:15px; margin-bottom:30px;">
-            <h2 style="color:#38bdf8; margin:0;">📂 اختر السيرفر لإدارة الإعدادات:</h2>
-            <a href="/" style="background:#334155; color:white; padding:8px 16px; text-decoration:none; border-radius:6px; font-weight:bold;">الرئيسية 🏠</a>
-        </div>
-        <div style="display:flex; gap:20px; flex-wrap:wrap;">
-            {cards_html if cards_html else "<p style='color:#9ca3af;'>لا توجد سيرفرات تمتلك فيها صلاحية Administrator ومتاحة للإدارة حالياً.</p>"}
-        </div>
-    </body>
-    </html>
-    ''')
+        cards.append(f"""
+        <article class="server-card">
+          <img class="server-icon" src="{icon_url}" alt="Server icon">
+          <h3>{name}</h3>
+          {status}
+          {action}
+        </article>
+        """)
+
+    content = f"""
+    <main class="page">
+      <div class="page-head">
+        <div><h1>📂 اختر سيرفرك</h1>
+          <p>اختر أحد السيرفرات التي تملك صلاحية إدارتها للمتابعة.</p></div>
+        <a class="btn btn-secondary" href="/">⌂ الرئيسية</a>
+      </div>
+      {"<div class='server-grid'>" + "".join(cards) + "</div>" if cards else
+       "<div class='empty'><span>🌌</span>ما لقينا سيرفرات متاحة لحسابك.<br>تأكد من صلاحياتك ثم أعد تسجيل الدخول.</div>"}
+    </main>
+    """
+    return page("اختيار السيرفر", content)
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect("/")
+
+# ملاحظة: مسار /server/<guild_id> يحتاج إلى تنفيذ إعدادات الإدارة الخاصة بك.
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
