@@ -517,6 +517,56 @@ function previewLocalImage(input) {
     reader.readAsDataURL(input.files[0]);
   }
 }
+
+let categoryCount = 1;
+function addTicketCategory() {
+  categoryCount++;
+  const container = document.getElementById('categoriesContainer');
+  const div = document.createElement('div');
+  div.className = 'settings-section-card';
+  div.style.marginTop = '20px';
+  div.innerHTML = `
+    <div class="settings-section-header">
+      <div class="settings-section-title"><span>📂</span> الفئة رقم ${categoryCount}</div>
+      <button type="button" class="btn btn-secondary" style="padding: 4px 10px; font-size:12px; color:#ff6b6b;" onclick="this.parentElement.parentElement.remove(); triggerChange();">حذف الفئة</button>
+    </div>
+    <div class="form-group">
+      <label>اسم الفئة *</label>
+      <input type="text" class="form-control" name="cat_name_${categoryCount}" placeholder="أدخل اسم الفئة (مثل: الدعم الفني، الشكاوي)...">
+    </div>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+      <div class="form-group">
+        <label>روم التذاكر *</label>
+        <select class="form-control" name="cat_ticket_channel_${categoryCount}">
+          <option value="">اختر الروم...</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>روم السجل (Log Channel) *</label>
+        <select class="form-control" name="cat_log_channel_${categoryCount}">
+          <option value="">اختر روم السجل...</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+      <div class="form-group">
+        <label>رتب المسؤول *</label>
+        <select class="form-control" name="cat_staff_role_${categoryCount}">
+          <option value="">اختر الرتبة...</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>نوع العرض *</label>
+        <select class="form-control" name="cat_display_type_${categoryCount}">
+          <option value="button">Button Primary</option>
+          <option value="select">Select Menu</option>
+        </select>
+      </div>
+    </div>
+  `;
+  container.appendChild(div);
+  triggerChange();
+}
 </script>
 </head>
 <body>
@@ -592,12 +642,12 @@ def home():
           <div class="eyebrow"><span class="dot"></span> عالمك، إدارتك، تحكمك</div>
           <h1>ارتقِ بسيرفرك<br><span class="gradient-text">إلى عالم آخر.</span></h1>
           <p class="subtitle">
-            مرحباً بك في Sky Universe، لوحة تحكم متطورة مرتبة بقوائم في اليسار مع نظام تذاكر متقدم وصلاحيات المسؤولين والمستخدمين.
+            مرحباً بك في Sky Universe، لوحة تحكم متطورة مرتبة بقوائم في اليسار مع إضافة فئات تذاكر متعددة وسجلات.
           </p>
           <div class="actions">{actions}</div>
           <div class="features">
             <div class="feature"><b>✦</b> القائمة في اليسار</div>
-            <div class="feature"><b>✦</b> نظام التذاكر المتكامل والصلاحيات</div>
+            <div class="feature"><b>✦</b> تعدد الفئات ورومات السجل بالأسفل</div>
             <div class="feature"><b>✦</b> زر دعم ديسكورد مباشر</div>
           </div>
         </div>
@@ -857,10 +907,10 @@ def s_welcome(guild_id):
     <div class="variable-box">
       <div style="font-weight:800; color:#fff; margin-bottom:6px;">✨ الاختصارات المتاحة لاستخدامها في الرسائل:</div>
       <div>
-        <span class="variable-tag">{{user}}</span> لإشارة (منشن) العضو الجديد[cite: 17].<br>
-        <span class="variable-tag">{{username}}</span> لكتابة اسم العضو نصياً[cite: 17].<br>
-        <span class="variable-tag">{{server}}</span> لكتابة اسم السيرفر تلقائياً[cite: 17].<br>
-        <span class="variable-tag">{{membercount}}</span> لطباعة عدد أعضاء السيرفر[cite: 17].
+        <span class="variable-tag">{{user}}</span> لإشارة (منشن) العضو الجديد.<br>
+        <span class="variable-tag">{{username}}</span> لكتابة اسم العضو نصياً.<br>
+        <span class="variable-tag">{{server}}</span> لكتابة اسم السيرفر تلقائياً.<br>
+        <span class="variable-tag">{{membercount}}</span> لطباعة عدد أعضاء السيرفر.
       </div>
     </div>
 
@@ -1136,34 +1186,59 @@ def s_tickets(guild_id):
 
     html = f"""
     <div class="page-head" style="margin-bottom:25px;">
-      <div><h1>🎫 نظام التذاكر المتقدم</h1><p>إدارة فئات التذاكر، صلاحيات المسؤولين والمستخدمين، وإعدادات التضمين.</p></div>
+      <div><h1>🎫 نظام التذاكر المتقدم</h1><p>إدارة فئات التذاكر المتعددة، رومات السجل، وصلاحيات المسؤولين والمستخدمين.</p></div>
     </div>
 
-    <!-- بطاقة فئات التذاكر -->
-    <div class="settings-section-card">
-      <div class="settings-section-header">
-        <div class="settings-section-title"><span>📂</span> فئات التذاكر (Categories)</div>
-      </div>
-      <div class="form-group">
-        <label>اسم الفئة (مثل: الدعم الفني، الشكاوي)</label>
-        <input type="text" class="form-control" name="ticket_category_name" placeholder="أدخل اسم الفئة...">
-      </div>
-      <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-        <div class="form-group">
-          <label>روم السجل (Log Channel)</label>
-          <select class="form-control" name="ticket_log_channel">
-            <option value="">اختر الروم...</option>
-            {ch_options if ch_options else '<option value="">لا توجد رومات</option>'}
-          </select>
+    <!-- حاوية الفئات المتعددة -->
+    <div id="categoriesContainer">
+      <div class="settings-section-card">
+        <div class="settings-section-header">
+          <div class="settings-section-title"><span>📂</span> الفئة رقم 1</div>
         </div>
         <div class="form-group">
-          <label>رتب المسؤولين (Staff Roles)</label>
-          <select class="form-control" name="ticket_staff_role">
-            <option value="">اختر الرتبة...</option>
-            {role_options if role_options else '<option value="">لا توجد رتب</option>'}
-          </select>
+          <label>اسم الفئة *</label>
+          <input type="text" class="form-control" name="cat_name_1" placeholder="أدخل اسم الفئة (مثل: الدعم الفني، الشكاوي)...">
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+          <div class="form-group">
+            <label>روم التذاكر *</label>
+            <select class="form-control" name="cat_ticket_channel_1">
+              <option value="">اختر الروم...</option>
+              {ch_options if ch_options else '<option value="">لا توجد رومات</option>'}
+            </select>
+          </div>
+          <div class="form-group">
+            <label>روم السجل (Log Channel) *</label>
+            <select class="form-control" name="cat_log_channel_1">
+              <option value="">اختر روم السجل...</option>
+              {ch_options if ch_options else '<option value="">لا توجد رومات</option>'}
+            </select>
+          </div>
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+          <div class="form-group">
+            <label>رتب المسؤول *</label>
+            <select class="form-control" name="cat_staff_role_1">
+              <option value="">اختر الرتبة...</option>
+              {role_options if role_options else '<option value="">لا توجد رتب</option>'}
+            </select>
+          </div>
+          <div class="form-group">
+            <label>نوع العرض *</label>
+            <select class="form-control" name="cat_display_type_1">
+              <option value="button">Button Primary</option>
+              <option value="select">Select Menu</option>
+            </select>
+          </div>
         </div>
       </div>
+    </div>
+
+    <!-- زر إضافة فئة جديدة -->
+    <div style="margin-bottom: 25px;">
+      <button type="button" class="btn btn-secondary" style="width: 100%; border: 2px dashed var(--blue); padding: 16px;" onclick="addTicketCategory()">
+        + إضافة فئة جديدة
+      </button>
     </div>
 
     <!-- بطاقة صلاحيات المسؤولين والمستخدمين -->
@@ -1198,21 +1273,6 @@ def s_tickets(guild_id):
             <label class="switch"><input type="checkbox"><span class="slider"></span></label>
           </div>
         </div>
-      </div>
-    </div>
-
-    <!-- بطاقة صور الخلفية والخطوط للتذاكر -->
-    <div class="settings-section-card">
-      <div class="settings-section-header">
-        <div class="settings-section-title"><span>🖼️</span> صور الخلفية والخطوط المخصصة للتذاكر</div>
-      </div>
-      <div class="form-group">
-        <label>صورة خلفية إعداد التذكرة (1920x1080 مقترح)</label>
-        <input type="file" class="form-control" accept="image/*">
-      </div>
-      <div class="form-group">
-        <label>صورة خط الفاصل لتذاكر الدعم</label>
-        <input type="file" class="form-control" accept="image/*">
       </div>
     </div>
     """
