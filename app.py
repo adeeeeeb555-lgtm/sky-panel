@@ -7,7 +7,8 @@ app.secret_key = os.environ.get("SESSION_SECRET", "sky_secret_key_123")
 
 CLIENT_ID = os.environ.get("DISCORD_CLIENT_ID", "").strip()
 CLIENT_SECRET = os.environ.get("DISCORD_CLIENT_SECRET", "").strip()
-REDIRECT_URI = os.environ.get("DISCORD_REDIRECT_URI", "").strip()
+# تم ضبط الرابط هنا مباشرة ليتطابق مع رابط موقعك الجديد
+REDIRECT_URI = os.environ.get("DISCORD_REDIRECT_URI", "https://sky-panel-z0b2.onrender.com/callback").strip()
 BOT_TOKEN = os.environ.get("DISCORD_TOKEN", "").strip()
 
 BOT_INVITE_URL = f"https://discord.com/oauth2/authorize?client_id={CLIENT_ID}&permissions=8&integration_type=0&scope=bot"
