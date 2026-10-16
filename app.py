@@ -1,4 +1,3 @@
-
 import os
 import requests
 from urllib.parse import urlencode
@@ -207,8 +206,8 @@ h1 {
   border: 2px solid #80cfff80; box-shadow: 0 0 25px #64baff20;
 }
 .server-card h3 { margin: 14px 0 4px; font-size: 16px; overflow-wrap: anywhere; }
-.status { color: #78e3bc; font-size: 11px; }
-.server-card .btn { margin-top: 15px; width: 100%; }
+.status { color: #78e3bc; font-size: 11px; margin-bottom: 10px; }
+.server-card .btn { margin-top: 10px; width: 100%; }
 .empty {
   padding: 45px 20px; text-align: center; border: 1px dashed #7b9dca40;
   background: #ffffff04; border-radius: 18px; color: var(--muted);
@@ -414,10 +413,11 @@ def dashboard():
         if bot_res and bot_res.status_code == 200:
             bot_guilds = {g["id"] for g in bot_res.json()}
 
+    # فلترة السيرفرات: (أنت أدمن فيها أو مالكها) + (البوت موجود فيها فعلياً)
     valid_guilds = [
         g for g in user_guilds
-        if (int(g.get("permissions", 0)) & 0x8) == 0x8
-        or g.get("owner", False)
+        if ((int(g.get("permissions", 0)) & 0x8) == 0x8 or g.get("owner", False))
+        and g.get("id") in bot_guilds
     ]
 
     cards = []
@@ -430,12 +430,8 @@ def dashboard():
         else:
             icon_url = "https://cdn.discordapp.com/embed/avatars/0.png"
 
-        if gid in bot_guilds:
-            action = f'<a class="btn btn-primary" href="/server/{gid}">⚙️ إدارة السيرفر</a>'
-            status = '<div class="status">● البوت موجود في السيرفر</div>'
-        else:
-            action = '<a class="btn btn-secondary" href="/invite">＋ إضافة البوت</a>'
-            status = '<div class="status" style="color:#f6c979">○ البوت غير موجود</div>'
+        action = f'<a class="btn btn-primary" href="/server/{gid}">⚙️ إدارة السيرفر</a>'
+        status = '<div class="status">● البوت متصل وجاهز</div>'
 
         cards.append(f"""
         <article class="server-card">
@@ -449,12 +445,12 @@ def dashboard():
     content = f"""
     <main class="page">
       <div class="page-head">
-        <div><h1>📂 اختر سيرفرك</h1>
-          <p>اختر أحد السيرفرات التي تملك صلاحية إدارتها للمتابعة.</p></div>
+        <div><h1>📂 سيرفراتك المتاحة للإدارة</h1>
+          <p>السيرفرات التي تمتلك فيها صلاحية Administrator والبوت مضاف إليها.</p></div>
         <a class="btn btn-secondary" href="/">⌂ الرئيسية</a>
       </div>
       {"<div class='server-grid'>" + "".join(cards) + "</div>" if cards else
-       "<div class='empty'><span>🌌</span>ما لقينا سيرفرات متاحة لحسابك.<br>تأكد من صلاحياتك ثم أعد تسجيل الدخول.</div>"}
+       "<div class='empty'><span>🌌</span>ما لقينا سيرفرات فيها البوت وأنت أدمن فيها.<br>أضف البوت للسيرفر أولاً ثم حدّث الصفحة.</div>"}
     </main>
     """
     return page("اختيار السيرفر", content)
@@ -463,8 +459,6 @@ def dashboard():
 def logout():
     session.clear()
     return redirect("/")
-
-# ملاحظة: مسار /server/<guild_id> يحتاج إلى تنفيذ إعدادات الإدارة الخاصة بك.
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
