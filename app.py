@@ -10,7 +10,6 @@ app.secret_key = os.environ.get("SESSION_SECRET", "dev-only-change-this-secret")
 CLIENT_ID = os.environ.get("DISCORD_CLIENT_ID", "").strip()
 CLIENT_SECRET = os.environ.get("DISCORD_CLIENT_SECRET", "").strip()
 
-# تم ضبط الرابط هنا ليكون منتهيًا بـ /callback تمامًا
 REDIRECT_URI = os.environ.get(
     "DISCORD_REDIRECT_URI",
     "https://sky-panel-z0b2.onrender.com/callback"
@@ -455,6 +454,54 @@ def dashboard():
     </main>
     """
     return page("اختيار السيرفر", content)
+
+@app.route("/server/<guild_id>")
+def server_manage(guild_id):
+    token = session.get("token")
+    if not token:
+        return redirect("/login")
+    
+    user_res = discord_get("/users/@me/guilds", token)
+    if not user_res or user_res.status_code != 200:
+        return redirect("/login")
+    
+    user_guilds = user_res.json()
+    target_guild = None
+    for g in user_guilds:
+        if str(g.get("id")) == str(guild_id):
+            if (int(g.get("permissions", 0)) & 0x8) == 0x8 or g.get("owner", False):
+                target_guild = g
+            break
+            
+    if not target_guild:
+        return "عذراً، ليس لديك صلاحية لإدارة هذا السيرفر.", 403
+        
+    guild_name = escape(str(target_guild.get("name", "السيرفر")))
+    
+    content = f"""
+    <main class="page">
+      <div class="page-head">
+        <div>
+          <h1>⚙️ إدارة سيرفر: {guild_name}</h1>
+          <p>أهلاً بك في لوحة تحكم السيرفر المخصصة.</p>
+        </div>
+        <a class="btn btn-secondary" href="/dashboard">← عودة لقائمة السيرفرات</a>
+      </div>
+      <div class="feature-grid">
+        <div class="feature-box">
+          <div class="feature-icon">🛡️</div>
+          <h3>إعدادات الحماية</h3>
+          <p>قريباً يمكنك التحكم بإعدادات الحماية والأمان الخاصة بالبوت هنا.</p>
+        </div>
+        <div class="feature-box">
+          <div class="feature-icon">🤖</div>
+          <h3>الأوامر والتنبيهات</h3>
+          <p>تخصيص ردود البوت وتفعيلات التنبيهات للسيرفر.</p>
+        </div>
+      </div>
+    </main>
+    """
+    return page(f"إدارة {guild_name}", content)
 
 @app.route("/logout")
 def logout():
