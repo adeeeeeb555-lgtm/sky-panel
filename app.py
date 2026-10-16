@@ -219,7 +219,7 @@ h1 {
 }
 .empty span { display: block; font-size: 40px; margin-bottom: 12px; }
 
-/* القائمة في اليمين والمحتوى في اليسار تماماً كما طلبته */
+/* القائمة في اليمين والمحتوى في اليسار تماماً كما طلبت */
 .dashboard-layout {
   display: grid; grid-template-columns: 1fr 310px; gap: 30px;
   width: min(1450px, 97%); margin: 40px auto 70px; align-items: start;
@@ -266,6 +266,18 @@ h1 {
   font-family: inherit; font-size: 14px; outline: none; transition: border-color .2s;
 }
 .form-control:focus { border-color: var(--blue); box-shadow: 0 0 15px #64baff30; }
+
+/* تنسيق القوائم المنسدلة النظيفة التي تفتح وتغلق */
+select.form-control {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239baaca' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: left 14px center;
+  background-size: 16px;
+  cursor: pointer;
+}
 
 /* بطاقات الحماية والسجلات */
 .cards-grid-3 {
@@ -397,13 +409,13 @@ def home():
           <div class="eyebrow"><span class="dot"></span> عالمك، إدارتك، تحكمك</div>
           <h1>ارتقِ بسيرفرك<br><span class="gradient-text">إلى عالم آخر.</span></h1>
           <p class="subtitle">
-            مرحباً بك في Sky Universe، لوحة تحكم متطورة مع قائمة في اليمين وأزرار حفظ وإعادة ضبط.
+            مرحباً بك في Sky Universe، لوحة تحكم متطورة مع قوائم منسدلة ذكية وأزرار حفظ وإعادة ضبط.
           </p>
           <div class="actions">{actions}</div>
           <div class="features">
             <div class="feature"><b>✦</b> القائمة في اليمين</div>
+            <div class="feature"><b>✦</b> قوائم منسدلة سلسة</div>
             <div class="feature"><b>✦</b> حماية متكاملة وعقوبات</div>
-            <div class="feature"><b>✦</b> حفظ وإعادة ضبط</div>
           </div>
         </div>
         <div class="space-art">
@@ -706,19 +718,19 @@ def s_security_edit(guild_id, sec_key):
     </div>
     <form method="POST">
       <div class="form-group">
-        <label>الرومات المستثناة (اختر الرومات التي لا يعمل فيها النظام)</label>
-        <select class="form-control" name="excluded_channels" multiple style="height: 110px;">
+        <label>الرومات المستثناة (اضغط للاختيار من القائمة المنسدلة)</label>
+        <select class="form-control" name="excluded_channels">
+          <option value="">اختر الروم المستثنى...</option>
           {ch_options if ch_options else '<option value="">لا توجد رومات متاحة</option>'}
         </select>
-        <small style="color:var(--muted); font-size:12px; margin-top:5px; display:block;">اضغط مع الاستمرار على Ctrl أو Cmd لتحديد أكثر من روم.</small>
       </div>
 
       <div class="form-group">
-        <label>الرتب المستثناة (اختر الرتب المعفاة من العقوبات)</label>
-        <select class="form-control" name="excluded_roles" multiple style="height: 110px;">
+        <label>الرتب المستثناة (اضغط للاختيار من القائمة المنسدلة)</label>
+        <select class="form-control" name="excluded_roles">
+          <option value="">اختر الرتبة المستثناة...</option>
           {role_options if role_options else '<option value="">لا توجد رتب متاحة</option>'}
         </select>
-        <small style="color:var(--muted); font-size:12px; margin-top:5px; display:block;">اضغط مع الاستمرار على Ctrl أو Cmd لتحديد أكثر من رتبة.</small>
       </div>
 
       <div class="form-group">
@@ -799,13 +811,15 @@ def s_command_edit(guild_id, cmd_name):
       </div>
       <div class="form-group">
         <label>الرتب المفعلة لاستخدام الأمر</label>
-        <select class="form-control" name="allowed_roles" multiple style="height: 100px;">
+        <select class="form-control" name="allowed_roles">
+          <option value="">اختر الرتبة المسموحة...</option>
           {role_options if role_options else '<option value="">لا توجد رتب</option>'}
         </select>
       </div>
       <div class="form-group">
         <label>الرومات المفعلة لاستخدام الأمر</label>
-        <select class="form-control" name="allowed_channels" multiple style="height: 100px;">
+        <select class="form-control" name="allowed_channels">
+          <option value="">اختر الروم المسموح...</option>
           {ch_options if ch_options else '<option value="">لا توجد رومات</option>'}
         </select>
       </div>
