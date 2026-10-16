@@ -149,13 +149,13 @@ h1 {
 .subtitle { color: var(--muted); font-size: 16px; line-height: 2.1; max-width: 530px; }
 .actions { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 26px; }
 
-/* قسم الكوكب المتحرك المطور بالكامل عبر CSS */
+/* تصميم الكوكب والمدار الدائري والبطاقات الددّارة حوله بتركيز استقامة النصوص */
 .space-art {
-  height: 420px; position: relative; display: grid; place-items: center;
+  height: 440px; position: relative; display: grid; place-items: center;
 }
 
 .planet-system {
-  position: relative; width: 320px; height: 320px; display: grid; place-items: center;
+  position: relative; width: 340px; height: 340px; display: grid; place-items: center;
 }
 
 @keyframes orbitRotate {
@@ -163,14 +163,19 @@ h1 {
   to { transform: rotate(360deg); }
 }
 
-@keyframes orbitCounter {
+@keyframes counterRotate {
   from { transform: rotate(360deg); }
   to { transform: rotate(0deg); }
 }
 
-.orbit-ring {
-  position: absolute; inset: 0; border: 1px dashed rgba(120, 170, 255, 0.25);
-  border-radius: 50%; animation: orbitRotate 30s linear infinite;
+.orbit-container {
+  position: absolute; inset: -40px;
+  animation: orbitRotate 24s linear infinite;
+  pointer-events: none;
+}
+
+.planet-core-wrap {
+  position: relative; width: 340px; height: 340px; display: grid; place-items: center;
 }
 
 .planet-core {
@@ -189,18 +194,20 @@ h1 {
   transform: rotate(-22deg); box-shadow: 0 0 20px rgba(109, 175, 255, 0.4);
 }
 
-.floating-node {
-  position: absolute; width: 155px; padding: 10px 14px; border: 1px solid var(--line);
-  border-radius: 14px; background: rgba(16, 26, 51, 0.88); backdrop-filter: blur(14px);
+.orbit-card {
+  position: absolute; width: 165px; padding: 12px 16px; border: 1px solid var(--line);
+  border-radius: 14px; background: rgba(16, 26, 51, 0.92); backdrop-filter: blur(14px);
   box-shadow: 0 10px 30px rgba(0,0,0,0.5); font-size: 12px; text-align: center;
-  animation: orbitRotate 30s linear infinite reverse; z-index: 5;
+  pointer-events: auto; z-index: 5;
+  /* حركة معاكسة لضمان بقاء النص معتدلاً ومقروءاً تماماً */
+  animation: counterRotate 24s linear infinite;
 }
 
-.node-1 { top: -10px; left: 30px; }
-.node-2 { bottom: 10px; right: 20px; }
+.card-pos-1 { top: 0px; left: 50%; transform: translateX(-50%); }
+.card-pos-2 { bottom: 0px; left: 50%; transform: translateX(-50%); }
 
-.floating-node strong { display: block; font-size: 13px; color: #fff; margin-bottom: 2px; }
-.floating-node small { color: var(--muted); font-size: 11px; }
+.orbit-card strong { display: block; font-size: 13px; color: #fff; margin-bottom: 2px; }
+.orbit-card small { color: var(--muted); font-size: 11px; }
 
 /* شبكة بطاقات المميزات العشرة */
 .features-section {
@@ -234,7 +241,7 @@ h1 {
 .feature-card h3 { margin: 0 0 8px; font-size: 16px; font-weight: 800; color: #eaf0ff; }
 .feature-card p { margin: 0; font-size: 13px; color: var(--muted); line-height: 1.7; }
 
-/* لوحة التحكم والقوائم الجانبية (متوافقة مع اتجاه RTL وجعل القائمة في اليمين) */
+/* لوحة التحكم والقوائم الجانبية */
 .page { width: min(1250px, 92%); margin: 40px auto 70px; }
 .page-head { display: flex; justify-content: space-between; align-items: center; gap: 20px; margin-bottom: 35px; }
 .page-head h1 { font-size: 30px; margin: 0 0 6px; }
@@ -263,7 +270,6 @@ h1 {
 }
 .empty span { display: block; font-size: 40px; margin-bottom: 12px; }
 
-/* ترتيب لوحة التحكم: القائمة الجانبية في اليمين والمحتوى في اليسار */
 .dashboard-layout {
   display: grid; grid-template-columns: 1fr 310px; gap: 30px;
   width: min(1480px, 97%); margin: 40px auto 70px; align-items: start;
@@ -344,7 +350,6 @@ select[multiple].form-control option:checked {
 }
 .settings-section-title { font-size: 16px; font-weight: 800; color: #e4eeff; display: flex; align-items: center; gap: 10px; }
 
-/* شريط الحفظ العائم السفلي */
 .floating-save-bar {
   position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%) translateY(120px);
   background: rgba(10, 16, 35, 0.95); border: 1px solid rgba(122, 203, 255, 0.4); border-radius: 16px;
@@ -711,21 +716,25 @@ def home():
           <div class="actions">{actions}</div>
           <div class="features">
             <div class="feature"><b>✦</b> واجهة زجاجية متجاوبة</div>
-            <div class="feature"><b>✦</b> كوكب متحرك وبطاقات عائمة</div>
+            <div class="feature"><b>✦</b> كوكب متحرك وبطاقات تدور باستقامة</div>
             <div class="feature"><b>✦</b> ربط مباشر مع Discord OAuth2</div>
           </div>
         </div>
         <div class="space-art">
           <div class="planet-system">
-            <div class="orbit-ring"></div>
-            <div class="planet-core"></div>
-            <div class="floating-node node-1">
-              <strong>🌌 Sky Universe</strong>
-              <small>رحلتك تبدأ هنا</small>
-            </div>
-            <div class="floating-node node-2">
-              <strong>⚡ تحكم ذكي</strong>
-              <small>كل شيء في مكان واحد</small>
+            <div class="planet-core-wrap">
+              <div class="planet-core"></div>
+              <!-- الحاوية الددّارة التي تدور حول الكوكب وتحافظ على استقامة النصوص -->
+              <div class="orbit-container">
+                <div class="orbit-card card-pos-1">
+                  <strong>🌌 Sky Universe</strong>
+                  <small>رحلتك تبدأ هنا</small>
+                </div>
+                <div class="orbit-card card-pos-2">
+                  <strong>⚡ تحكم ذكي</strong>
+                  <small>كل شيء في مكان واحد</small>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -1418,5 +1427,5 @@ def logout():
     return redirect("/")
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
+    port = int(os.environ.D("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
