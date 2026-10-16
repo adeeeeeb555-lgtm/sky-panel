@@ -113,9 +113,10 @@ a { color: inherit; text-decoration: none; }
 .btn-secondary {
   color: #e5edff; border-color: var(--line); background: #ffffff08;
 }
-.btn-danger {
-  color: #ffcccc; border-color: rgba(255,100,100,0.3); background: rgba(255,0,0,0.1);
+.btn-discord {
+  color: #ffffff; background: #5865F2; box-shadow: 0 4px 20px rgba(88,101,242,0.4);
 }
+.btn-discord:hover { background: #4752C4; }
 
 .hero {
   width: min(1200px, 92%); margin: auto; padding: 78px 0 65px;
@@ -223,7 +224,7 @@ h1 {
 }
 .empty span { display: block; font-size: 40px; margin-bottom: 12px; }
 
-/* القائمة في اليسار والمحتوى الواسع في اليمين تماماً مثل طلبك */
+/* القائمة في اليسار والمحتوى في اليمين تماماً */
 .dashboard-layout {
   display: grid; grid-template-columns: 310px 1fr; gap: 30px;
   width: min(1480px, 97%); margin: 40px auto 70px; align-items: start;
@@ -264,6 +265,7 @@ h1 {
 
 .form-group { margin-bottom: 22px; }
 .form-group label { display: block; font-size: 14px; font-weight: 700; color: #cedbfa; margin-bottom: 8px; text-align: right; }
+.field-desc { font-size: 12px; color: var(--muted); margin-bottom: 6px; text-align: right; line-height: 1.6; }
 .form-control {
   width: 100%; padding: 12px 16px; border-radius: 12px;
   background: #060a17; border: 1px solid var(--line); color: var(--text);
@@ -283,7 +285,6 @@ select.form-control {
   cursor: pointer;
 }
 
-/* بطاقات Sections بتصميم فخم ومنظم */
 .settings-section-card {
   background: #080d1fe6; border: 1px solid var(--line); border-radius: 18px;
   padding: 26px; margin-bottom: 24px; box-shadow: 0 8px 25px rgba(0,0,0,0.25);
@@ -293,7 +294,7 @@ select.form-control {
 }
 .settings-section-title { font-size: 16px; font-weight: 800; color: #e4eeff; display: flex; align-items: center; gap: 10px; }
 
-/* شريط الحفظ العائم السفلي الذي يظهر عند التعديل */
+/* شريط الحفظ العائم السفلي */
 .floating-save-bar {
   position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%) translateY(100px);
   background: rgba(10, 16, 35, 0.95); border: 1px solid #7acbff60; border-radius: 16px;
@@ -306,7 +307,6 @@ select.form-control {
 .save-dot { width: 10px; height: 10px; background: #f0b429; border-radius: 50%; box-shadow: 0 0 10px #f0b429; animation: pulse 1.5s infinite; }
 @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
 
-/* زر التفعيل السريع (Switch) */
 .switch {
   position: relative; display: inline-block; width: 48px; height: 26px;
 }
@@ -350,7 +350,13 @@ input:checked + .slider:before { transform: translateX(22px); }
 }
 .btn-edit:hover { background: #20356b; }
 
-.footer { text-align: center; color: #7785a5; font-size: 12px; padding: 30px; border-top: 1px solid #ffffff0c; }
+.footer {
+  text-align: center; color: #7785a5; font-size: 13px; padding: 35px 20px;
+  border-top: 1px solid var(--line); margin-top: 50px;
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+}
+.footer-links { display: flex; gap: 16px; align-items: center; }
+
 @media(max-width: 1050px) {
   .dashboard-layout { grid-template-columns: 1fr; }
   .sidebar { position: static; order: 2; }
@@ -390,7 +396,15 @@ window.addEventListener('DOMContentLoaded', () => {
   <div class="nav-right">{{ header_auth|safe }}</div>
 </header>
 {{ content|safe }}
-<footer class="footer">✦ SKY UNIVERSE · لوحة تحكم البوت ✦</footer>
+<footer class="footer">
+  <div>✦ SKY UNIVERSE · لوحة تحكم البوت الاحترافية ✦</div>
+  <div class="footer-links">
+    <span>تحتاج مساعدة؟ تواصل معنا فوراً:</span>
+    <a href="https://discord.gg/HuH8TtmGA" target="_blank" class="btn btn-discord" style="padding: 8px 18px; font-size: 13px;">
+      💬 دعم البوت (Discord)
+    </a>
+  </div>
+</footer>
 </body>
 </html>
 """
@@ -446,13 +460,13 @@ def home():
           <div class="eyebrow"><span class="dot"></span> عالمك، إدارتك، تحكمك</div>
           <h1>ارتقِ بسيرفرك<br><span class="gradient-text">إلى عالم آخر.</span></h1>
           <p class="subtitle">
-            مرحباً بك في Sky Universe، لوحة تحكم متطورة مرتبة بقوائم في اليسار وشريط حفظ ذكي.
+            مرحباً بك في Sky Universe، لوحة تحكم متطورة مرتبة بقوائم في اليسار، مع وصف دقيق لكل خيار وزر دعم فني مباشر.
           </p>
           <div class="actions">{actions}</div>
           <div class="features">
             <div class="feature"><b>✦</b> القائمة في اليسار</div>
-            <div class="feature"><b>✦</b> حفظ عائم عند التعديل</div>
-            <div class="feature"><b>✦</b> ترحيب وتذاكر متقدمة</div>
+            <div class="feature"><b>✦</b> وصف لكل الخيارات</div>
+            <div class="feature"><b>✦</b> زر دعم ديسكورد مباشر</div>
           </div>
         </div>
         <div class="space-art">
@@ -683,6 +697,7 @@ def s_settings(guild_id):
     </div>
     <div class="form-group">
       <label>لغة البوت (Bot Language)</label>
+      <div class="field-desc">حدد اللغة التي سيتفاعل بها البوت مع الأعضاء داخل سيرفرك (عربي / إنجليزي).</div>
       <select class="form-control" name="bot_lang">
         <option value="ar">العربية (Arabic) 🇸🇦</option>
         <option value="en">الإنجليزية (English) 🇺🇸</option>
@@ -690,6 +705,7 @@ def s_settings(guild_id):
     </div>
     <div class="form-group">
       <label>بادئة الأوامر (Prefix)</label>
+      <div class="field-desc">الرمز أو الحرف الذي يبدأ به استخدام أوامر البوت التقليدية (مثال: ! أو ?).</div>
       <input type="text" class="form-control" name="prefix" value="!">
     </div>
     """
@@ -715,11 +731,13 @@ def s_welcome(guild_id):
         </label>
       </div>
       <div class="form-group">
-        <label>نص رسالة الترحيب (استخدم {{user}} للإشارة إلى العضو)</label>
+        <label>نص رسالة الترحيب</label>
+        <div class="field-desc">اكتب رسالة ترحيب مخصصة تظهر عند دخول العضو الجديد. يمكنك استخدام المتغير ({{user}}) لإشارة العضو تلقائياً.</div>
         <textarea class="form-control" name="welcome_msg" style="min-height: 90px;">مرحباً بك {{user}} في خادمنا الرائع! 🌸</textarea>
       </div>
       <div class="form-group">
         <label>طريقة التوصيل</label>
+        <div class="field-desc">اختر ما إذا كنت تريد إرسال الترحيب في روم عام أو برسالة خاصة (DM).</div>
         <div style="display: flex; gap: 20px; margin-top: 8px;">
           <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer;">
             <input type="radio" name="welcome_delivery" value="dm"> إرسال كرسالة خاصة 👑 <span style="font-size:11px; color:var(--gold);">ميزة بريميوم</span>
@@ -731,6 +749,7 @@ def s_welcome(guild_id):
       </div>
       <div class="form-group">
         <label>اختر الروم</label>
+        <div class="field-desc">حدد الروم المخصص لإرسال رسائل الترحيب بداخله.</div>
         <select class="form-control" name="welcome_channel">
           <option value="">اختر الرومات...</option>
           {ch_options if ch_options else '<option value="">لا توجد رومات متاحة</option>'}
@@ -741,20 +760,48 @@ def s_welcome(guild_id):
     <!-- بطاقة مصمم صورة الترحيب -->
     <div class="settings-section-card">
       <div class="settings-section-header">
-        <div class="settings-section-title"><span>🎨</span> مصمم صورة الترحيب</div>
+        <div class="settings-section-title"><span>🎨</span> مصمم صورة الترحيب المتقدم</div>
         <label class="switch">
           <input type="checkbox" name="welcome_img_enabled" checked>
           <span class="slider"></span>
         </label>
       </div>
-      <div style="background:#050816; border:1px solid var(--line); border-radius:14px; padding:40px 20px; text-align:center; margin-bottom:20px;">
-        <div style="width:85px; height:85px; border-radius:50%; background:#5865F2; margin:0 auto 12px; display:grid; place-items:center; font-size:36px; box-shadow:0 0 25px rgba(88,101,242,0.4);">💬</div>
+      <div style="background:#050816; border:1px solid var(--line); border-radius:14px; padding:30px 20px; text-align:center; margin-bottom:20px;">
+        <div style="width:85px; height:85px; border-radius:50%; background:#5865F2; margin:0 auto 12px; display:grid; place-items:center; font-size:36px; box-shadow:0 0 25px rgba(88,101,242,0.4);">🖼️</div>
         <div style="font-size:18px; font-weight:800; color:#fff;">Welcome to the server</div>
         <div style="font-size:15px; color:var(--muted);">Username</div>
       </div>
-      <div style="display:flex; justify-content:space-between; align-items:center;">
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+        <div class="form-group">
+          <label>عرض صورة العضو (Width)</label>
+          <input type="text" class="form-control" name="avatar_w" value="210">
+        </div>
+        <div class="form-group">
+          <label>ارتفاع صورة العضو (Height)</label>
+          <input type="text" class="form-control" name="avatar_h" value="216">
+        </div>
+        <div class="form-group">
+          <label>موضع صورة العضو (أعلى)</label>
+          <input type="text" class="form-control" name="avatar_top" value="27">
+        </div>
+        <div class="form-group">
+          <label>موضع صورة العضو (يسار)</label>
+          <input type="text" class="form-control" name="avatar_left" value="7.59">
+        </div>
+        <div class="form-group">
+          <label>حجم خط اسم المستخدم</label>
+          <input type="text" class="form-control" name="username_size" value="50">
+        </div>
+        <div class="form-group">
+          <label>موضع اسم المستخدم (أعلى)</label>
+          <input type="text" class="form-control" name="username_top" value="100">
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:15px;">
         <button type="button" class="btn btn-secondary">إعادة التعيين إلى الافتراضي ↺</button>
-        <button type="button" class="btn btn-primary">رفع خلفية 🖼️</button>
+        <button type="button" class="btn btn-primary">رفع خلفية مخصصة 🖼️</button>
       </div>
     </div>
     """
@@ -808,6 +855,7 @@ def s_security_edit(guild_id, sec_key):
     </div>
     <div class="form-group">
       <label>الرومات المستثناة</label>
+      <div class="field-desc">اختر الرومات التي تريد استثناءها بحيث لا يعمل فيها نظام الحماية هذا.</div>
       <select class="form-control" name="excluded_channels">
         <option value="">اختر الروم المستثنى...</option>
         {ch_options if ch_options else '<option value="">لا توجد رومات متاحة</option>'}
@@ -815,6 +863,7 @@ def s_security_edit(guild_id, sec_key):
     </div>
     <div class="form-group">
       <label>الرتب المستثناة</label>
+      <div class="field-desc">اختر الرتب الإدارية أو الخاصة المعفاة تماماً من عقوبات هذا النظام.</div>
       <select class="form-control" name="excluded_roles">
         <option value="">اختر الرتبة المستثناة...</option>
         {role_options if role_options else '<option value="">لا توجد رتب متاحة</option>'}
@@ -822,6 +871,7 @@ def s_security_edit(guild_id, sec_key):
     </div>
     <div class="form-group">
       <label>إجراءات العقوبة التلقائية</label>
+      <div class="field-desc">حدد العقوبة التلقائية التي يطبقها البوت عند رصد المخالفة.</div>
       <select class="form-control" name="punishment_action">
         <option value="warn">إرسال تحذير (Warn)</option>
         <option value="timeout">إسكات مؤقت - تايم آوت (Timeout)</option>
@@ -834,17 +884,21 @@ def s_security_edit(guild_id, sec_key):
 @app.route("/server/<guild_id>/commands", methods=["GET", "POST"])
 def s_commands(guild_id):
     cmds = [
-        ("ban/", "حظر عضو من السيرفر"), ("unban/", "إلغاء حظر عضو"), ("clear/", "مسح الرسائل في روم"),
-        ("hide/", "إخفاء روم عن الأعضاء"), ("show/", "إظهار روم مخفي"), ("lock/", "قفل روم لمنع الرسائل")
+        ("ban", "حظر عضو من السيرفر"), ("unban", "إلغاء حظر عضو"), ("clear", "مسح الرسائل في روم"),
+        ("hide", "إخفاء روم عن الأعضاء"), ("show", "إظهار روم مخفي"), ("lock", "قفل روم لمنع الرسائل"),
+        ("unlock", "فتح روم"), ("move", "نقل الأعضاء بين رومات الصوت"), ("role", "إضافة أو إزالة الرتب لعضو"),
+        ("setnick", "تعيين لقب لعضو"), ("timeout", "إسكات عضو مؤقتاً"), ("untimeout", "إزالة الإسكات عن عضو"),
+        ("vkick", "طرد عضو من روم صوتي"), ("warn", "تحذير عضو"), ("unwarn", "إزالة إنذار عن عضو"),
+        ("warns", "عرض تحذيرات عضو"), ("vmute", "كتم عضو في الصوت")
     ]
     cards_html = ""
     for cmd, desc in cmds:
         cards_html += f"""
         <div class="card-item">
           <div class="card-header">
-            <div class="card-title"><a class="btn-edit" href="/server/{guild_id}/command-edit/{cmd.strip('/')}">✎ تعديل</a> {cmd}</div>
+            <div class="card-title"><a class="btn-edit" href="/server/{guild_id}/command-edit/{cmd}">✎ تعديل</a> /{cmd}</div>
             <label class="switch">
-              <input type="checkbox" name="cmd_{cmd.strip('/')}" checked>
+              <input type="checkbox" name="cmd_{cmd}" checked>
               <span class="slider"></span>
             </label>
           </div>
@@ -867,15 +921,17 @@ def s_command_edit(guild_id, cmd_name):
 
     html = f"""
     <div class="page-head" style="margin-bottom:25px;">
-      <div><h1>✎ تعديل أمر: {cmd_name}/</h1><p>إعداد الأسماء البديلة، الرتب المسموحة، والرومات المفعلة.</p></div>
+      <div><h1>✎ تعديل أمر: /{cmd_name}</h1><p>إعداد الأسماء البديلة، الرتب المسموحة، والرومات المفعلة.</p></div>
       <a class="btn btn-secondary" href="/server/{guild_id}/commands">← عودة</a>
     </div>
     <div class="form-group">
       <label>الأسماء البديلة للأمر</label>
+      <div class="field-desc">أسماء إضافية أو اختصارات يمكن استخدامها لتشغيل نفس الأمر.</div>
       <input type="text" class="form-control" value="{cmd_name}">
     </div>
     <div class="form-group">
       <label>الرتب المفعلة لاستخدام الأمر</label>
+      <div class="field-desc">الرتب الوحيدة المسموح لها بتنفيذ هذا الأمر الإشرافي.</div>
       <select class="form-control" name="allowed_roles">
         <option value="">اختر الرتبة المسموحة...</option>
         {role_options if role_options else '<option value="">لا توجد رتب</option>'}
@@ -883,6 +939,7 @@ def s_command_edit(guild_id, cmd_name):
     </div>
     <div class="form-group">
       <label>الرومات المفعلة لاستخدام الأمر</label>
+      <div class="field-desc">الرومات المسموح فيها كتابة وتنفيذ هذا الأمر.</div>
       <select class="form-control" name="allowed_channels">
         <option value="">اختر الروم المسموح...</option>
         {ch_options if ch_options else '<option value="">لا توجد رومات</option>'}
@@ -899,7 +956,11 @@ def s_logs(guild_id):
 
     logs_list = [
         ("حظر عضو", "log_ban"), ("مهلة عضو", "log_timeout"), ("طرد عضو", "log_kick"),
-        ("إنضمام عضو", "log_join"), ("مغادرة عضو", "log_leave"), ("إعطاء رتبه", "log_role_give")
+        ("إنضمام عضو", "log_join"), ("مغادرة عضو", "log_leave"), ("إلغاء حظر عضو", "log_unban"),
+        ("إعطاء رتبه", "log_role_give"), ("إزالة رتبه", "log_role_take"), ("تغيير اللقب", "log_name_change"),
+        ("إنشاء روم", "log_channel_create"), ("حذف روم", "log_channel_delete"), ("تعديل روم", "log_channel_update"),
+        ("ميوت صوتي", "log_voice_mute"), ("دفن صوتي", "log_voice_deaf"), ("طرد صوتي", "log_voice_disc"),
+        ("حذف رسالة", "log_msg_delete"), ("تعديل رسالة", "log_msg_update"), ("فك المهلة", "log_untimeout")
     ]
     cards_html = ""
     for title, prefix in logs_list:
@@ -914,6 +975,7 @@ def s_logs(guild_id):
           </div>
           <div style="display: flex; flex-direction: column; gap: 6px;">
             <label style="color:var(--muted); font-size:12px; text-align:right;"># الروم</label>
+            <div class="field-desc" style="margin-bottom:2px;">حدد الروم المخصص لتسجيل هذا الحدث بدقة.</div>
             <select class="form-control" name="{prefix}_channel" style="padding: 10px 14px; font-size: 13px;">
               {empty_ch}
             </select>
@@ -932,15 +994,29 @@ def s_logs(guild_id):
 def s_tickets(guild_id):
     html = f"""
     <div class="page-head" style="margin-bottom:25px;">
-      <div><h1>🎫 نظام التذاكر المتقدم</h1><p>تخصيص رسالة التذاكر، الأزرار، والخيارات.</p></div>
+      <div><h1>🎫 نظام التذاكر المتقدم</h1><p>تخصيص رسالة التذاكر، الأزرار، ورفع صور المرفقات.</p></div>
     </div>
     <div class="form-group">
       <label>رسالة التذاكر</label>
-      <textarea class="form-control" name="ticket_msg">اضغط على الزر أدناه لفتح تذاكر الدعم الفني والمساعدة.</textarea>
+      <div class="field-desc">نص الـ Embed الذي يظهر للأعضاء في روم التذاكر مع زر الفتح.</div>
+      <textarea class="form-control" name="ticket_msg" style="min-height: 90px;">اضغط على الزر أدناه لفتح تذاكر الدعم الفني والمساعدة.</textarea>
     </div>
     <div class="form-group">
-      <label>رابط صورة التذاكر</label>
+      <label>رابط صورة التذاكر أو المرفق</label>
+      <div class="field-desc">يمكنك رفع أو لصق رابط صورة البانر أو الأيقونة الخاصة بالتذاكر.</div>
       <input type="url" class="form-control" name="ticket_img" placeholder="https://...">
+    </div>
+    <div class="form-group">
+      <label>طريقة إرسال التذكرة</label>
+      <div class="field-desc">حدد ما إذا كانت التذكرة تفتح كرسالة منفصلة أو كمرفق.</div>
+      <div style="display: flex; gap: 20px; margin-top: 8px;">
+        <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer;">
+          <input type="radio" name="ticket_mode" value="attachment"> كمرفق
+        </label>
+        <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer;">
+          <input type="radio" name="ticket_mode" value="separate" checked> رسالة منفصلة
+        </label>
+      </div>
     </div>
     """
     return render_server_page(guild_id, "tickets", html)
