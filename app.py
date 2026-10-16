@@ -39,8 +39,8 @@ STYLE = """
 
 :root {
   --bg: #050816;
-  --panel: rgba(14, 23, 48, .88);
-  --line: rgba(120, 170, 255, .22);
+  --panel: rgba(14, 23, 48, .92);
+  --line: rgba(120, 170, 255, .18);
   --blue: #64caff;
   --purple: #9b8cff;
   --text: #f4f7ff;
@@ -75,7 +75,7 @@ a { color: inherit; text-decoration: none; }
   display: flex; justify-content: space-between; align-items: center;
   gap: 18px; padding: 20px clamp(24px, 5vw, 60px);
   border-bottom: 1px solid var(--line);
-  background: rgba(5, 8, 22, .88);
+  background: rgba(5, 8, 22, .9);
   backdrop-filter: blur(18px); position: relative; z-index: 2;
 }
 .brand { display: flex; align-items: center; gap: 14px; }
@@ -96,9 +96,9 @@ a { color: inherit; text-decoration: none; }
 .user-pill img { width: 36px; height: 36px; border-radius: 50%; }
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-  padding: 13px 24px; border-radius: 14px; text-decoration: none;
-  font-family: inherit; font-size: 15px; font-weight: 800;
-  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+  padding: 12px 22px; border-radius: 12px; text-decoration: none;
+  font-family: inherit; font-size: 14px; font-weight: 800;
+  transition: transform .15s ease, box-shadow .15s ease;
   border: 1px solid transparent; cursor: pointer;
 }
 .btn:hover { transform: translateY(-2px); }
@@ -106,11 +106,9 @@ a { color: inherit; text-decoration: none; }
   color: #06101f; background: linear-gradient(115deg, #73dcff, #a6a0ff);
   box-shadow: 0 8px 28px #58baff28;
 }
-.btn-primary:hover { box-shadow: 0 10px 34px #58baff50; }
 .btn-secondary {
   color: #e5edff; border-color: var(--line); background: #ffffff08;
 }
-.btn-secondary:hover { border-color: #7bcaff80; }
 
 .hero {
   width: min(1200px, 92%); margin: auto; padding: 78px 0 65px;
@@ -218,70 +216,72 @@ h1 {
 }
 .empty span { display: block; font-size: 40px; margin-bottom: 12px; }
 
-/* تصميم لوحة التحكم مع جعل القائمة في اليمين والمحتوى في اليسار وبسرعة فائقة */
+/* القائمة في اليسار والمحتوى في اليمين تماماً مثل صورك */
 .dashboard-layout {
-  display: grid; grid-template-columns: 1fr 310px; gap: 30px;
-  width: min(1380px, 96%); margin: 40px auto 70px; align-items: start;
+  display: grid; grid-template-columns: 310px 1fr; gap: 30px;
+  width: min(1450px, 97%); margin: 40px auto 70px; align-items: start;
 }
 .sidebar {
   background: linear-gradient(155deg, #121c38dd, #080d1fff);
-  border: 1px solid var(--line); border-radius: 24px; padding: 28px;
-  display: flex; flex-direction: column; gap: 22px; backdrop-filter: blur(16px);
-  position: sticky; top: 25px; order: 2;
+  border: 1px solid var(--line); border-radius: 24px; padding: 26px;
+  display: flex; flex-direction: column; gap: 18px; backdrop-filter: blur(16px);
+  position: sticky; top: 25px; order: 1;
 }
 .content-panel {
   background: linear-gradient(155deg, #15203acc, #0c1327dd);
-  border: 1px solid var(--line); border-radius: 24px; padding: 45px;
+  border: 1px solid var(--line); border-radius: 24px; padding: 40px;
   backdrop-filter: blur(16px); min-height: 700px;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.4); order: 1;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.4); order: 2;
 }
 
-.sidebar-header { text-align: center; padding-bottom: 20px; border-bottom: 1px solid var(--line); }
+.sidebar-header { text-align: center; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
 .sidebar-icon {
-  width: 95px; height: 95px; border-radius: 28px; object-fit: cover;
-  border: 2px solid #75caff80; box-shadow: 0 0 30px #64baff30; margin: 0 auto 14px; display: block;
+  width: 75px; height: 75px; border-radius: 22px; object-fit: cover;
+  border: 2px solid #75caff80; box-shadow: 0 0 25px #64baff30; margin: 0 auto 10px; display: block;
 }
-.sidebar-header h3 { margin: 0 0 5px; font-size: 18px; overflow-wrap: anywhere; }
-.sidebar-header p { color: var(--muted); font-size: 13px; margin: 0; }
+.sidebar-header h3 { margin: 0 0 3px; font-size: 16px; overflow-wrap: anywhere; }
+.sidebar-header p { color: var(--muted); font-size: 12px; margin: 0; }
 
-.menu-list { display: flex; flex-direction: column; gap: 10px; }
+.menu-list { display: flex; flex-direction: column; gap: 6px; }
 .menu-item {
-  display: flex; align-items: center; gap: 14px; padding: 14px 18px;
-  border-radius: 14px; color: var(--muted); font-weight: 700; font-size: 15px;
+  display: flex; align-items: center; gap: 12px; padding: 11px 15px;
+  border-radius: 12px; color: var(--muted); font-weight: 700; font-size: 14px;
   transition: all .15s ease; border: 1px solid transparent;
 }
 .menu-item:hover, .menu-item.active {
   background: linear-gradient(115deg, #5bbfff1a, #8f82ff1a);
   color: var(--text); border-color: #7acbff50;
-  box-shadow: 0 6px 22px #58baff18; transform: translateX(3px);
+  box-shadow: 0 4px 18px #58baff15; transform: translateX(-3px);
 }
-.menu-item span { font-size: 20px; }
+.menu-item span { font-size: 18px; }
 
-.form-group { margin-bottom: 25px; }
-.form-group label { display: block; font-size: 14px; font-weight: 700; color: #cedbfa; margin-bottom: 10px; }
+.form-group { margin-bottom: 22px; }
+.form-group label { display: block; font-size: 14px; font-weight: 700; color: #cedbfa; margin-bottom: 8px; }
 .form-control {
-  width: 100%; padding: 14px 18px; border-radius: 14px;
+  width: 100%; padding: 12px 16px; border-radius: 12px;
   background: #060a17; border: 1px solid var(--line); color: var(--text);
-  font-family: inherit; font-size: 15px; outline: none; transition: border-color .2s;
+  font-family: inherit; font-size: 14px; outline: none; transition: border-color .2s;
 }
-.form-control:focus { border-color: var(--blue); box-shadow: 0 0 18px #64baff35; }
-textarea.form-control { resize: vertical; min-height: 120px; }
-select.form-control { cursor: pointer; }
+.form-control:focus { border-color: var(--blue); box-shadow: 0 0 15px #64baff30; }
 
-/* بطاقات اللوق المستقلة ودقيقة التفاصيل */
-.log-card {
-  background: #080d1ff5; border: 1px solid var(--line); border-radius: 16px;
-  padding: 20px; margin-bottom: 18px; display: flex; flex-direction: column; gap: 14px;
+/* تصميم شبكي بـ 3 أعمدة (كل صف 3 بطاقات تماماً مثل صورك) */
+.cards-grid-3 {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 25px;
 }
-.log-card-header {
+.card-item {
+  background: #080d1fe6; border: 1px solid var(--line); border-radius: 16px;
+  padding: 20px; display: flex; flex-direction: column; gap: 14px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+}
+.card-header {
   display: flex; justify-content: space-between; align-items: center;
 }
-.log-card-title { font-size: 16px; font-weight: 800; color: #e4eeff; display: flex; align-items: center; gap: 10px; }
-.log-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 15px; align-items: center; }
+.card-title { font-size: 15px; font-weight: 800; color: #e4eeff; display: flex; align-items: center; gap: 8px; }
+.card-body { display: flex; flex-direction: column; gap: 10px; }
 
-/* تصميم زر التفعيل (Switch) الفضائي الفخم */
+/* زر التفعيل السريع (Switch) */
 .switch {
-  position: relative; display: inline-block; width: 54px; height: 28px;
+  position: relative; display: inline-block; width: 48px; height: 26px;
 }
 .switch input { opacity: 0; width: 0; height: 0; }
 .slider {
@@ -289,24 +289,31 @@ select.form-control { cursor: pointer; }
   background-color: #1a2748; transition: .3s; border-radius: 34px; border: 1px solid var(--line);
 }
 .slider:before {
-  position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 3px;
+  position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 3px;
   background-color: white; transition: .3s; border-radius: 50%;
 }
 input:checked + .slider { background: linear-gradient(115deg, #64caff, #9b8cff); }
-input:checked + .slider:before { transform: translateX(26px); }
+input:checked + .slider:before { transform: translateX(22px); }
+
+.btn-edit {
+  background: #152242; border: 1px solid var(--line); color: var(--blue);
+  width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center;
+  cursor: pointer; transition: background .2s;
+}
+.btn-edit:hover { background: #20356b; }
 
 .footer { text-align: center; color: #7785a5; font-size: 12px; padding: 30px; border-top: 1px solid #ffffff0c; }
-@media(max-width: 950px) {
+@media(max-width: 1050px) {
   .dashboard-layout { grid-template-columns: 1fr; }
-  .sidebar { position: static; order: 1; }
-  .content-panel { order: 2; }
+  .sidebar { position: static; order: 2; }
+  .content-panel { order: 1; }
+  .cards-grid-3 { grid-template-columns: 1fr; }
   .hero { grid-template-columns: 1fr; padding-top: 50px; gap: 15px; }
   .space-art { min-height: 310px; grid-row: 1; }
   .orbit { width: 260px; }
   .planet { width: 110px; height: 110px; }
   .feature-grid { grid-template-columns: 1fr; }
   .nav { padding: 15px 5%; }
-  .log-grid { grid-template-columns: 1fr; }
 }
 </style>
 </head>
@@ -375,14 +382,14 @@ def home():
           <div class="eyebrow"><span class="dot"></span> عالمك، إدارتك، تحكمك</div>
           <h1>ارتقِ بسيرفرك<br><span class="gradient-text">إلى عالم آخر.</span></h1>
           <p class="subtitle">
-            مرحباً بك في Sky Universe، لوحة تحكم فائقة السرعة وواسعة
-            لتدير مجتمعك بكل احترافية ودقة.
+            مرحباً بك في Sky Universe، لوحة تحكم متطورة مرتبة في 3 أعمدة
+            مع قائمة جانبية في اليسار.
           </p>
           <div class="actions">{actions}</div>
           <div class="features">
-            <div class="feature"><b>✦</b> قائمة في اليمين</div>
-            <div class="feature"><b>✦</b> سرعة فائقة</div>
-            <div class="feature"><b>✦</b> لوقات مستقلة بدقة</div>
+            <div class="feature"><b>✦</b> قائمة في اليسار</div>
+            <div class="feature"><b>✦</b> 3 أعمدة مرتبة</div>
+            <div class="feature"><b>✦</b> أوامر إشراف احترافية</div>
           </div>
         </div>
         <div class="space-art">
@@ -394,15 +401,15 @@ def home():
       <section class="section">
         <div class="section-heading">
           <h2>كل أدواتك في <span class="gradient-text">مكان واحد</span></h2>
-          <p>إدارة مجتمعك بتصميم عصري سريع ومرتب.</p>
+          <p>إدارة مجتمعك بتصميم عصري مرتب.</p>
         </div>
         <div class="feature-grid">
           <div class="feature-box"><div class="feature-icon">🛡️</div>
-            <h3>الحماية والإدارة</h3><p>لغات البوت، الأوامر، وحمايات السيرفر المتقدمة.</p></div>
+            <h3>أوامر الإشراف</h3><p>تفعيل وتعطيل وإعداد أوامر الحماية والإشراف بسهولة.</p></div>
           <div class="feature-box"><div class="feature-icon">🎫</div>
             <h3>نظام التذاكر</h3><p>تخصيص كامل للرسائل والأزرار والصور.</p></div>
           <div class="feature-box"><div class="feature-icon">📊</div>
-            <h3>السجلات المستقلة</h3><p>لوق خاص لكل حدث مع إمكانية التفعيل والإيقاف الفردي.</p></div>
+            <h3>السجلات المستقلة</h3><p>لوق خاص لكل حدث بنظام شبكي من 3 أعمدة.</p></div>
         </div>
       </section>
     </main>
@@ -551,7 +558,7 @@ def get_server_context(guild_id):
     if BOT_TOKEN:
         ch_res = discord_get(f"/guilds/{guild_id}/channels", BOT_TOKEN, "Bot")
         if ch_res and ch_res.status_code == 200:
-            channels = [c for c in ch_res.json() if c.get("type") == 0]
+            channels = [c for c in ch_res.json() if c.get("type"] == 0]
             
     return target_guild, channels
 
@@ -575,12 +582,11 @@ def render_server_page(guild_id, active_tab, tab_content_html):
         <p>لوحة التحكم الشاملة</p>
       </div>
       <div class="menu-list">
-        <a class="menu-item {'active' if active_tab=='settings' else ''}" href="/server/{guild_id}/settings"><span>⚙️</span> الإعدادات واللغة</a>
+        <a class="menu-item {'active' if active_tab=='settings' else ''}" href="/server/{guild_id}/settings"><span>⚙️</span> الإعدادات العامة</a>
+        <a class="menu-item {'active' if active_tab=='commands' else ''}" href="/server/{guild_id}/commands"><span>🛡️</span> أوامر الإشراف</a>
+        <a class="menu-item {'active' if active_tab=='logs' else ''}" href="/server/{guild_id}/logs"><span>📊</span> السجلات (Logs)</a>
         <a class="menu-item {'active' if active_tab=='tickets' else ''}" href="/server/{guild_id}/tickets"><span>🎫</span> نظام التذاكر</a>
         <a class="menu-item {'active' if active_tab=='welcome' else ''}" href="/server/{guild_id}/welcome"><span>👋</span> نظام الترحيب</a>
-        <a class="menu-item {'active' if active_tab=='security' else ''}" href="/server/{guild_id}/security"><span>🛡️</span> إعدادات الحماية</a>
-        <a class="menu-item {'active' if active_tab=='commands' else ''}" href="/server/{guild_id}/commands"><span>🤖</span> الأوامر والتنبيهات</a>
-        <a class="menu-item {'active' if active_tab=='logs' else ''}" href="/server/{guild_id}/logs"><span>📊</span> السجلات الدقيقة (Logs)</a>
       </div>
       <div style="margin-top: auto; padding-top: 15px; border-top: 1px solid var(--line);">
         <a class="btn btn-secondary" style="width: 100%; text-align: center;" href="/dashboard">← عودة لقائمة السيرفرات</a>
@@ -590,25 +596,23 @@ def render_server_page(guild_id, active_tab, tab_content_html):
     
     layout_content = f"""
     <div class="dashboard-layout">
+      {sidebar_html}
       <main class="content-panel">
         {tab_content_html}
       </main>
-      {sidebar_html}
     </div>
     """
     return page(f"إدارة {guild_name}", layout_content)
 
 @app.route("/server/<guild_id>/settings", methods=["GET", "POST"])
 def s_settings(guild_id):
-    if request.method == "POST":
-        pass
     html = f"""
     <div class="page-head" style="margin-bottom:25px;">
-      <div><h1>⚙️ إعدادات السيرفر واللغة العامة</h1><p>اختر لغة البوت الأساسية في السيرفر وبادئة الأوامر.</p></div>
+      <div><h1>⚙️ إعدادات السيرفر واللغة</h1><p>اختر لغة البوت الأساسية وبادئة الأوامر.</p></div>
     </div>
     <form method="POST">
       <div class="form-group">
-        <label>لغة البوت في السيرفر (Bot Language)</label>
+        <label>لغة البوت (Bot Language)</label>
         <select class="form-control" name="bot_lang">
           <option value="ar">العربية (Arabic) 🇸🇦</option>
           <option value="en">الإنجليزية (English) 🇺🇸</option>
@@ -618,107 +622,71 @@ def s_settings(guild_id):
         <label>بادئة الأوامر (Prefix)</label>
         <input type="text" class="form-control" name="prefix" value="!">
       </div>
-      <button type="submit" class="btn btn-primary">حفظ إعدادات البوت ✦</button>
+      <button type="submit" class="btn btn-primary">حفظ الإعدادات ✦</button>
     </form>
     """
     return render_server_page(guild_id, "settings", html)
 
-@app.route("/server/<guild_id>/tickets", methods=["GET", "POST"])
-def s_tickets(guild_id):
-    if request.method == "POST":
-        pass
-    html = f"""
-    <div class="page-head" style="margin-bottom:25px;">
-      <div><h1>🎫 نظام التذاكر المتقدم</h1><p>تخصيص رسالة التذاكر، الأزرار، والخيارات والصور.</p></div>
-    </div>
-    <form method="POST">
-      <div class="form-group">
-        <label>رسالة التذاكر (Embed Description)</label>
-        <textarea class="form-control" name="ticket_msg">اضغط على الزر أدناه لفتح تذاكر الدعم الفني والمساعدة.</textarea>
-      </div>
-      <div class="form-group">
-        <label>رابط صورة التذاكر (Banner/Image URL)</label>
-        <input type="url" class="form-control" name="ticket_img" placeholder="https://example.com/image.png">
-      </div>
-      <div class="form-group">
-        <label>نص ولون زر فتح التذكرة</label>
-        <input type="text" class="form-control" name="btn_text" value="فتح تذكرة 🎫">
-      </div>
-      <button type="submit" class="btn btn-primary">حفظ ونشر رسالة التذاكر ✦</button>
-    </form>
-    """
-    return render_server_page(guild_id, "tickets", html)
-
-@app.route("/server/<guild_id>/welcome", methods=["GET", "POST"])
-def s_welcome(guild_id):
-    _, channels = get_server_context(guild_id)
-    ch_options = "".join([f'<option value="{c["id"]}">#{c["name"]}</option>' for c in channels])
-    
-    html = f"""
-    <div class="page-head" style="margin-bottom:25px;">
-      <div><h1>👋 نظام الترحيب بالأعضاء</h1><p>استقبل أعضاءك برسائل وصور مخصصة في الروم المحدد.</p></div>
-    </div>
-    <form method="POST">
-      <div class="form-group">
-        <label>روم الترحيب (Welcome Channel)</label>
-        <select class="form-control" name="welcome_channel">
-          {ch_options if ch_options else '<option value="">لا توجد رومات نصية متاحة</option>'}
-        </select>
-      </div>
-      <div class="form-group">
-        <label>رسالة الترحيب (استخدم {{user}} لذكر العضو)</label>
-        <textarea class="form-control" name="welcome_msg">مرحباً بك {{user}} في السيرفر! نورتنا 🌌</textarea>
-      </div>
-      <div class="form-group">
-        <label>رابط صورة الترحيب (Banner URL)</label>
-        <input type="url" class="form-control" name="welcome_img" placeholder="https://example.com/welcome.png">
-      </div>
-      <button type="submit" class="btn btn-primary">حفظ إعدادات الترحيب ✦</button>
-    </form>
-    """
-    return render_server_page(guild_id, "welcome", html)
-
-@app.route("/server/<guild_id>/security", methods=["GET", "POST"])
-def s_security(guild_id):
-    html = f"""
-    <div class="page-head" style="margin-bottom:25px;">
-      <div><h1>🛡️ إعدادات الحماية والأمان</h1><p>حماية السيرفر من السبام، الروابط الخبيثة، والتخريب.</p></div>
-    </div>
-    <form method="POST">
-      <div class="form-group">
-        <label>حماية السبام والروابط (Anti-Spam)</label>
-        <select class="form-control" name="anti_spam">
-          <option value="on">مفعل (قوي)</option>
-          <option value="off">متوقف</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>حماية التخريب (Anti-Nuke)</label>
-        <select class="form-control" name="anti_nuke">
-          <option value="on">مفعل</option>
-          <option value="off">متوقف</option>
-        </select>
-      </div>
-      <button type="submit" class="btn btn-primary">حفظ إعدادات الحماية ✦</button>
-    </form>
-    """
-    return render_server_page(guild_id, "security", html)
-
 @app.route("/server/<guild_id>/commands", methods=["GET", "POST"])
 def s_commands(guild_id):
+    cmds = [
+        ("ban/", "حظر عضو من السيرفر"), ("unban/", "إلغاء حظر عضو"), ("clear/", "مسح الرسائل في روم"),
+        ("hide/", "إخفاء روم عن الأعضاء"), ("show/", "إظهار روم مخفي"), ("lock/", "قفل روم لمنع الرسائل"),
+        ("unlock/", "فتح روم"), ("move/", "نقل الأعضاء بين رومات الصوت"), ("role/", "إضافة أو إزالة الرتب لعضو"),
+        ("setnick/", "تعيين لقب لعضو"), ("timeout/", "إسكات عضو مؤقتاً"), ("untimeout/", "إزالة الإسكات عن عضو"),
+        ("vkick/", "طرد عضو من روم صوتي"), ("warn/", "تحذير عضو"), ("unwarn/", "إزالة إنذار عن عضو"),
+        ("warns/", "عرض تحذيرات عضو"), ("vmute/", "كتم عضو في الصوت")
+    ]
+    
+    cards_html = ""
+    for cmd, desc in cmds:
+        cards_html += f"""
+        <div class="card-item">
+          <div class="card-header">
+            <div class="card-title"><a class="btn-edit" href="/server/{guild_id}/command-edit/{cmd.strip('/')}">✎</a> {cmd}</div>
+            <label class="switch">
+              <input type="checkbox" name="cmd_{cmd.strip('/')}" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div style="font-size: 13px; color: var(--muted);">{desc}</div>
+        </div>
+        """
+        
     html = f"""
     <div class="page-head" style="margin-bottom:25px;">
-      <div><h1>🤖 الأوامر والتنبيهات المخصصة</h1><p>تخصيص ردود البوت التلقائية والتنبيهات للسيرفر.</p></div>
+      <div><h1>🛡️ أوامر الإشراف</h1><p>تفعيل، تعطيل، وإعداد أوامر الإشراف.</p></div>
+    </div>
+    <form method="POST">
+      <div class="cards-grid-3">
+        {cards_html}
+      </div>
+      <button type="submit" class="btn btn-primary" style="width: 100%;">حفظ إعدادات الأوامر ✦</button>
+    </form>
+    """
+    return render_server_page(guild_id, "commands", html)
+
+@app.route("/server/<guild_id>/command-edit/<cmd_name>")
+def s_command_edit(guild_id, cmd_name):
+    html = f"""
+    <div class="page-head" style="margin-bottom:25px;">
+      <div><h1>✎ تعديل {cmd_name}/</h1><p>إعداد الأسماء البديلة، الرتب، الرومات والسلوك.</p></div>
+      <a class="btn btn-secondary" href="/server/{guild_id}/commands">← عودة</a>
     </div>
     <form method="POST">
       <div class="form-group">
-        <label>تفعيل ردود الأوامر التلقائية</label>
-        <select class="form-control" name="auto_responses">
-          <option value="on">مفعل</option>
-          <option value="off">متوقف</option>
-        </select>
+        <label>الأسماء البديلة</label>
+        <input type="text" class="form-control" value="{cmd_name}">
       </div>
-      <button type="submit" class="btn btn-primary">حفظ الأوامر ✦</button>
+      <div class="form-group">
+        <label>الرتب المفعلة</label>
+        <input type="text" class="form-control" placeholder="اختر الرتب...">
+      </div>
+      <div class="form-group">
+        <label>الرومات المفعلة</label>
+        <input type="text" class="form-control" placeholder="اختر الرومات...">
+      </div>
+      <button type="submit" class="btn btn-primary">حفظ التعديلات ✦</button>
     </form>
     """
     return render_server_page(guild_id, "commands", html)
@@ -729,19 +697,29 @@ def s_logs(guild_id):
     ch_options = "".join([f'<option value="{c["id"]}">#{c["name"]}</option>' for c in channels])
     empty_ch = '<option value="">اختر الروم...</option>' + ch_options
 
-    def render_log_box(title, prefix):
-        return f"""
-        <div class="log-card">
-          <div class="log-card-header">
-            <div class="log-card-title"><span>📊</span> {title}</div>
+    logs_list = [
+        ("حظر عضو", "log_ban"), ("مهلة عضو", "log_timeout"), ("طرد عضو", "log_kick"),
+        ("إنضمام عضو", "log_join"), ("مغادرة عضو", "log_leave"), ("إلغاء حظر عضو", "log_unban"),
+        ("إعطاء رتبه", "log_role_give"), ("إزالة رتبه", "log_role_take"), ("تغيير اللقب", "log_name_change"),
+        ("إنشاء روم", "log_channel_create"), ("حذف روم", "log_channel_delete"), ("تعديل روم", "log_channel_update"),
+        ("ميوت صوتي", "log_voice_mute"), ("دفن صوتي", "log_voice_deaf"), ("طرد صوتي", "log_voice_disc"),
+        ("حذف رسالة", "log_msg_delete"), ("تعديل رسالة", "log_msg_update"), ("فك المهلة", "log_untimeout")
+    ]
+
+    cards_html = ""
+    for title, prefix in logs_list:
+        cards_html += f"""
+        <div class="card-item">
+          <div class="card-header">
+            <div class="card-title"><span>📊</span> {title}</div>
             <label class="switch">
-              <input type="checkbox" name="{prefix}_enabled" value="yes" checked>
+              <input type="checkbox" name="{prefix}_enabled" checked>
               <span class="slider"></span>
             </label>
           </div>
-          <div class="log-grid">
-            <label style="color:var(--muted); font-size:13px; margin:0;">روم السجل المخصص:</label>
-            <select class="form-control" name="{prefix}_channel">
+          <div class="card-body">
+            <label style="color:var(--muted); font-size:12px;"># الروم</label>
+            <select class="form-control" name="{prefix}_channel" style="padding: 8px 12px; font-size: 13px;">
               {empty_ch}
             </select>
           </div>
@@ -750,37 +728,60 @@ def s_logs(guild_id):
 
     html = f"""
     <div class="page-head" style="margin-bottom:25px;">
-      <div><h1>📊 السجلات الدقيقة والمستقلة تماماً (Logs System)</h1><p>كل لوق مستقل بحاله تماماً مع زر تفعيل وروم مخصص وتفاصيل دقيقة.</p></div>
+      <div><h1>📊 سجلات السيرفر</h1><p>تكوين رومات التسجيل والأحداث المختلفة.</p></div>
     </div>
     <form method="POST">
-      {render_log_box("لوق إنشاء الرومات (اسم الروم، نوعه، ومن أنشأه مع التفاصيل)", "log_channel_create")}
-      {render_log_box("لوق حذف الرومات (اسم الروم، ومن حذفه مع التفاصيل)", "log_channel_delete")}
-      {render_log_box("لوق تعديل الرومات (تغيير الاسم، الصلاحيات والتفاصيل)", "log_channel_update")}
-      
-      {render_log_box("لوق إعطاء الرتب لحاله (العضو، الرتبة المعطاة، ومن أعطاها)", "log_role_give")}
-      {render_log_box("لوق سحب الرتب لحاله (العضو، الرتبة المسحوبة، ومن سحبها)", "log_role_take")}
-      {render_log_box("لوق تعديل الرتب لحاله (اسم الرتبة، التعديلات الكاملة)", "log_role_update")}
-      
-      {render_log_box("لوق الباند (العضو، السبب، ومن أعطى الباند)", "log_ban")}
-      {render_log_box("لوق فك الباند (العضو، ومن فك عنه الباند)", "log_unban")}
-      {render_log_box("لوق الطرد - Kick (العضو، السبب، ومن طرده)", "log_kick")}
-      
-      {render_log_box("لوق التايم آوت - Timeout (المدة، السبب، ومن أعطاه)", "log_timeout")}
-      {render_log_box("لوق فك التايم آوت (العضو، ومن فك عنه)", "log_untimeout")}
-      
-      {render_log_box("لوق تغيير الأسماء (الاسم القديم والجديد للعضو)", "log_name_change")}
-      
-      {render_log_box("لوق إعطاء الميوت الصوتي (Mute)", "log_voice_mute")}
-      {render_log_box("لوق إعطاء الدفن الصوتي (Deafen)", "log_voice_deaf")}
-      {render_log_box("لوق طرد من الروم الصوتي (Disconnect)", "log_voice_disconnect")}
-      
-      {render_log_box("لوق حذف الرسائل (محتوى الرسالة، صاحبها، والروم)", "log_message_delete")}
-      {render_log_box("لوق تعديل الرسائل (المحتوى القديم والجديد مع التفاصيل)", "log_message_update")}
-
-      <button type="submit" class="btn btn-primary" style="margin-top: 20px; width: 100%;">حفظ إعدادات السجلات بدقة ✦</button>
+      <div class="cards-grid-3">
+        {cards_html}
+      </div>
+      <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 15px;">حفظ إعدادات السجلات ✦</button>
     </form>
     """
     return render_server_page(guild_id, "logs", html)
+
+@app.route("/server/<guild_id>/tickets", methods=["GET", "POST"])
+def s_tickets(guild_id):
+    html = f"""
+    <div class="page-head" style="margin-bottom:25px;">
+      <div><h1>🎫 نظام التذاكر المتقدم</h1><p>تخصيص رسالة التذاكر، الأزرار، والخيارات.</p></div>
+    </div>
+    <form method="POST">
+      <div class="form-group">
+        <label>رسالة التذاكر</label>
+        <textarea class="form-control" name="ticket_msg">اضغط على الزر أدناه لفتح تذاكر الدعم الفني والمساعدة.</textarea>
+      </div>
+      <div class="form-group">
+        <label>رابط صورة التذاكر</label>
+        <input type="url" class="form-control" name="ticket_img" placeholder="https://...">
+      </div>
+      <button type="submit" class="btn btn-primary">حفظ ونشر التذاكر ✦</button>
+    </form>
+    """
+    return render_server_page(guild_id, "tickets", html)
+
+@app.route("/server/<guild_id>/welcome", methods=["GET", "POST"])
+def s_welcome(guild_id):
+    _, channels = get_server_context(guild_id)
+    ch_options = "".join([f'<option value="{c["id"]}">#{c["name"]}</option>' for c in channels])
+    html = f"""
+    <div class="page-head" style="margin-bottom:25px;">
+      <div><h1>👋 نظام الترحيب</h1><p>استقبل أعضاءك برسائل وصور مخصصة.</p></div>
+    </div>
+    <form method="POST">
+      <div class="form-group">
+        <label>روم الترحيب</label>
+        <select class="form-control" name="welcome_channel">
+          {ch_options if ch_options else '<option value="">لا توجد رومات</option>'}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>رسالة الترحيب</label>
+        <textarea class="form-control" name="welcome_msg">مرحباً بك {{user}} في السيرفر!</textarea>
+      </div>
+      <button type="submit" class="btn btn-primary">حفظ الترحيب ✦</button>
+    </form>
+    """
+    return render_server_page(guild_id, "welcome", html)
 
 @app.route("/logout")
 def logout():
