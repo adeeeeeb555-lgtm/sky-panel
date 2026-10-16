@@ -6,7 +6,6 @@ from markupsafe import escape
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "dev-only-change-this-secret")
-app.config.update(SESSION_COOKIE_HTTPONLY=True, SESSION_COOKIE_SAMESITE="Lax")
 
 CLIENT_ID = os.environ.get("DISCORD_CLIENT_ID", "").strip()
 CLIENT_SECRET = os.environ.get("DISCORD_CLIENT_SECRET", "").strip()
@@ -144,97 +143,57 @@ h1 {
 .feature { display: flex; align-items: center; gap: 8px; }
 .feature b { color: #76e3c0; }
 
-
 .space-art {
-  min-height: 470px; position: relative; display: grid; place-items: center;
-  isolation: isolate; perspective: 1000px;
-  background:
-    radial-gradient(ellipse at 50% 50%, #123b8a30 0%, transparent 55%),
-    radial-gradient(circle at 20% 25%, #5e4bff14 0 2px, transparent 3px),
-    radial-gradient(circle at 75% 22%, #7bd8ff22 0 1px, transparent 2px);
+  min-height: 360px; position: relative; display: grid; place-items: center;
 }
-.space-art:before {
-  content: ""; position: absolute; inset: 0; z-index: -2; pointer-events: none;
-  background-image:
-    radial-gradient(1px 1px at 12% 18%, #d8f5ff 99%, transparent),
-    radial-gradient(1px 1px at 82% 16%, #9cc8ff 99%, transparent),
-    radial-gradient(2px 2px at 72% 78%, #b5a5ff 99%, transparent),
-    radial-gradient(1px 1px at 22% 76%, #8adfff 99%, transparent),
-    radial-gradient(1px 1px at 48% 8%, #fff 99%, transparent),
-    radial-gradient(1px 1px at 92% 53%, #fff 99%, transparent);
+
+@keyframes orbitRotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
+
 .orbit {
-  width: min(350px, 72vw); aspect-ratio: 1; border-radius: 50%;
-  border: 1px solid #4b91ff60; display: grid; place-items: center;
-  transform: rotate(-20deg); position: relative; z-index: 1;
-  box-shadow: 0 0 90px #286aff18, inset 0 0 60px #618aff0b;
+  width: min(340px, 75vw); aspect-ratio: 1; border-radius: 50%;
+  border: 1px solid #7b9bff35; display: grid; place-items: center;
+  position: relative;
+  box-shadow: 0 0 90px #5a7dff0b, inset 0 0 60px #618aff0b;
+  animation: orbitRotate 25s linear infinite;
 }
 .orbit:before, .orbit:after {
-  content: ""; position: absolute; border: 1px solid #80baff40;
-  border-radius: 50%; inset: 25px; transform: rotate(24deg);
+  content: ""; position: absolute; border: 1px solid #80baff30;
+  border-radius: 50%; inset: 25px;
 }
-.orbit:after { inset: 55px; border-color: #b4a0ff45; }
+.orbit:after { inset: 55px; border-color: #b4a0ff35; }
 .planet {
-  width: clamp(125px, 14vw, 175px); height: clamp(125px, 14vw, 175px);
-  border-radius: 50%; position: relative; z-index: 2; overflow: visible;
+  width: 145px; height: 145px; border-radius: 50%;
   background:
-    radial-gradient(ellipse at 28% 25%, #d5faff 0%, #65d7ff 8%, transparent 22%),
-    radial-gradient(ellipse at 66% 37%, #4b9bff 0%, transparent 28%),
-    radial-gradient(ellipse at 35% 65%, #1852c5 0%, transparent 35%),
-    radial-gradient(circle at 35% 30%, #7bd8ff 0%, #2d67db 38%, #171b69 72%, #05091d 100%);
-  box-shadow: inset -24px -18px 34px #020617d9, inset 8px 6px 18px #8be9ff8a,
-              0 0 35px #277bff80, 0 0 95px #3b5cff30;
-  animation: planetFloat 6s ease-in-out infinite;
-}
-.planet:before {
-  content: ""; position: absolute; inset: 9% -18%;
-  border: 8px solid transparent; border-top-color: #83f0ff;
-  border-bottom-color: #7c78ff; border-left-color: #4a8dff;
-  border-right-color: #bc9bff; border-radius: 50%;
-  transform: rotate(-24deg) scaleY(.34);
-  box-shadow: 0 0 14px #5bcaffaa, inset 0 0 10px #7f9dff70;
+    radial-gradient(circle at 30% 25%, #c2edff, transparent 16%),
+    radial-gradient(circle at 35% 30%, #7bd8ff, #526de2 42%, #34215f 76%, #10142f);
+  box-shadow: inset -20px -15px 35px #030718b5, 0 0 75px #637dff52;
+  position: relative; z-index: 1;
 }
 .planet:after {
-  content: "✦"; position: absolute; left: 50%; top: 50%;
-  transform: translate(-50%,-50%); color: #b9f4ff; font-size: 38px;
-  text-shadow: 0 0 22px #46baff; opacity: .92;
+  content: ""; position: absolute; width: 190px; height: 35px;
+  border: 7px solid #9bb8ff9c; border-left-color: #c2a9ff;
+  border-right-color: #6ad8ff; border-radius: 50%; top: 55px; left: -25px;
+  transform: rotate(-25deg); box-shadow: 0 0 22px #6dafff38;
 }
-.orbiting-info {
-  position: absolute; width: min(350px, 72vw); aspect-ratio: 1; border-radius: 50%;
-  z-index: 4; pointer-events: none; animation: orbitSpin 24s linear infinite;
+
+@keyframes floatAnimation {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
 }
-.orbit-label {
-  position: absolute; width: 150px; transform: translate(-50%,-50%);
-}
-.orbit-label:nth-child(1) { top: 4%; left: 50%; }
-.orbit-label:nth-child(2) { top: 50%; left: 100%; }
-.orbit-label:nth-child(3) { top: 96%; left: 50%; }
-.info-card {
-  padding: 12px 14px; border: 1px solid #258cffaa; border-radius: 15px;
-  background: linear-gradient(145deg, #071a39ed, #10153be8);
-  backdrop-filter: blur(14px); box-shadow: 0 8px 28px #0006, 0 0 24px #126bff24;
-  text-align: center; animation: counterSpin 24s linear infinite;
-}
-.info-icon { font-size: 23px; margin-bottom: 4px; filter: drop-shadow(0 0 8px #45baff); }
-.info-card strong { display: block; color: #e5f5ff; font-size: 13px; }
-.info-card small { display: block; color: #9ebce5; font-size: 10px; margin-top: 4px; }
+
 .float-card {
-  position: absolute; padding: 13px 17px; border: 1px solid #378eff55;
-  border-radius: 14px; background: #09162ee8; backdrop-filter: blur(12px);
-  box-shadow: 0 15px 40px #0004, 0 0 25px #286aff14; font-size: 12px; z-index: 5;
-  animation: cardFloat 5s ease-in-out infinite;
+  position: absolute; padding: 14px 18px; border: 1px solid var(--line);
+  border-radius: 14px; background: #101a33d9; backdrop-filter: blur(12px);
+  box-shadow: 0 15px 40px #0003; font-size: 13px;
+  animation: floatAnimation 4s ease-in-out infinite;
 }
-.float-card strong { display: block; font-size: 14px; margin-bottom: 3px; color: #e8f5ff; }
+.float-card strong { display: block; font-size: 15px; margin-bottom: 3px; }
 .float-card small { color: var(--muted); }
-.card-top { top: 4%; right: 0; }
-.card-bottom { bottom: 3%; left: 0; animation-delay: -2.5s; }
-@keyframes orbitSpin { to { transform: rotate(360deg); } }
-@keyframes counterSpin { to { transform: rotate(-360deg); } }
-@keyframes planetFloat { 0%,100% { translate: 0 0; } 50% { translate: 0 -8px; } }
-@keyframes cardFloat { 0%,100% { translate: 0 0; } 50% { translate: 0 -6px; } }
-@media (prefers-reduced-motion: reduce) {
-  .planet, .orbiting-info, .info-card, .float-card { animation: none !important; }
-}
+.card-top { top: 13%; right: -20px; }
+.card-bottom { bottom: 12%; left: -20px; }
 
 .page { width: min(1250px, 92%); margin: 40px auto 70px; }
 .page-head { display: flex; justify-content: space-between; align-items: center; gap: 20px; margin-bottom: 35px; }
@@ -261,7 +220,7 @@ h1 {
 }
 .empty span { display: block; font-size: 40px; margin-bottom: 12px; }
 
-/* القائمة في اليسار والمحتوى في اليمين */
+/* جعل القائمة الجانبية في اليمين والمحتوى في اليسار بشكل متناسق مع العربية */
 .dashboard-layout {
   display: grid; grid-template-columns: 310px 1fr; gap: 30px;
   width: min(1480px, 97%); margin: 40px auto 70px; align-items: start;
@@ -322,16 +281,18 @@ select.form-control {
   cursor: pointer;
 }
 
-/* خاصية اختيار عدة رتب (Multiple Select) */
+/* خاصية اختيار عدة رتب أو رومات (Multiple Select) مع تحسين الشكل */
 select[multiple].form-control {
   height: 140px;
   background-image: none;
   padding: 8px;
+  overflow-y: auto;
 }
 select[multiple].form-control option {
   padding: 8px 12px;
   margin-bottom: 4px;
   border-radius: 6px;
+  background: #0c1327;
 }
 select[multiple].form-control option:checked {
   background: linear-gradient(115deg, #64caff, #9b8cff);
@@ -436,8 +397,8 @@ input:checked + .slider:before { transform: translateX(22px); }
 
 @media(max-width: 1050px) {
   .dashboard-layout { grid-template-columns: 1fr; }
-  .sidebar { position: static; order: 2; }
-  .content-panel { order: 1; }
+  .sidebar { position: static; order: 1; }
+  .content-panel { order: 2; }
   .cards-grid-3 { grid-template-columns: 1fr; }
   .hero { grid-template-columns: 1fr; padding-top: 50px; gap: 15px; }
   .space-art { min-height: 310px; grid-row: 1; }
@@ -577,6 +538,20 @@ function changeAvatarSize(size) {
   }
 }
 
+function updateWelcomeTitle(val) {
+  const titleEl = document.getElementById('previewTitle');
+  if (titleEl) {
+    titleEl.textContent = val || 'Welcome to the server';
+  }
+}
+
+function updateWelcomeSub(val) {
+  const subEl = document.getElementById('previewSub');
+  if (subEl) {
+    subEl.textContent = val || 'Username';
+  }
+}
+
 function previewLocalImage(input) {
   if (input.files && input.files[0]) {
     const reader = new FileReader();
@@ -591,7 +566,7 @@ function previewLocalImage(input) {
 }
 
 let categoryCount = 1;
-function addTicketCategory(roleOptionsHTML) {
+function addTicketCategory(roleOptionsHTML, channelOptionsHTML) {
   categoryCount++;
   const container = document.getElementById('categoriesContainer');
   const div = document.createElement('div');
@@ -611,18 +586,20 @@ function addTicketCategory(roleOptionsHTML) {
         <label>روم التذاكر *</label>
         <select class="form-control" name="cat_ticket_channel_${categoryCount}">
           <option value="">اختر الروم...</option>
+          ${channelOptionsHTML}
         </select>
       </div>
       <div class="form-group">
         <label>روم السجل (Log Channel) *</label>
         <select class="form-control" name="cat_log_channel_${categoryCount}">
           <option value="">اختر روم السجل...</option>
+          ${channelOptionsHTML}
         </select>
       </div>
     </div>
     <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 15px;">
       <div class="form-group">
-        <label>رتب المسؤول (اختر أكثر من رتبة بالضغط على Ctrl) *</label>
+        <label>رتب المسؤولين (اختر عدة رتب بالضغط على Ctrl) *</label>
         <select class="form-control" name="cat_staff_roles_${categoryCount}" multiple>
           ${roleOptionsHTML}
         </select>
@@ -718,20 +695,17 @@ def home():
           </p>
           <div class="actions">{actions}</div>
           <div class="features">
-            <div class="feature"><b>✦</b> القائمة في اليسار</div>
+            <div class="feature"><b>✦</b> القائمة في اليمين</div>
             <div class="feature"><b>✦</b> اختيار عدة رتب (Multi-select)</div>
             <div class="feature"><b>✦</b> زر دعم ديسكورد مباشر</div>
           </div>
         </div>
-        <div class="space-art" aria-label="كوكب Sky Universe ومعلومات البوت">
-          <div class="orbit"><div class="planet"></div></div>
-          <div class="orbiting-info">
-            <div class="orbit-label"><div class="info-card"><div class="info-icon">🤖</div><strong>Sky Bot</strong><small>مساعد سيرفرك الذكي</small></div></div>
-            <div class="orbit-label"><div class="info-card"><div class="info-icon">🛡️</div><strong>الحماية</strong><small>أدوات إدارة وأمان</small></div></div>
-            <div class="orbit-label"><div class="info-card"><div class="info-icon">🎫</div><strong>نظام التذاكر</strong><small>دعم وتنظيم الطلبات</small></div></div>
+        <div class="space-art">
+          <div class="orbit">
+            <div class="planet"></div>
           </div>
           <div class="float-card card-top"><strong>🌌 Sky Universe</strong><small>رحلتك تبدأ هنا</small></div>
-          <div class="float-card card-bottom"><strong>⚡ تحكم ذكي</strong><small>كل شيء في مكان واحد</small></div>
+          <div class="float-card card-bottom"><strong>⚡ تحكم أذكى</strong><small>كل شيء في مكان واحد</small></div>
         </div>
       </section>
     </main>
@@ -1027,13 +1001,13 @@ def s_welcome(guild_id):
     <!-- بطاقة مصمم صورة الترحيب التفاعلي -->
     <div class="settings-section-card">
       <div class="settings-section-header">
-        <div class="settings-section-title"><span>🎨</span> مصمم صورة الترحيب التفاعلي (تصغير، تكبير، وسحب)</div>
+        <div class="settings-section-title"><span>🎨</span> مصمم صورة الترحيب التفاعلي (تعديل النصوص والتكبير والسحب)</div>
         <label class="switch">
           <input type="checkbox" name="welcome_img_enabled" checked>
           <span class="slider"></span>
         </label>
       </div>
-      <div class="field-desc">يمكنك سحب العناصر بالماوس وتعديل حجم صورة العضو بكل سهولة!</div>
+      <div class="field-desc">يمكنك سحب العناصر بالماوس وتعديل الكلام المكتوب على الصورة مجاناً!</div>
 
       <!-- لوحة المعاينة والسحب بالماوس -->
       <div id="canvasPreview" class="canvas-container">
@@ -1041,8 +1015,20 @@ def s_welcome(guild_id):
           <div id="avatarCircle" style="width:85px; height:85px; border-radius:50%; background:#5865F2; display:grid; place-items:center; font-size:32px; box-shadow:0 0 20px rgba(88,101,242,0.5);">👤</div>
         </div>
         <div id="dragText" class="draggable-item" style="left: 150px; top: 60px;" onmousedown="startDrag(event, 'dragText')">
-          <div style="font-size:22px; font-weight:900; color:#fff;">Welcome to the server</div>
-          <div style="font-size:16px; color:var(--blue);">Username</div>
+          <div id="previewTitle" style="font-size:22px; font-weight:900; color:#fff;">Welcome to the server</div>
+          <div id="previewSub" style="font-size:16px; color:var(--blue);">Username</div>
+        </div>
+      </div>
+
+      <!-- خانات تعديل الكلام المكتوب على صورة الترحيب -->
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:15px;">
+        <div class="form-group">
+          <label>النص الرئيسي في الصورة</label>
+          <input type="text" class="form-control" name="welcome_img_title" value="Welcome to the server" placeholder="مثل: أهلاً بك في السيرفر" oninput="updateWelcomeTitle(this.value)">
+        </div>
+        <div class="form-group">
+          <label>النص الفرعي في الصورة</label>
+          <input type="text" class="form-control" name="welcome_img_sub" value="Username" placeholder="مثل: {username}" oninput="updateWelcomeSub(this.value)">
         </div>
       </div>
 
@@ -1257,6 +1243,7 @@ def s_tickets(guild_id):
     ch_options = "".join([f'<option value="{c["id"]}">#{c["name"]}</option>' for c in channels])
     role_options = "".join([f'<option value="{r["id"]}">@{r["name"]}</option>' for r in roles])
     role_options_js = role_options.replace('"', '\\"').replace('\n', '')
+    ch_options_js = ch_options.replace('"', '\\"').replace('\n', '')
 
     html = f"""
     <div class="page-head" style="margin-bottom:25px;">
@@ -1309,7 +1296,7 @@ def s_tickets(guild_id):
 
     <!-- زر إضافة فئة جديدة -->
     <div style="margin-bottom: 25px;">
-      <button type="button" class="btn btn-secondary" style="width: 100%; border: 2px dashed var(--blue); padding: 16px;" onclick="addTicketCategory('{role_options_js}')">
+      <button type="button" class="btn btn-secondary" style="width: 100%; border: 2px dashed var(--blue); padding: 16px;" onclick="addTicketCategory('{role_options_js}', '{ch_options_js}')">
         + إضافة فئة جديدة
       </button>
     </div>
