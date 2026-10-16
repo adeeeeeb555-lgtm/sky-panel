@@ -181,11 +181,6 @@ h1 {
 .card-top { top: 13%; right: 0; }
 .card-bottom { bottom: 12%; left: 0; }
 
-.section { width: min(1200px, 92%); margin: 0 auto 70px; }
-.section-heading { text-align: center; margin-bottom: 35px; }
-.section-heading h2 { font-size: 28px; margin: 0 0 8px; }
-.section-heading p { color: var(--muted); margin: 0; font-size: 14px; }
-
 .page { width: min(1250px, 92%); margin: 40px auto 70px; }
 .page-head { display: flex; justify-content: space-between; align-items: center; gap: 20px; margin-bottom: 35px; }
 .page-head h1 { font-size: 30px; margin: 0 0 6px; }
@@ -380,22 +375,68 @@ input:checked + .slider:before { transform: translateX(22px); }
 }
 </style>
 <script>
+// حفظ المواضع الأصلية قبل السحب لإعادتها إذا لم يتم الحفظ
+let initialPositions = {};
+
 function triggerChange() {
   const bar = document.getElementById('saveBar');
   if (bar) bar.classList.add('visible');
 }
-function hideBar() {
+
+function saveState() {
+  const avatarLeft = document.getElementById('avatar_left');
+  const avatarTop = document.getElementById('avatar_top');
+  const textLeft = document.getElementById('text_left');
+  const textTop = document.getElementById('text_top');
+  const bgUrl = document.getElementById('bg_url_input');
+
+  if (avatarLeft && avatarTop && textLeft && textTop) {
+    initialPositions = {
+      avatarLeft: avatarLeft.value,
+      avatarTop: avatarTop.value,
+      textLeft: textLeft.value,
+      textTop: textTop.value,
+      bgUrl: bgUrl ? bgUrl.value : ''
+    };
+  }
+}
+
+function resetPositions() {
   const bar = document.getElementById('saveBar');
   if (bar) bar.classList.remove('visible');
+
+  if (initialPositions.avatarLeft !== undefined) {
+    document.getElementById('avatar_left').value = initialPositions.avatarLeft;
+    document.getElementById('avatar_top').value = initialPositions.avatarTop;
+    document.getElementById('text_left').value = initialPositions.textLeft;
+    document.getElementById('text_top').value = initialPositions.textTop;
+
+    const dragAvatar = document.getElementById('dragAvatar');
+    const dragText = document.getElementById('dragText');
+
+    if (dragAvatar) {
+      dragAvatar.style.left = initialPositions.avatarLeft + 'px';
+      dragAvatar.style.top = initialPositions.avatarTop + 'px';
+    }
+    if (dragText) {
+      dragText.style.left = initialPositions.textLeft + 'px';
+      dragText.style.top = initialPositions.textTop + 'px';
+    }
+
+    if (initialPositions.bgUrl !== undefined) {
+      updateBg(initialPositions.bgUrl);
+    }
+  }
 }
+
 window.addEventListener('DOMContentLoaded', () => {
+  saveState();
   document.querySelectorAll('input, select, textarea').forEach(el => {
     el.addEventListener('input', triggerChange);
     el.addEventListener('change', triggerChange);
   });
 });
 
-// نظام السحب بالماوس لتصميم الصورة
 let activeDrag = null;
 let offsetX = 0, offsetY = 0;
 
@@ -441,6 +482,20 @@ function updateBg(url) {
   const canvas = document.getElementById('canvasPreview');
   if (canvas) {
     canvas.style.backgroundImage = 'url(' + url + ')';
+  }
+}
+
+// معاينة صورة مرفوعة من جهازك
+function previewLocalImage(input) {
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      updateBg(e.target.result);
+      const urlInput = document.getElementById('bg_url_input');
+      if (urlInput) urlInput.value = e.target.result;
+      triggerChange();
+    };
+    reader.readAsDataURL(input.files[0]);
   }
 }
 </script>
@@ -523,7 +578,7 @@ def home():
           <div class="actions">{actions}</div>
           <div class="features">
             <div class="feature"><b>✦</b> القائمة في اليسار</div>
-            <div class="feature"><b>✦</b> مصمم بالماوس وتصميم تفاعلي</div>
+            <div class="feature"><b>✦</b> رفع ملفات مباشرة والسحب بالماوس</div>
             <div class="feature"><b>✦</b> زر دعم ديسكورد مباشر</div>
           </div>
         </div>
@@ -728,8 +783,8 @@ def render_server_page(guild_id, active_tab, tab_content_html):
         <span>تم اكتشاف تغييرات! يرجى الحفظ أو الإلغاء.</span>
       </div>
       <div style="display:flex; gap:10px;">
-        <button type="submit" form="mainForm" class="btn btn-gold" style="padding: 8px 20px;">حفظ</button>
-        <button type="reset" form="mainForm" onclick="hideBar()" class="btn btn-secondary" style="padding: 8px 18px;">إلغاء</button>
+        <button type="submit" form="mainForm" onclick="saveState()" class="btn btn-gold" style="padding: 8px 20px;">حفظ</button>
+        <button type="button" form="mainForm" onclick="resetPositions()" class="btn btn-secondary" style="padding: 8px 18px;">إلغاء</button>
       </div>
     </div>
     """
@@ -738,7 +793,7 @@ def render_server_page(guild_id, active_tab, tab_content_html):
     <div class="dashboard-layout">
       {sidebar_html}
       <main class="content-panel">
-        <form id="mainForm" method="POST">
+        <form id="mainForm" method="POST" enctype="multipart/form-data">
           {tab_content_html}
         </form>
       </main>
@@ -823,7 +878,7 @@ def s_welcome(guild_id):
       </div>
     </div>
 
-    <!-- بطاقة مصمم صورة الترحيب المطور مع السحب بالماوس -->
+    <!-- بطاقة مصمم صورة الترحيب المطور مع السحب بالماوس ورفع الملفات -->
     <div class="settings-section-card">
       <div class="settings-section-header">
         <div class="settings-section-title"><span>🎨</span> مصمم صورة الترحيب التفاعلي (احرك بالماوس)</div>
@@ -832,7 +887,7 @@ def s_welcome(guild_id):
           <span class="slider"></span>
         </label>
       </div>
-      <div class="field-desc">ملاحظة: يمكنك سحب الصورة والنص بالماوس مباشرة لتغيير أماكنهم!</div>
+      <div class="field-desc">ملاحظة: يمكنك سحب الصورة والنص بالماوس مباشرة لتغيير أماكنهم! ولن تتغير الأماكن نهائياً حتى تضغط حفظ.</div>
 
       <!-- لوحة المعاينة والسحب بالماوس -->
       <div id="canvasPreview" class="canvas-container">
@@ -846,8 +901,13 @@ def s_welcome(guild_id):
       </div>
 
       <div class="form-group">
-        <label>رابط صورة الخلفية (Background Image URL)</label>
-        <input type="url" class="form-control" placeholder="https://..." oninput="updateBg(this.value)">
+        <label>رفع صورة خلفية من جهازك (الملفات)</label>
+        <input type="file" class="form-control" accept="image/*" onchange="previewLocalImage(this)">
+      </div>
+
+      <div class="form-group">
+        <label>أو ضع رابط صورة خلفية مباشرة (Background Image URL)</label>
+        <input type="url" id="bg_url_input" class="form-control" placeholder="https://..." oninput="updateBg(this.value)">
       </div>
 
       <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
