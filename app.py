@@ -558,7 +558,7 @@ def get_server_context(guild_id):
     if BOT_TOKEN:
         ch_res = discord_get(f"/guilds/{guild_id}/channels", BOT_TOKEN, "Bot")
         if ch_res and ch_res.status_code == 200:
-            channels = [c for c in ch_res.json() if c.get("type"] == 0]
+            channels = [c for c in ch_res.json() if c.get("type") == 0]
             
     return target_guild, channels
 
