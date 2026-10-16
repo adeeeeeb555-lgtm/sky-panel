@@ -216,22 +216,22 @@ h1 {
 }
 .empty span { display: block; font-size: 40px; margin-bottom: 12px; }
 
-/* القائمة في اليسار والمحتوى في اليمين تماماً مثل صورك */
+/* القائمة في اليمين والمحتوى في اليسار تماماً مثل طلبك */
 .dashboard-layout {
-  display: grid; grid-template-columns: 310px 1fr; gap: 30px;
+  display: grid; grid-template-columns: 1fr 310px; gap: 30px;
   width: min(1450px, 97%); margin: 40px auto 70px; align-items: start;
 }
 .sidebar {
   background: linear-gradient(155deg, #121c38dd, #080d1fff);
   border: 1px solid var(--line); border-radius: 24px; padding: 26px;
   display: flex; flex-direction: column; gap: 18px; backdrop-filter: blur(16px);
-  position: sticky; top: 25px; order: 1;
+  position: sticky; top: 25px; order: 2;
 }
 .content-panel {
   background: linear-gradient(155deg, #15203acc, #0c1327dd);
   border: 1px solid var(--line); border-radius: 24px; padding: 40px;
   backdrop-filter: blur(16px); min-height: 700px;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.4); order: 2;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.4); order: 1;
 }
 
 .sidebar-header { text-align: center; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
@@ -251,7 +251,7 @@ h1 {
 .menu-item:hover, .menu-item.active {
   background: linear-gradient(115deg, #5bbfff1a, #8f82ff1a);
   color: var(--text); border-color: #7acbff50;
-  box-shadow: 0 4px 18px #58baff15; transform: translateX(-3px);
+  box-shadow: 0 4px 18px #58baff15; transform: translateX(3px);
 }
 .menu-item span { font-size: 18px; }
 
@@ -264,7 +264,7 @@ h1 {
 }
 .form-control:focus { border-color: var(--blue); box-shadow: 0 0 15px #64baff30; }
 
-/* تصميم شبكي بـ 3 أعمدة (كل صف 3 بطاقات تماماً مثل صورك) */
+/* بطاقات الحماية والسجلات بصفوف مرتبة */
 .cards-grid-3 {
   display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 25px;
 }
@@ -277,7 +277,15 @@ h1 {
   display: flex; justify-content: space-between; align-items: center;
 }
 .card-title { font-size: 15px; font-weight: 800; color: #e4eeff; display: flex; align-items: center; gap: 8px; }
-.card-body { display: flex; flex-direction: column; gap: 10px; }
+
+/* أزرار الحماية الكبيرة تماماً مثل صورك */
+.security-card {
+  background: #080d1fe6; border: 1px solid var(--line); border-radius: 16px;
+  padding: 22px; display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 15px; box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+}
+.security-info h3 { margin: 0 0 5px; font-size: 16px; color: #e4eeff; }
+.security-info p { margin: 0; font-size: 13px; color: var(--muted); }
 
 /* زر التفعيل السريع (Switch) */
 .switch {
@@ -297,16 +305,21 @@ input:checked + .slider:before { transform: translateX(22px); }
 
 .btn-edit {
   background: #152242; border: 1px solid var(--line); color: var(--blue);
-  width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center;
-  cursor: pointer; transition: background .2s;
+  padding: 8px 16px; border-radius: 10px; display: inline-flex; align-items: center; gap: 6px;
+  cursor: pointer; transition: background .2s; font-size: 13px; font-weight: 700;
 }
 .btn-edit:hover { background: #20356b; }
+
+/* شريط أزرار الحفظ والإلغاء العائم أسفل التعدیل */
+.save-bar {
+  display: flex; gap: 12px; margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--line);
+}
 
 .footer { text-align: center; color: #7785a5; font-size: 12px; padding: 30px; border-top: 1px solid #ffffff0c; }
 @media(max-width: 1050px) {
   .dashboard-layout { grid-template-columns: 1fr; }
-  .sidebar { position: static; order: 2; }
-  .content-panel { order: 1; }
+  .sidebar { position: static; order: 1; }
+  .content-panel { order: 2; }
   .cards-grid-3 { grid-template-columns: 1fr; }
   .hero { grid-template-columns: 1fr; padding-top: 50px; gap: 15px; }
   .space-art { min-height: 310px; grid-row: 1; }
@@ -382,14 +395,13 @@ def home():
           <div class="eyebrow"><span class="dot"></span> عالمك، إدارتك، تحكمك</div>
           <h1>ارتقِ بسيرفرك<br><span class="gradient-text">إلى عالم آخر.</span></h1>
           <p class="subtitle">
-            مرحباً بك في Sky Universe، لوحة تحكم متطورة مرتبة في 3 أعمدة
-            مع قائمة جانبية في اليسار.
+            مرحباً بك في Sky Universe، لوحة تحكم متطورة مع قائمة في اليمين وأزرار حفظ ذكية.
           </p>
           <div class="actions">{actions}</div>
           <div class="features">
-            <div class="feature"><b>✦</b> قائمة في اليسار</div>
-            <div class="feature"><b>✦</b> 3 أعمدة مرتبة</div>
-            <div class="feature"><b>✦</b> أوامر إشراف احترافية</div>
+            <div class="feature"><b>✦</b> القائمة في اليمين</div>
+            <div class="feature"><b>✦</b> نظام حماية متكامل</div>
+            <div class="feature"><b>✦</b> أزرار حفظ بعد التعديل</div>
           </div>
         </div>
         <div class="space-art">
@@ -405,11 +417,11 @@ def home():
         </div>
         <div class="feature-grid">
           <div class="feature-box"><div class="feature-icon">🛡️</div>
-            <h3>أوامر الإشراف</h3><p>تفعيل وتعطيل وإعداد أوامر الحماية والإشراف بسهولة.</p></div>
+            <h3>الحماية الشاملة</h3><p>كشف السبام، الكلمات السيئة، والروابط.</p></div>
           <div class="feature-box"><div class="feature-icon">🎫</div>
             <h3>نظام التذاكر</h3><p>تخصيص كامل للرسائل والأزرار والصور.</p></div>
           <div class="feature-box"><div class="feature-icon">📊</div>
-            <h3>السجلات المستقلة</h3><p>لوق خاص لكل حدث بنظام شبكي من 3 أعمدة.</p></div>
+            <h3>السجلات (Logs)</h3><p>لوق خاص لكل حدث بنظام شبكي مرتب.</p></div>
         </div>
       </section>
     </main>
@@ -583,7 +595,8 @@ def render_server_page(guild_id, active_tab, tab_content_html):
       </div>
       <div class="menu-list">
         <a class="menu-item {'active' if active_tab=='settings' else ''}" href="/server/{guild_id}/settings"><span>⚙️</span> الإعدادات العامة</a>
-        <a class="menu-item {'active' if active_tab=='commands' else ''}" href="/server/{guild_id}/commands"><span>🛡️</span> أوامر الإشراف</a>
+        <a class="menu-item {'active' if active_tab=='security' else ''}" href="/server/{guild_id}/security"><span>🛡️</span> الحماية والأمان</a>
+        <a class="menu-item {'active' if active_tab=='commands' else ''}" href="/server/{guild_id}/commands"><span>🤖</span> أوامر الإشراف</a>
         <a class="menu-item {'active' if active_tab=='logs' else ''}" href="/server/{guild_id}/logs"><span>📊</span> السجلات (Logs)</a>
         <a class="menu-item {'active' if active_tab=='tickets' else ''}" href="/server/{guild_id}/tickets"><span>🎫</span> نظام التذاكر</a>
         <a class="menu-item {'active' if active_tab=='welcome' else ''}" href="/server/{guild_id}/welcome"><span>👋</span> نظام الترحيب</a>
@@ -596,10 +609,10 @@ def render_server_page(guild_id, active_tab, tab_content_html):
     
     layout_content = f"""
     <div class="dashboard-layout">
-      {sidebar_html}
       <main class="content-panel">
         {tab_content_html}
       </main>
+      {sidebar_html}
     </div>
     """
     return page(f"إدارة {guild_name}", layout_content)
@@ -622,10 +635,88 @@ def s_settings(guild_id):
         <label>بادئة الأوامر (Prefix)</label>
         <input type="text" class="form-control" name="prefix" value="!">
       </div>
-      <button type="submit" class="btn btn-primary">حفظ الإعدادات ✦</button>
+      <div class="save-bar">
+        <button type="submit" class="btn btn-primary">حفظ</button>
+        <a href="/server/{guild_id}/settings" class="btn btn-secondary">إلغاء</a>
+      </div>
     </form>
     """
     return render_server_page(guild_id, "settings", html)
+
+@app.route("/server/<guild_id>/security", methods=["GET", "POST"])
+def s_security(guild_id):
+    sec_items = [
+        ("كشف الكلمات السيئة", "bad_words", "كشف ومعالجة الرسائل التي تحتوي على كلمات أو عبارات سيئة محددة"),
+        ("كشف السبام", "spam", "تحديد ومعالجة رسائل السبام بناءً على التكرار والمحتوى"),
+        ("فلترة الروابط", "links", "فلترة وإدارة الرسائل التي تحتوي على روابط، مع خيارات للنطاقات المسموحة"),
+        ("سبام المنشن", "mention_spam", "كشف ومعالجة الرسائل التي تحتوي على منشنات مفرطة للمستخدمين"),
+        ("كشف الأحرف الكبيرة المفرطة", "caps", "تحديد وإدارة الرسائل التي تحتوي على كمية مفرطة من الأحرف الكبيرة"),
+        ("فلترة دعوات ديسكورد", "discord_inv", "تحديد وإدارة الرسائل التي تحتوي على روابط دعوة سيرفرات ديسكورد")
+    ]
+
+    list_html = ""
+    for title, key, desc in sec_items:
+        list_html += f"""
+        <div class="security-card">
+          <div class="security-info">
+            <h3>{title}</h3>
+            <p>{desc}</p>
+          </div>
+          <div style="display:flex; align-items:center; gap:14px;">
+            <a class="btn-edit" href="/server/{guild_id}/security-edit/{key}">إعداد</a>
+            <label class="switch">
+              <input type="checkbox" name="sec_{key}" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+        """
+
+    html = f"""
+    <div class="page-head" style="margin-bottom:25px;">
+      <div><h1>🛡️ الحماية والأمان</h1><p>أنظمة الحماية المتقدمة لحماية سيرفرك وتأمينه ضد التخريب والسبام.</p></div>
+    </div>
+    <form method="POST">
+      {list_html}
+      <div class="save-bar">
+        <button type="submit" class="btn btn-primary">حفظ</button>
+        <a href="/server/{guild_id}/security" class="btn btn-secondary">إلغاء</a>
+      </div>
+    </form>
+    """
+    return render_server_page(guild_id, "security", html)
+
+@app.route("/server/<guild_id>/security-edit/<sec_key>", methods=["GET", "POST"])
+def s_security_edit(guild_id, sec_key):
+    html = f"""
+    <div class="page-head" style="margin-bottom:25px;">
+      <div><h1>✎ إعدادات الحماية: {sec_key}</h1><p>تخصيص الاستثناءات، الرومات، الرتب، والإجراءات.</p></div>
+      <a class="btn btn-secondary" href="/server/{guild_id}/security">← عودة</a>
+    </div>
+    <form method="POST">
+      <div class="form-group">
+        <label>الرومات المستثناة</label>
+        <input type="text" class="form-control" placeholder="اختر الرومات المستثناة...">
+      </div>
+      <div class="form-group">
+        <label>الرتب المستثناة</label>
+        <input type="text" class="form-control" placeholder="اختر الرتب المستثناة...">
+      </div>
+      <div class="form-group">
+        <label>الإجراءات المتخذة</label>
+        <select class="form-control">
+          <option>حظر الرسالة</option>
+          <option>إرسال تنبيه للروم</option>
+          <option>إسكات العضو (Timeout)</option>
+        </select>
+      </div>
+      <div class="save-bar">
+        <button type="submit" class="btn btn-primary">حفظ</button>
+        <a href="/server/{guild_id}/security" class="btn btn-secondary">إلغاء</a>
+      </div>
+    </form>
+    """
+    return render_server_page(guild_id, "security", html)
 
 @app.route("/server/<guild_id>/commands", methods=["GET", "POST"])
 def s_commands(guild_id):
@@ -643,7 +734,7 @@ def s_commands(guild_id):
         cards_html += f"""
         <div class="card-item">
           <div class="card-header">
-            <div class="card-title"><a class="btn-edit" href="/server/{guild_id}/command-edit/{cmd.strip('/')}">✎</a> {cmd}</div>
+            <div class="card-title"><a class="btn-edit" href="/server/{guild_id}/command-edit/{cmd.strip('/')}">✎ تعديل</a> {cmd}</div>
             <label class="switch">
               <input type="checkbox" name="cmd_{cmd.strip('/')}" checked>
               <span class="slider"></span>
@@ -655,18 +746,21 @@ def s_commands(guild_id):
         
     html = f"""
     <div class="page-head" style="margin-bottom:25px;">
-      <div><h1>🛡️ أوامر الإشراف</h1><p>تفعيل، تعطيل، وإعداد أوامر الإشراف.</p></div>
+      <div><h1>🤖 أوامر الإشراف</h1><p>تفعيل، تعطيل، وإعداد أوامر الإشراف.</p></div>
     </div>
     <form method="POST">
       <div class="cards-grid-3">
         {cards_html}
       </div>
-      <button type="submit" class="btn btn-primary" style="width: 100%;">حفظ إعدادات الأوامر ✦</button>
+      <div class="save-bar">
+        <button type="submit" class="btn btn-primary">حفظ</button>
+        <a href="/server/{guild_id}/commands" class="btn btn-secondary">إلغاء</a>
+      </div>
     </form>
     """
     return render_server_page(guild_id, "commands", html)
 
-@app.route("/server/<guild_id>/command-edit/<cmd_name>")
+@app.route("/server/<guild_id>/command-edit/<cmd_name>", methods=["GET", "POST"])
 def s_command_edit(guild_id, cmd_name):
     html = f"""
     <div class="page-head" style="margin-bottom:25px;">
@@ -686,7 +780,10 @@ def s_command_edit(guild_id, cmd_name):
         <label>الرومات المفعلة</label>
         <input type="text" class="form-control" placeholder="اختر الرومات...">
       </div>
-      <button type="submit" class="btn btn-primary">حفظ التعديلات ✦</button>
+      <div class="save-bar">
+        <button type="submit" class="btn btn-primary">حفظ</button>
+        <a href="/server/{guild_id}/commands" class="btn btn-secondary">إلغاء</a>
+      </div>
     </form>
     """
     return render_server_page(guild_id, "commands", html)
@@ -717,9 +814,9 @@ def s_logs(guild_id):
               <span class="slider"></span>
             </label>
           </div>
-          <div class="card-body">
+          <div style="display: flex; flex-direction: column; gap: 6px;">
             <label style="color:var(--muted); font-size:12px;"># الروم</label>
-            <select class="form-control" name="{prefix}_channel" style="padding: 8px 12px; font-size: 13px;">
+            <select class="form-control" name="{prefix}_channel" style="padding: 10px 14px; font-size: 13px;">
               {empty_ch}
             </select>
           </div>
@@ -728,13 +825,16 @@ def s_logs(guild_id):
 
     html = f"""
     <div class="page-head" style="margin-bottom:25px;">
-      <div><h1>📊 سجلات السيرفر</h1><p>تكوين رومات التسجيل والأحداث المختلفة.</p></div>
+      <div><h1>📊 سجلات السيرفر (Logs)</h1><p>تكوين رومات التسجيل والأحداث المختلفة.</p></div>
     </div>
     <form method="POST">
       <div class="cards-grid-3">
         {cards_html}
       </div>
-      <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 15px;">حفظ إعدادات السجلات ✦</button>
+      <div class="save-bar">
+        <button type="submit" class="btn btn-primary">حفظ</button>
+        <a href="/server/{guild_id}/logs" class="btn btn-secondary">إلغاء</a>
+      </div>
     </form>
     """
     return render_server_page(guild_id, "logs", html)
@@ -754,7 +854,10 @@ def s_tickets(guild_id):
         <label>رابط صورة التذاكر</label>
         <input type="url" class="form-control" name="ticket_img" placeholder="https://...">
       </div>
-      <button type="submit" class="btn btn-primary">حفظ ونشر التذاكر ✦</button>
+      <div class="save-bar">
+        <button type="submit" class="btn btn-primary">حفظ</button>
+        <a href="/server/{guild_id}/tickets" class="btn btn-secondary">إلغاء</a>
+      </div>
     </form>
     """
     return render_server_page(guild_id, "tickets", html)
@@ -778,7 +881,10 @@ def s_welcome(guild_id):
         <label>رسالة الترحيب</label>
         <textarea class="form-control" name="welcome_msg">مرحباً بك {{user}} في السيرفر!</textarea>
       </div>
-      <button type="submit" class="btn btn-primary">حفظ الترحيب ✦</button>
+      <div class="save-bar">
+        <button type="submit" class="btn btn-primary">حفظ</button>
+        <a href="/server/{guild_id}/welcome" class="btn btn-secondary">إلغاء</a>
+      </div>
     </form>
     """
     return render_server_page(guild_id, "welcome", html)
