@@ -109,6 +109,9 @@ a { color: inherit; text-decoration: none; }
 .btn-secondary {
   color: #e5edff; border-color: var(--line); background: #ffffff08;
 }
+.btn-danger {
+  color: #ffcccc; border-color: rgba(255,100,100,0.3); background: rgba(255,0,0,0.1);
+}
 
 .hero {
   width: min(1200px, 92%); margin: auto; padding: 78px 0 65px;
@@ -216,7 +219,7 @@ h1 {
 }
 .empty span { display: block; font-size: 40px; margin-bottom: 12px; }
 
-/* القائمة في اليمين والمحتوى في اليسار تماماً مثل طلبك */
+/* القائمة في اليمين والمحتوى في اليسار تماماً كما طلبته */
 .dashboard-layout {
   display: grid; grid-template-columns: 1fr 310px; gap: 30px;
   width: min(1450px, 97%); margin: 40px auto 70px; align-items: start;
@@ -264,7 +267,7 @@ h1 {
 }
 .form-control:focus { border-color: var(--blue); box-shadow: 0 0 15px #64baff30; }
 
-/* بطاقات الحماية والسجلات بصفوف مرتبة */
+/* بطاقات الحماية والسجلات */
 .cards-grid-3 {
   display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 25px;
 }
@@ -278,7 +281,6 @@ h1 {
 }
 .card-title { font-size: 15px; font-weight: 800; color: #e4eeff; display: flex; align-items: center; gap: 8px; }
 
-/* أزرار الحماية الكبيرة تماماً مثل صورك */
 .security-card {
   background: #080d1fe6; border: 1px solid var(--line); border-radius: 16px;
   padding: 22px; display: flex; justify-content: space-between; align-items: center;
@@ -310,7 +312,7 @@ input:checked + .slider:before { transform: translateX(22px); }
 }
 .btn-edit:hover { background: #20356b; }
 
-/* شريط أزرار الحفظ والإلغاء العائم أسفل التعدیل */
+/* أزرار الحفظ وإعادة الضبط */
 .save-bar {
   display: flex; gap: 12px; margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--line);
 }
@@ -395,13 +397,13 @@ def home():
           <div class="eyebrow"><span class="dot"></span> عالمك، إدارتك، تحكمك</div>
           <h1>ارتقِ بسيرفرك<br><span class="gradient-text">إلى عالم آخر.</span></h1>
           <p class="subtitle">
-            مرحباً بك في Sky Universe، لوحة تحكم متطورة مع قائمة في اليمين وأزرار حفظ ذكية.
+            مرحباً بك في Sky Universe، لوحة تحكم متطورة مع قائمة في اليمين وأزرار حفظ وإعادة ضبط.
           </p>
           <div class="actions">{actions}</div>
           <div class="features">
             <div class="feature"><b>✦</b> القائمة في اليمين</div>
-            <div class="feature"><b>✦</b> نظام حماية متكامل</div>
-            <div class="feature"><b>✦</b> أزرار حفظ بعد التعديل</div>
+            <div class="feature"><b>✦</b> حماية متكاملة وعقوبات</div>
+            <div class="feature"><b>✦</b> حفظ وإعادة ضبط</div>
           </div>
         </div>
         <div class="space-art">
@@ -417,7 +419,7 @@ def home():
         </div>
         <div class="feature-grid">
           <div class="feature-box"><div class="feature-icon">🛡️</div>
-            <h3>الحماية الشاملة</h3><p>كشف السبام، الكلمات السيئة، والروابط.</p></div>
+            <h3>الحماية الشاملة</h3><p>كشف السبام، الكلمات السيئة، والفلترة المتقدمة.</p></div>
           <div class="feature-box"><div class="feature-icon">🎫</div>
             <h3>نظام التذاكر</h3><p>تخصيص كامل للرسائل والأزرار والصور.</p></div>
           <div class="feature-box"><div class="feature-icon">📊</div>
@@ -552,10 +554,10 @@ def dashboard():
 def get_server_context(guild_id):
     token = session.get("token")
     if not token:
-        return None, None
+        return None, None, None
     user_res = discord_get("/users/@me/guilds", token)
     if not user_res or user_res.status_code != 200:
-        return None, None
+        return None, None, None
     
     target_guild = None
     for g in user_res.json():
@@ -564,18 +566,23 @@ def get_server_context(guild_id):
                 target_guild = g
             break
     if not target_guild:
-        return None, None
+        return None, None, None
         
     channels = []
+    roles = []
     if BOT_TOKEN:
         ch_res = discord_get(f"/guilds/{guild_id}/channels", BOT_TOKEN, "Bot")
         if ch_res and ch_res.status_code == 200:
             channels = [c for c in ch_res.json() if c.get("type") == 0]
             
-    return target_guild, channels
+        role_res = discord_get(f"/guilds/{guild_id}/roles", BOT_TOKEN, "Bot")
+        if role_res and role_res.status_code == 200:
+            roles = role_res.json()
+            
+    return target_guild, channels, roles
 
 def render_server_page(guild_id, active_tab, tab_content_html):
-    target_guild, channels = get_server_context(guild_id)
+    target_guild, _, _ = get_server_context(guild_id)
     if not target_guild:
         return "عذراً، ليس لديك صلاحية أو أن السيرفر غير صالح.", 403
         
@@ -637,7 +644,7 @@ def s_settings(guild_id):
       </div>
       <div class="save-bar">
         <button type="submit" class="btn btn-primary">حفظ</button>
-        <a href="/server/{guild_id}/settings" class="btn btn-secondary">إلغاء</a>
+        <button type="reset" class="btn btn-danger">إعادة ضبط</button>
       </div>
     </form>
     """
@@ -663,7 +670,7 @@ def s_security(guild_id):
             <p>{desc}</p>
           </div>
           <div style="display:flex; align-items:center; gap:14px;">
-            <a class="btn-edit" href="/server/{guild_id}/security-edit/{key}">إعداد</a>
+            <a class="btn-edit" href="/server/{guild_id}/security-edit/{key}">إعدادات متقدمة</a>
             <label class="switch">
               <input type="checkbox" name="sec_{key}" checked>
               <span class="slider"></span>
@@ -679,8 +686,8 @@ def s_security(guild_id):
     <form method="POST">
       {list_html}
       <div class="save-bar">
-        <button type="submit" class="btn btn-primary">حفظ</button>
-        <a href="/server/{guild_id}/security" class="btn btn-secondary">إلغاء</a>
+        <button type="submit" class="btn btn-primary">حفظ التغييرات</button>
+        <button type="reset" class="btn btn-danger">إعادة ضبط</button>
       </div>
     </form>
     """
@@ -688,31 +695,45 @@ def s_security(guild_id):
 
 @app.route("/server/<guild_id>/security-edit/<sec_key>", methods=["GET", "POST"])
 def s_security_edit(guild_id, sec_key):
+    _, channels, roles = get_server_context(guild_id)
+    ch_options = "".join([f'<option value="{c["id"]}">#{c["name"]}</option>' for c in channels])
+    role_options = "".join([f'<option value="{r["id"]}">@{r["name"]}</option>' for r in roles])
+
     html = f"""
     <div class="page-head" style="margin-bottom:25px;">
-      <div><h1>✎ إعدادات الحماية: {sec_key}</h1><p>تخصيص الاستثناءات، الرومات، الرتب، والإجراءات.</p></div>
+      <div><h1>✎ تخصيص حماية: {sec_key}</h1><p>تحديد الاستثناءات من رومات ورتب، واختيار إجراءات العقوبة (باند، تايم آوت، تحذير).</p></div>
       <a class="btn btn-secondary" href="/server/{guild_id}/security">← عودة</a>
     </div>
     <form method="POST">
       <div class="form-group">
-        <label>الرومات المستثناة</label>
-        <input type="text" class="form-control" placeholder="اختر الرومات المستثناة...">
+        <label>الرومات المستثناة (اختر الرومات التي لا يعمل فيها النظام)</label>
+        <select class="form-control" name="excluded_channels" multiple style="height: 110px;">
+          {ch_options if ch_options else '<option value="">لا توجد رومات متاحة</option>'}
+        </select>
+        <small style="color:var(--muted); font-size:12px; margin-top:5px; display:block;">اضغط مع الاستمرار على Ctrl أو Cmd لتحديد أكثر من روم.</small>
       </div>
+
       <div class="form-group">
-        <label>الرتب المستثناة</label>
-        <input type="text" class="form-control" placeholder="اختر الرتب المستثناة...">
+        <label>الرتب المستثناة (اختر الرتب المعفاة من العقوبات)</label>
+        <select class="form-control" name="excluded_roles" multiple style="height: 110px;">
+          {role_options if role_options else '<option value="">لا توجد رتب متاحة</option>'}
+        </select>
+        <small style="color:var(--muted); font-size:12px; margin-top:5px; display:block;">اضغط مع الاستمرار على Ctrl أو Cmd لتحديد أكثر من رتبة.</small>
       </div>
+
       <div class="form-group">
-        <label>الإجراءات المتخذة</label>
-        <select class="form-control">
-          <option>حظر الرسالة</option>
-          <option>إرسال تنبيه للروم</option>
-          <option>إسكات العضو (Timeout)</option>
+        <label>إجراءات العقوبة التلقائية</label>
+        <select class="form-control" name="punishment_action">
+          <option value="warn">إرسال تحذير (Warn)</option>
+          <option value="timeout">إسكات مؤقت - تايم آوت (Timeout)</option>
+          <option value="ban">حظر نهائي - باند (Ban)</option>
+          <option value="delete">حظر الرسالة فقط دون عقوبة</option>
         </select>
       </div>
+
       <div class="save-bar">
         <button type="submit" class="btn btn-primary">حفظ</button>
-        <a href="/server/{guild_id}/security" class="btn btn-secondary">إلغاء</a>
+        <button type="reset" class="btn btn-danger">إعادة ضبط</button>
       </div>
     </form>
     """
@@ -754,7 +775,7 @@ def s_commands(guild_id):
       </div>
       <div class="save-bar">
         <button type="submit" class="btn btn-primary">حفظ</button>
-        <a href="/server/{guild_id}/commands" class="btn btn-secondary">إلغاء</a>
+        <button type="reset" class="btn btn-danger">إعادة ضبط</button>
       </div>
     </form>
     """
@@ -762,27 +783,35 @@ def s_commands(guild_id):
 
 @app.route("/server/<guild_id>/command-edit/<cmd_name>", methods=["GET", "POST"])
 def s_command_edit(guild_id, cmd_name):
+    _, channels, roles = get_server_context(guild_id)
+    ch_options = "".join([f'<option value="{c["id"]}">#{c["name"]}</option>' for c in channels])
+    role_options = "".join([f'<option value="{r["id"]}">@{r["name"]}</option>' for r in roles])
+
     html = f"""
     <div class="page-head" style="margin-bottom:25px;">
-      <div><h1>✎ تعديل {cmd_name}/</h1><p>إعداد الأسماء البديلة، الرتب، الرومات والسلوك.</p></div>
+      <div><h1>✎ تعديل أمر: {cmd_name}/</h1><p>إعداد الأسماء البديلة، الرتب المسموحة، والرومات المفعلة.</p></div>
       <a class="btn btn-secondary" href="/server/{guild_id}/commands">← عودة</a>
     </div>
     <form method="POST">
       <div class="form-group">
-        <label>الأسماء البديلة</label>
+        <label>الأسماء البديلة للأمر</label>
         <input type="text" class="form-control" value="{cmd_name}">
       </div>
       <div class="form-group">
-        <label>الرتب المفعلة</label>
-        <input type="text" class="form-control" placeholder="اختر الرتب...">
+        <label>الرتب المفعلة لاستخدام الأمر</label>
+        <select class="form-control" name="allowed_roles" multiple style="height: 100px;">
+          {role_options if role_options else '<option value="">لا توجد رتب</option>'}
+        </select>
       </div>
       <div class="form-group">
-        <label>الرومات المفعلة</label>
-        <input type="text" class="form-control" placeholder="اختر الرومات...">
+        <label>الرومات المفعلة لاستخدام الأمر</label>
+        <select class="form-control" name="allowed_channels" multiple style="height: 100px;">
+          {ch_options if ch_options else '<option value="">لا توجد رومات</option>'}
+        </select>
       </div>
       <div class="save-bar">
         <button type="submit" class="btn btn-primary">حفظ</button>
-        <a href="/server/{guild_id}/commands" class="btn btn-secondary">إلغاء</a>
+        <button type="reset" class="btn btn-danger">إعادة ضبط</button>
       </div>
     </form>
     """
@@ -790,7 +819,7 @@ def s_command_edit(guild_id, cmd_name):
 
 @app.route("/server/<guild_id>/logs", methods=["GET", "POST"])
 def s_logs(guild_id):
-    _, channels = get_server_context(guild_id)
+    _, channels, _ = get_server_context(guild_id)
     ch_options = "".join([f'<option value="{c["id"]}">#{c["name"]}</option>' for c in channels])
     empty_ch = '<option value="">اختر الروم...</option>' + ch_options
 
@@ -833,7 +862,7 @@ def s_logs(guild_id):
       </div>
       <div class="save-bar">
         <button type="submit" class="btn btn-primary">حفظ</button>
-        <a href="/server/{guild_id}/logs" class="btn btn-secondary">إلغاء</a>
+        <button type="reset" class="btn btn-danger">إعادة ضبط</button>
       </div>
     </form>
     """
@@ -856,7 +885,7 @@ def s_tickets(guild_id):
       </div>
       <div class="save-bar">
         <button type="submit" class="btn btn-primary">حفظ</button>
-        <a href="/server/{guild_id}/tickets" class="btn btn-secondary">إلغاء</a>
+        <button type="reset" class="btn btn-danger">إعادة ضبط</button>
       </div>
     </form>
     """
@@ -864,7 +893,7 @@ def s_tickets(guild_id):
 
 @app.route("/server/<guild_id>/welcome", methods=["GET", "POST"])
 def s_welcome(guild_id):
-    _, channels = get_server_context(guild_id)
+    _, channels, _ = get_server_context(guild_id)
     ch_options = "".join([f'<option value="{c["id"]}">#{c["name"]}</option>' for c in channels])
     html = f"""
     <div class="page-head" style="margin-bottom:25px;">
@@ -883,7 +912,7 @@ def s_welcome(guild_id):
       </div>
       <div class="save-bar">
         <button type="submit" class="btn btn-primary">حفظ</button>
-        <a href="/server/{guild_id}/welcome" class="btn btn-secondary">إلغاء</a>
+        <button type="reset" class="btn btn-danger">إعادة ضبط</button>
       </div>
     </form>
     """
