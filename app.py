@@ -149,7 +149,6 @@ h1 {
 .subtitle { color: var(--muted); font-size: 16px; line-height: 2.1; max-width: 530px; }
 .actions { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 26px; }
 
-/* تصميم الكوكب والمدار الدائري والبطاقات الددّارة حوله بتركيز استقامة النصوص */
 .space-art {
   height: 440px; position: relative; display: grid; place-items: center;
 }
@@ -199,7 +198,6 @@ h1 {
   border-radius: 14px; background: rgba(16, 26, 51, 0.92); backdrop-filter: blur(14px);
   box-shadow: 0 10px 30px rgba(0,0,0,0.5); font-size: 12px; text-align: center;
   pointer-events: auto; z-index: 5;
-  /* حركة معاكسة لضمان بقاء النص معتدلاً ومقروءاً تماماً */
   animation: counterRotate 24s linear infinite;
 }
 
@@ -209,7 +207,6 @@ h1 {
 .orbit-card strong { display: block; font-size: 13px; color: #fff; margin-bottom: 2px; }
 .orbit-card small { color: var(--muted); font-size: 11px; }
 
-/* شبكة بطاقات المميزات العشرة */
 .features-section {
   width: min(1250px, 92%); margin: 50px auto 30px;
 }
@@ -241,7 +238,6 @@ h1 {
 .feature-card h3 { margin: 0 0 8px; font-size: 16px; font-weight: 800; color: #eaf0ff; }
 .feature-card p { margin: 0; font-size: 13px; color: var(--muted); line-height: 1.7; }
 
-/* لوحة التحكم والقوائم الجانبية */
 .page { width: min(1250px, 92%); margin: 40px auto 70px; }
 .page-head { display: flex; justify-content: space-between; align-items: center; gap: 20px; margin-bottom: 35px; }
 .page-head h1 { font-size: 30px; margin: 0 0 6px; }
@@ -724,7 +720,6 @@ def home():
           <div class="planet-system">
             <div class="planet-core-wrap">
               <div class="planet-core"></div>
-              <!-- الحاوية الددّارة التي تدور حول الكوكب وتحافظ على استقامة النصوص -->
               <div class="orbit-container">
                 <div class="orbit-card card-pos-1">
                   <strong>🌌 Sky Universe</strong>
@@ -740,7 +735,6 @@ def home():
         </div>
       </section>
 
-      <!-- قسم بطاقات المميزات العشرة -->
       <section class="features-section">
         <div class="section-title">
           <h2>مميزات لوحة تحكم Sky Universe</h2>
@@ -1427,5 +1421,5 @@ def logout():
     return redirect("/")
 
 if __name__ == "__main__":
-    port = int(os.environ.D("PORT", 5000))
+    port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
