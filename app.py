@@ -126,9 +126,9 @@ a { color: inherit; text-decoration: none; }
 .btn-discord:hover { background: #4752C4; }
 
 .hero {
-  width: min(1250px, 92%); margin: auto; padding: 60px 0 40px;
-  display: grid; grid-template-columns: 1.1fr 0.9fr;
-  align-items: center; gap: 40px; min-height: 540px;
+  width: min(1300px, 94%); margin: auto; padding: 50px 0 30px;
+  display: grid; grid-template-columns: 1fr 1fr;
+  align-items: center; gap: 30px; min-height: 580px;
 }
 
 .eyebrow {
@@ -139,22 +139,23 @@ a { color: inherit; text-decoration: none; }
 .dot { width: 8px; height: 8px; background: #72e5ba; border-radius: 50%; box-shadow: 0 0 10px #72e5ba; }
 
 h1 {
-  font-size: clamp(34px, 4.8vw, 60px); line-height: 1.35;
-  letter-spacing: -.8px; margin: 20px 0 14px; font-weight: 900;
+  font-size: clamp(32px, 4.2vw, 54px); line-height: 1.35;
+  letter-spacing: -.8px; margin: 18px 0 12px; font-weight: 900;
 }
 .gradient-text {
   background: linear-gradient(100deg, #71ddff, #9b9aff 60%, #d6b5ff);
   color: transparent; background-clip: text; -webkit-background-clip: text;
 }
-.subtitle { color: var(--muted); font-size: 16px; line-height: 2.1; max-width: 530px; }
-.actions { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 26px; }
+.subtitle { color: var(--muted); font-size: 15px; line-height: 2.0; max-width: 500px; }
+.actions { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 22px; }
 
+/* نظام الكوكب والبطاقات العشرة الددّارة حوله بمحيط دائري */
 .space-art {
-  height: 440px; position: relative; display: grid; place-items: center;
+  height: 520px; position: relative; display: grid; place-items: center;
 }
 
 .planet-system {
-  position: relative; width: 340px; height: 340px; display: grid; place-items: center;
+  position: relative; width: 480px; height: 480px; display: grid; place-items: center;
 }
 
 @keyframes orbitRotate {
@@ -168,76 +169,60 @@ h1 {
 }
 
 .orbit-container {
-  position: absolute; inset: -40px;
-  animation: orbitRotate 24s linear infinite;
+  position: absolute; inset: 0;
+  animation: orbitRotate 45s linear infinite;
   pointer-events: none;
 }
-
-.planet-core-wrap {
-  position: relative; width: 340px; height: 340px; display: grid; place-items: center;
+.orbit-container:hover {
+  animation-play-state: paused;
 }
 
 .planet-core {
-  width: 130px; height: 130px; border-radius: 50%;
+  width: 120px; height: 120px; border-radius: 50%;
   background:
     radial-gradient(circle at 30% 25%, #c2edff, transparent 15%),
     radial-gradient(circle at 35% 30%, #7bd8ff, #526de2 45%, #23154f 80%, #0a0d20);
-  box-shadow: inset -20px -15px 35px rgba(3, 7, 24, 0.9), 0 0 50px rgba(99, 125, 255, 0.4);
+  box-shadow: inset -18px -14px 30px rgba(3, 7, 24, 0.9), 0 0 45px rgba(99, 125, 255, 0.4);
   position: relative; z-index: 2;
 }
 
 .planet-core:after {
-  content: ""; position: absolute; width: 175px; height: 32px;
-  border: 6px solid rgba(155, 184, 255, 0.7); border-left-color: #c2a9ff;
-  border-right-color: #6ad8ff; border-radius: 50%; top: 49px; left: -22px;
-  transform: rotate(-22deg); box-shadow: 0 0 20px rgba(109, 175, 255, 0.4);
+  content: ""; position: absolute; width: 160px; height: 28px;
+  border: 5px solid rgba(155, 184, 255, 0.7); border-left-color: #c2a9ff;
+  border-right-color: #6ad8ff; border-radius: 50%; top: 46px; left: -20px;
+  transform: rotate(-22deg); box-shadow: 0 0 18px rgba(109, 175, 255, 0.4);
 }
 
 .orbit-card {
-  position: absolute; width: 165px; padding: 12px 16px; border: 1px solid var(--line);
-  border-radius: 14px; background: rgba(16, 26, 51, 0.92); backdrop-filter: blur(14px);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5); font-size: 12px; text-align: center;
+  position: absolute; width: 145px; padding: 10px 12px; border: 1px solid var(--line);
+  border-radius: 14px; background: rgba(14, 23, 48, 0.94); backdrop-filter: blur(14px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.5); font-size: 11px; text-align: center;
   pointer-events: auto; z-index: 5;
-  animation: counterRotate 24s linear infinite;
+  animation: counterRotate 45s linear infinite;
+  transition: transform 0.2s, border-color 0.2s;
+}
+.orbit-card:hover {
+  border-color: var(--blue); transform: scale(1.08);
+  z-index: 20;
 }
 
-.card-pos-1 { top: 0px; left: 50%; transform: translateX(-50%); }
-.card-pos-2 { bottom: 0px; left: 50%; transform: translateX(-50%); }
+.orbit-card .icon { font-size: 16px; margin-bottom: 2px; display: block; }
+.orbit-card strong { display: block; font-size: 12px; color: #fff; margin-bottom: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.orbit-card p { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
-.orbit-card strong { display: block; font-size: 13px; color: #fff; margin-bottom: 2px; }
-.orbit-card small { color: var(--muted); font-size: 11px; }
+/* توزيع البطاقات العشرة على مسار الدائرة بدقة (زوايا متساوية 36 درجة لكل بطاقة) */
+.card-pos-1  { top: 10px; left: 50%; transform: translate(-50%, 0); }
+.card-pos-2  { top: 40px; right: 85px; }
+.card-pos-3  { top: 135px; right: 15px; }
+.card-pos-4  { bottom: 135px; right: 15px; }
+.card-pos-5  { bottom: 40px; right: 85px; }
+.card-pos-6  { bottom: 10px; left: 50%; transform: translate(-50%, 0); }
+.card-pos-7  { bottom: 40px; left: 85px; }
+.card-pos-8  { bottom: 135px; left: 15px; }
+.card-pos-9  { top: 135px; left: 15px; }
+.card-pos-10 { top: 40px; left: 85px; }
 
-.features-section {
-  width: min(1250px, 92%); margin: 50px auto 30px;
-}
-.section-title {
-  text-align: center; margin-bottom: 35px;
-}
-.section-title h2 { font-size: 28px; font-weight: 900; margin: 0 0 8px; }
-.section-title p { color: var(--muted); font-size: 14px; margin: 0; }
-
-.features-grid {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;
-}
-
-.feature-card {
-  background: var(--panel); border: 1px solid var(--line); border-radius: 20px;
-  padding: 24px; backdrop-filter: blur(16px);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-  transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease;
-}
-.feature-card:hover {
-  transform: translateY(-5px); border-color: rgba(100, 202, 255, 0.5);
-  box-shadow: 0 15px 40px rgba(100, 202, 255, 0.15);
-}
-.feature-icon {
-  width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center;
-  font-size: 22px; background: rgba(100, 202, 255, 0.1); border: 1px solid rgba(100, 202, 255, 0.25);
-  margin-bottom: 16px;
-}
-.feature-card h3 { margin: 0 0 8px; font-size: 16px; font-weight: 800; color: #eaf0ff; }
-.feature-card p { margin: 0; font-size: 13px; color: var(--muted); line-height: 1.7; }
-
+/* لوحة التحكم والقوائم الجانبية */
 .page { width: min(1250px, 92%); margin: 40px auto 70px; }
 .page-head { display: flex; justify-content: space-between; align-items: center; gap: 20px; margin-bottom: 35px; }
 .page-head h1 { font-size: 30px; margin: 0 0 6px; }
@@ -712,84 +697,66 @@ def home():
           <div class="actions">{actions}</div>
           <div class="features">
             <div class="feature"><b>✦</b> واجهة زجاجية متجاوبة</div>
-            <div class="feature"><b>✦</b> كوكب متحرك وبطاقات تدور باستقامة</div>
+            <div class="feature"><b>✦</b> كوكب متحرك وبطاقات مميزات تدور حوله</div>
             <div class="feature"><b>✦</b> ربط مباشر مع Discord OAuth2</div>
           </div>
         </div>
         <div class="space-art">
           <div class="planet-system">
-            <div class="planet-core-wrap">
-              <div class="planet-core"></div>
-              <div class="orbit-container">
-                <div class="orbit-card card-pos-1">
-                  <strong>🌌 Sky Universe</strong>
-                  <small>رحلتك تبدأ هنا</small>
-                </div>
-                <div class="orbit-card card-pos-2">
-                  <strong>⚡ تحكم ذكي</strong>
-                  <small>كل شيء في مكان واحد</small>
-                </div>
+            <div class="planet-core"></div>
+            <!-- حاوية البطاقات العشرة الددّارة حول الكوكب بمحيط دائري متناسق -->
+            <div class="orbit-container">
+              <div class="orbit-card card-pos-1">
+                <span class="icon">👋</span>
+                <strong>نظام الترحيب</strong>
+                <p>استقبال الأعضاء الجدد برسائل</p>
+              </div>
+              <div class="orbit-card card-pos-2">
+                <span class="icon">🛡️</span>
+                <strong>الحماية المتقدمة</strong>
+                <p>مكافحة السبام والروابط</p>
+              </div>
+              <div class="orbit-card card-pos-3">
+                <span class="icon">🎫</span>
+                <strong>نظام التذاكر</strong>
+                <p>تنظيم الدعم والشراء</p>
+              </div>
+              <div class="orbit-card card-pos-4">
+                <span class="icon">📂</span>
+                <strong>إدارة السيرفر</strong>
+                <p>إعدادات القنوات والرتب</p>
+              </div>
+              <div class="orbit-card card-pos-5">
+                <span class="icon">📊</span>
+                <strong>الإحصائيات</strong>
+                <p>عرض تفاصيل وحالة السيرفر</p>
+              </div>
+              <div class="orbit-card card-pos-6">
+                <span class="icon">⚡</span>
+                <strong>التحكم الذكي</strong>
+                <p>إعدادات البوت والخصائص</p>
+              </div>
+              <div class="orbit-card card-pos-7">
+                <span class="icon">👑</span>
+                <strong>إدارة الرتب</strong>
+                <p>صلاحيات الإشراف والاستثناءات</p>
+              </div>
+              <div class="orbit-card card-pos-8">
+                <span class="icon">🌐</span>
+                <strong>إعدادات اللغة</strong>
+                <p>دعم العربية والإنجليزية</p>
+              </div>
+              <div class="orbit-card card-pos-9">
+                <span class="icon">🎨</span>
+                <strong>تخصيص البطاقات</strong>
+                <p>تعديل رسائل ومظهر البوت</p>
+              </div>
+              <div class="orbit-card card-pos-10" style="cursor: pointer;" onclick="window.open('https://discord.gg/HuH8TtmGA', '_blank')">
+                <span class="icon">💬</span>
+                <strong>الدعم الفني</strong>
+                <p>مجتمع الدعم عبر Discord</p>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="features-section">
-        <div class="section-title">
-          <h2>مميزات لوحة تحكم Sky Universe</h2>
-          <p>أدوات متكاملة مصممة خصيصاً لتمنحك تحكماً كاملاً وغير محدود بسيرفرك</p>
-        </div>
-        <div class="features-grid">
-          <div class="feature-card">
-            <div class="feature-icon">👋</div>
-            <h3>نظام الترحيب</h3>
-            <p>استقبال الأعضاء الجدد برسائل ترحيب نصية وصور مخصصة قابلة للتعديل والسحب.</p>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon">🛡️</div>
-            <h3>الحماية المتقدمة</h3>
-            <p>أدوات مكافحة السبام والكلمات السيئة والروابط الضارة لحماية سيرفرك وتأمينه.</p>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon">🎫</div>
-            <h3>نظام التذاكر</h3>
-            <p>تنظيم تذاكر الدعم الفني والشراء مع فئات متعددة، رومات سجل، ورتب مسؤولين.</p>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon">📂</div>
-            <h3>إدارة السيرفر</h3>
-            <p>الوصول الفوري إلى إعدادات السيرفر الأساسية والقنوات والرتب بشكل سلس وآمن.</p>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon">📊</div>
-            <h3>الإحصائيات المتقدمة</h3>
-            <p>عرض تفاصيل وحالة السيرفر والبوت لحظةً بلحظة لضمان استقرار وسلاسة العمل.</p>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon">⚡</div>
-            <h3>التحكم الذكي</h3>
-            <p>جمع كافة إعدادات البوت والخصائص في لوحة تحكم واحدة سهلة ومرنة.</p>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon">👑</div>
-            <h3>إدارة الرتب والصلاحيات</h3>
-            <p>التحكم الكامل بالرتب وصلاحيات الإشراف وتعيين الاستثناءات المتعددة بكل سهولة.</p>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon">🌐</div>
-            <h3>إعدادات اللغة</h3>
-            <p>دعم كامل للغة العربية والإنجليزية لتجربة مستخدم مريحة ومصممة خصيصاً لك.</p>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon">🎨</div>
-            <h3>تخصيص البطاقات والرسائل</h3>
-            <p>تعديل رسائل البوت ومظهرها ومواقع العناصر بفضل المصمم التفاعلي المرن.</p>
-          </div>
-          <div class="feature-card" style="cursor: pointer;" onclick="window.open('https://discord.gg/HuH8TtmGA', '_blank')">
-            <div class="feature-icon">💬</div>
-            <h3>الدعم الفني</h3>
-            <p>رابط مباشر وسريع للتوجه إلى مجتمع الدعم الفني عبر Discord لحل أي استفسار.</p>
           </div>
         </div>
       </section>
