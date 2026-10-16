@@ -9,9 +9,11 @@ app.secret_key = os.environ.get("SESSION_SECRET", "dev-only-change-this-secret")
 
 CLIENT_ID = os.environ.get("DISCORD_CLIENT_ID", "").strip()
 CLIENT_SECRET = os.environ.get("DISCORD_CLIENT_SECRET", "").strip()
+
+# تم ضبط الرابط هنا ليكون مطابقاً لرابط الـ Redirect الذي أرسلته تماماً
 REDIRECT_URI = os.environ.get(
     "DISCORD_REDIRECT_URI",
-    "https://sky-panel-z0b2.onrender.com/callback"
+    "https://sky-panel-z0b2.onrender.com/"
 ).strip()
 BOT_TOKEN = os.environ.get("DISCORD_TOKEN", "").strip()
 
