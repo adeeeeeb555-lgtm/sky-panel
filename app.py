@@ -70,7 +70,7 @@ body:before {
                    320px 300px, 270px 330px, 370px 290px;
   opacity: .75;
 }
-a { color: inherit; }
+a { color: inherit; text-decoration: none; }
 .nav {
   display: flex; justify-content: space-between; align-items: center;
   gap: 18px; padding: 17px clamp(18px, 5vw, 70px);
@@ -214,24 +214,63 @@ h1 {
   background: #ffffff04; border-radius: 18px; color: var(--muted);
 }
 .empty span { display: block; font-size: 35px; margin-bottom: 12px; }
+
+/* تصميم لوحة التحكم مع القائمة الجانبية الجديدة */
+.dashboard-layout {
+  display: grid; grid-template-columns: 280px 1fr; gap: 25px;
+  width: min(1200px, 94%); margin: 40px auto 70px; align-items: start;
+}
+.sidebar {
+  background: linear-gradient(155deg, #121c38cc, #080d1fff);
+  border: 1px solid var(--line); border-radius: 22px; padding: 24px;
+  display: flex; flex-direction: column; gap: 20px; backdrop-filter: blur(14px);
+}
+.sidebar-header { text-align: center; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
+.sidebar-icon {
+  width: 85px; height: 85px; border-radius: 26px; object-fit: cover;
+  border: 2px solid #75caff80; box-shadow: 0 0 25px #64baff25; margin: 0 auto 12px; display: block;
+}
+.sidebar-header h3 { margin: 0 0 4px; font-size: 17px; overflow-wrap: anywhere; }
+.sidebar-header p { color: var(--muted); font-size: 12px; margin: 0; }
+
+.menu-list { display: flex; flex-direction: column; gap: 8px; }
+.menu-item {
+  display: flex; align-items: center; gap: 12px; padding: 12px 16px;
+  border-radius: 12px; color: var(--muted); font-weight: 700; font-size: 14px;
+  transition: all .2s; border: 1px solid transparent;
+}
+.menu-item:hover, .menu-item.active {
+  background: linear-gradient(115deg, #5bbfff1a, #8f82ff1a);
+  color: var(--text); border-color: #7acbff50;
+  box-shadow: 0 5px 20px #58baff15; transform: translateX(-3px);
+}
+.menu-item span { font-size: 18px; }
+
+.content-panel {
+  background: linear-gradient(155deg, #15203a99, #0c1327bb);
+  border: 1px solid var(--line); border-radius: 22px; padding: 32px;
+  backdrop-filter: blur(14px); min-height: 500px;
+}
+.form-group { margin-bottom: 22px; }
+.form-group label { display: block; font-size: 13px; font-weight: 700; color: #b8c6e2; margin-bottom: 8px; }
+.form-control {
+  width: 100%; padding: 12px 16px; border-radius: 12px;
+  background: #060a17; border: 1px solid var(--line); color: var(--text);
+  font-family: inherit; font-size: 14px; outline: none; transition: border-color .2s;
+}
+.form-control:focus { border-color: var(--blue); box-shadow: 0 0 15px #64baff30; }
+textarea.form-control { resize: vertical; min-height: 100px; }
+select.form-control { cursor: pointer; }
+
 .footer { text-align: center; color: #7785a5; font-size: 11px; padding: 25px; border-top: 1px solid #ffffff0c; }
-@media(max-width: 760px) {
+@media(max-width: 850px) {
+  .dashboard-layout { grid-template-columns: 1fr; }
   .hero { grid-template-columns: 1fr; padding-top: 50px; gap: 15px; }
   .space-art { min-height: 310px; grid-row: 1; }
   .orbit { width: 260px; }
   .planet { width: 110px; height: 110px; }
-  .planet:after { width: 145px; height: 27px; left: -17px; top: 42px; }
   .feature-grid { grid-template-columns: 1fr; }
   .nav { padding: 13px 5%; }
-  .brand h2 { font-size: 16px; }
-  .brand small { display: none; }
-  .nav-right { gap: 7px; }
-  .user-pill { padding: 5px; }
-  .user-pill span { display: none; }
-  .nav .btn { padding: 9px 12px; font-size: 12px; }
-  .page-head { align-items: flex-start; flex-direction: column; }
-  .card-top { right: -3px; }
-  .card-bottom { left: -3px; }
 }
 </style>
 </head>
@@ -430,7 +469,7 @@ def dashboard():
         else:
             icon_url = "https://cdn.discordapp.com/embed/avatars/0.png"
 
-        action = f'<a class="btn btn-primary" href="/server/{gid}">⚙️ إدارة السيرفر</a>'
+        action = f'<a class="btn btn-primary" href="/server/{gid}/settings">⚙️ إدارة السيرفر</a>'
         status = '<div class="status">● البوت متصل وجاهز</div>'
 
         cards.append(f"""
@@ -455,53 +494,233 @@ def dashboard():
     """
     return page("اختيار السيرفر", content)
 
-@app.route("/server/<guild_id>")
-def server_manage(guild_id):
+def get_server_context(guild_id):
     token = session.get("token")
     if not token:
-        return redirect("/login")
-    
+        return None, None
     user_res = discord_get("/users/@me/guilds", token)
     if not user_res or user_res.status_code != 200:
-        return redirect("/login")
+        return None, None
     
-    user_guilds = user_res.json()
     target_guild = None
-    for g in user_guilds:
+    for g in user_res.json():
         if str(g.get("id")) == str(guild_id):
             if (int(g.get("permissions", 0)) & 0x8) == 0x8 or g.get("owner", False):
                 target_guild = g
             break
-            
     if not target_guild:
-        return "عذراً، ليس لديك صلاحية لإدارة هذا السيرفر.", 403
+        return None, None
+        
+    # جلب رومات السيرفر الحقيقية عبر بوت التوكن لتوفير اختيار دقيق
+    channels = []
+    if BOT_TOKEN:
+        ch_res = discord_get(f"/guilds/{guild_id}/channels", BOT_TOKEN, "Bot")
+        if ch_res and ch_res.status_code == 200:
+            channels = [c for c in ch_res.json() if c.get("type") == 0] # Text channels only
+            
+    return target_guild, channels
+
+def render_server_page(guild_id, active_tab, tab_content_html):
+    target_guild, channels = get_server_context(guild_id)
+    if not target_guild:
+        return "عذراً، ليس لديك صلاحية أو أن السيرفر غير صالح.", 403
         
     guild_name = escape(str(target_guild.get("name", "السيرفر")))
-    
-    content = f"""
-    <main class="page">
-      <div class="page-head">
-        <div>
-          <h1>⚙️ إدارة سيرفر: {guild_name}</h1>
-          <p>أهلاً بك في لوحة تحكم السيرفر المخصصة.</p>
-        </div>
-        <a class="btn btn-secondary" href="/dashboard">← عودة لقائمة السيرفرات</a>
+    icon = target_guild.get("icon")
+    if icon:
+        icon_url = f"https://cdn.discordapp.com/icons/{guild_id}/{escape(str(icon))}.png"
+    else:
+        icon_url = "https://cdn.discordapp.com/embed/avatars/0.png"
+        
+    sidebar_html = f"""
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <img class="sidebar-icon" src="{icon_url}" alt="Server Icon">
+        <h3>{guild_name}</h3>
+        <p>لوحة تحكم البوت</p>
       </div>
-      <div class="feature-grid">
-        <div class="feature-box">
-          <div class="feature-icon">🛡️</div>
-          <h3>إعدادات الحماية</h3>
-          <p>قريباً يمكنك التحكم بإعدادات الحماية والأمان الخاصة بالبوت هنا.</p>
-        </div>
-        <div class="feature-box">
-          <div class="feature-icon">🤖</div>
-          <h3>الأوامر والتنبيهات</h3>
-          <p>تخصيص ردود البوت وتفعيلات التنبيهات للسيرفر.</p>
-        </div>
+      <div class="menu-list">
+        <a class="menu-item {'active' if active_tab=='settings' else ''}" href="/server/{guild_id}/settings"><span>⚙️</span> الإعدادات واللغة</a>
+        <a class="menu-item {'active' if active_tab=='tickets' else ''}" href="/server/{guild_id}/tickets"><span>🎫</span> نظام التذاكر</a>
+        <a class="menu-item {'active' if active_tab=='welcome' else ''}" href="/server/{guild_id}/welcome"><span>👋</span> نظام الترحيب</a>
+        <a class="menu-item {'active' if active_tab=='security' else ''}" href="/server/{guild_id}/security"><span>🛡️</span> إعدادات الحماية</a>
+        <a class="menu-item {'active' if active_tab=='commands' else ''}" href="/server/{guild_id}/commands"><span>🤖</span> الأوامر والتنبيهات</a>
+        <a class="menu-item {'active' if active_tab=='logs' else ''}" href="/server/{guild_id}/logs"><span>📊</span> السجلات الدقيقة (Logs)</a>
       </div>
-    </main>
+      <div style="margin-top: auto; padding-top: 15px; border-top: 1px solid var(--line);">
+        <a class="btn btn-secondary" style="width: 100%; text-align: center;" href="/dashboard">← عودة لقائمة السيرفرات</a>
+      </div>
+    </aside>
     """
-    return page(f"إدارة {guild_name}", content)
+    
+    layout_content = f"""
+    <div class="dashboard-layout">
+      {sidebar_html}
+      <main class="content-panel">
+        {tab_content_html}
+      </main>
+    </div>
+    """
+    return page(f"إدارة {guild_name}", layout_content)
+
+@app.route("/server/<guild_id>/settings", methods=["GET", "POST"])
+def s_settings(guild_id):
+    if request.method == "POST":
+        # حفظ الإعدادات واللغة
+        pass
+    html = f"""
+    <div class="page-head" style="margin-bottom:20px;">
+      <div><h1>⚙️ إعدادات السيرفر واللغة</h1><p>اختر لغة البوت الأساسية في السيرفر وإعدادات الربط العامة.</p></div>
+    </div>
+    <form method="POST">
+      <div class="form-group">
+        <label>لغة البوت في السيرفر (Bot Language)</label>
+        <select class="form-control" name="bot_lang">
+          <option value="ar">العربية (Arabic)</option>
+          <option value="en">الإنجليزية (English)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>بادئة الأوامر (Prefix)</label>
+        <input type="text" class="form-control" name="prefix" value="!">
+      </div>
+      <button type="submit" class="btn btn-primary">حفظ إعدادات البوت ✦</button>
+    </form>
+    """
+    return render_server_page(guild_id, "settings", html)
+
+@app.route("/server/<guild_id>/tickets", methods=["GET", "POST"])
+def s_tickets(guild_id):
+    if request.method == "POST":
+        pass
+    html = f"""
+    <div class="page-head" style="margin-bottom:20px;">
+      <div><h1>🎫 نظام التذاكر المتقدم</h1><p>تخصيص رسالة التذاكر، الأزرار، والخيارات والصور.</p></div>
+    </div>
+    <form method="POST">
+      <div class="form-group">
+        <label>رسالة التذاكر (Embed Description)</label>
+        <textarea class="form-control" name="ticket_msg">اضغط على الزر أدناه لفتح تذاكر الدعم الفني والمساعدة.</textarea>
+      </div>
+      <div class="form-group">
+        <label>رابط صورة التذاكر (Banner/Image URL)</label>
+        <input type="url" class="form-control" name="ticket_img" placeholder="https://example.com/image.png">
+      </div>
+      <div class="form-group">
+        <label>نص زر فتح التذكرة</label>
+        <input type="text" class="form-control" name="btn_text" value="فتح تذكرة 🎫">
+      </div>
+      <button type="submit" class="btn btn-primary">حفظ ونشر رسالة التذاكر ✦</button>
+    </form>
+    """
+    return render_server_page(guild_id, "tickets", html)
+
+@app.route("/server/<guild_id>/welcome", methods=["GET", "POST"])
+def s_welcome(guild_id):
+    _, channels = get_server_context(guild_id)
+    ch_options = "".join([f'<option value="{c["id"]}">#{c["name"]}</option>' for c in channels])
+    
+    html = f"""
+    <div class="page-head" style="margin-bottom:20px;">
+      <div><h1>👋 نظام الترحيب بالأعضاء</h1><p>استقبل أعضاءك برسائل وصور مخصصة في الروم المحدد.</p></div>
+    </div>
+    <form method="POST">
+      <div class="form-group">
+        <label>روم الترحيب (Welcome Channel)</label>
+        <select class="form-control" name="welcome_channel">
+          {ch_options if ch_options else '<option value="">لا توجد رومات نصية متاحة</option>'}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>رسالة الترحيب (استخدم {{user}} لذكر العضو)</label>
+        <textarea class="form-control" name="welcome_msg">مرحباً بك {{user}} في السيرفر! نورتنا 🌌</textarea>
+      </div>
+      <div class="form-group">
+        <label>رابط صورة الترحيب (Banner URL)</label>
+        <input type="url" class="form-control" name="welcome_img" placeholder="https://example.com/welcome.png">
+      </div>
+      <button type="submit" class="btn btn-primary">حفظ إعدادات الترحيب ✦</button>
+    </form>
+    """
+    return render_server_page(guild_id, "welcome", html)
+
+@app.route("/server/<guild_id>/security", methods=["GET", "POST"])
+def s_security(guild_id):
+    html = f"""
+    <div class="page-head" style="margin-bottom:20px;">
+      <div><h1>🛡️ إعدادات الحماية والأمان</h1><p>حماية السيرفر من السبام، الروابط الخبيثة، والتخريب.</p></div>
+    </div>
+    <form method="POST">
+      <div class="form-group">
+        <label>حماية السبام والروابط (Anti-Spam)</label>
+        <select class="form-control" name="anti_spam">
+          <option value="on">مفعل (قوي)</option>
+          <option value="off">متوقف</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>حماية التخريب (Anti-Nuke)</label>
+        <select class="form-control" name="anti_nuke">
+          <option value="on">مفعل</option>
+          <option value="off">متوقف</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary">حفظ الحماية ✦</button>
+    </form>
+    """
+    return render_server_page(guild_id, "security", html)
+
+@app.route("/server/<guild_id>/commands", methods=["GET", "POST"])
+def s_commands(guild_id):
+    html = f"""
+    <div class="page-head" style="margin-bottom:20px;">
+      <div><h1>🤖 الأوامر والتنبيهات المخصصة</h1><p>تخصيص ردود البوت التلقائية والتنبيهات.</p></div>
+    </div>
+    <form method="POST">
+      <div class="form-group">
+        <label>تفعيل ردود الأوامر التلقائية</label>
+        <select class="form-control" name="auto_responses">
+          <option value="on">مفعل</option>
+          <option value="off">متوقف</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary">حفظ الأوامر ✦</button>
+    </form>
+    """
+    return render_server_page(guild_id, "commands", html)
+
+@app.route("/server/<guild_id>/logs", methods=["GET", "POST"])
+def s_logs(guild_id):
+    _, channels = get_server_context(guild_id)
+    ch_options = "".join([f'<option value="{c["id"]}">#{c["name"]}</option>' for c in channels])
+    
+    html = f"""
+    <div class="page-head" style="margin-bottom:20px;">
+      <div><h1>📊 السجلات الدقيقة (Logs System)</h1><p>اختر الروم المناسب لكل حدث ليقوم البوت بتسجيل كافة التفاصيل بدقة تامة.</p></div>
+    </div>
+    <form method="POST">
+      <div class="form-group">
+        <label>روم سجلات الأعضاء (دخول/خروج/بان)</label>
+        <select class="form-control" name="log_members">
+          {ch_options if ch_options else '<option value="">لا توجد رومات</option>'}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>روم سجلات الرسائل (حذف/تعديل)</label>
+        <select class="form-control" name="log_messages">
+          {ch_options if ch_options else '<option value="">لا توجد رومات</option>'}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>روم سجلات الرومات والأدوار (Channels & Roles Logs)</label>
+        <select class="form-control" name="log_moderation">
+          {ch_options if ch_options else '<option value="">لا توجد رومات</option>'}
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary">حفظ إعدادات السجلات بدقة ✦</button>
+    </form>
+    """
+    return render_server_page(guild_id, "logs", html)
 
 @app.route("/logout")
 def logout():
