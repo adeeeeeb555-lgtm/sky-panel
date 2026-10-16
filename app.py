@@ -39,15 +39,17 @@ STYLE = """
 
 :root {
   --bg: #050816;
-  --panel: rgba(14, 23, 48, .94);
-  --line: rgba(120, 170, 255, .18);
+  --panel: rgba(14, 23, 48, .85);
+  --line: rgba(120, 170, 255, .2);
   --blue: #64caff;
   --purple: #9b8cff;
   --gold: #f0b429;
   --text: #f4f7ff;
   --muted: #9baaca;
 }
+
 * { box-sizing: border-box; }
+
 body {
   margin: 0; min-height: 100vh; color: var(--text);
   font-family: 'Cairo', Tahoma, sans-serif;
@@ -58,6 +60,7 @@ body {
     var(--bg);
   overflow-x: hidden; padding-bottom: 90px;
 }
+
 body:before {
   content: ""; position: fixed; inset: 0; pointer-events: none; z-index: -1;
   background-image:
@@ -71,14 +74,17 @@ body:before {
                    320px 300px, 270px 330px, 370px 290px;
   opacity: .75;
 }
+
 a { color: inherit; text-decoration: none; }
+
 .nav {
   display: flex; justify-content: space-between; align-items: center;
   gap: 18px; padding: 20px clamp(24px, 5vw, 60px);
   border-bottom: 1px solid var(--line);
-  background: rgba(5, 8, 22, .9);
+  background: rgba(5, 8, 22, .85);
   backdrop-filter: blur(18px); position: relative; z-index: 2;
 }
+
 .brand { display: flex; align-items: center; gap: 14px; }
 .logo {
   width: 50px; height: 50px; display: grid; place-items: center;
@@ -89,29 +95,30 @@ a { color: inherit; text-decoration: none; }
 .brand h2 { margin: 0; font-size: 22px; font-weight: 900; }
 .brand small { color: var(--muted); font-size: 12px; display: block; }
 .nav-right { display: flex; align-items: center; gap: 14px; }
+
 .user-pill {
   display: flex; align-items: center; gap: 10px; padding: 8px 16px;
   background: #ffffff08; border: 1px solid var(--line); border-radius: 50px;
-  font-size: 14px;
+  font-size: 14px; backdrop-filter: blur(10px);
 }
 .user-pill img { width: 36px; height: 36px; border-radius: 50%; }
+
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   padding: 12px 22px; border-radius: 12px; text-decoration: none;
   font-family: inherit; font-size: 14px; font-weight: 800;
-  transition: transform .15s ease, box-shadow .15s ease;
+  transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
   border: 1px solid transparent; cursor: pointer;
 }
-.btn:hover { transform: translateY(-2px); }
+.btn:hover { transform: translateY(-3px); }
 .btn-primary {
   color: #06101f; background: linear-gradient(115deg, #73dcff, #a6a0ff);
-  box-shadow: 0 8px 28px #58baff28;
+  box-shadow: 0 8px 28px #58baff38;
 }
-.btn-gold {
-  color: #06101f; background: var(--gold); font-weight: 900;
-}
+.btn-gold { color: #06101f; background: var(--gold); font-weight: 900; }
 .btn-secondary {
-  color: #e5edff; border-color: var(--line); background: #ffffff08;
+  color: #e5edff; border-color: var(--line); background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(10px);
 }
 .btn-discord {
   color: #ffffff; background: #5865F2; box-shadow: 0 4px 20px rgba(88,101,242,0.4);
@@ -119,32 +126,36 @@ a { color: inherit; text-decoration: none; }
 .btn-discord:hover { background: #4752C4; }
 
 .hero {
-  width: min(1200px, 92%); margin: auto; padding: 78px 0 65px;
-  display: grid; grid-template-columns: 1.15fr .85fr;
-  align-items: center; gap: 45px; min-height: 580px;
+  width: min(1250px, 92%); margin: auto; padding: 60px 0 40px;
+  display: grid; grid-template-columns: 1.1fr 0.9fr;
+  align-items: center; gap: 40px; min-height: 540px;
 }
+
 .eyebrow {
   display: inline-flex; align-items: center; gap: 9px; padding: 7px 14px;
   color: #b6dfff; border: 1px solid #67bfff35; background: #57baff0c;
-  border-radius: 50px; font-size: 13px; font-weight: 800;
+  border-radius: 50px; font-size: 13px; font-weight: 800; backdrop-filter: blur(8px);
 }
-.dot { width: 8px; height: 8px; background: #72e5ba; border-radius: 50%; }
+.dot { width: 8px; height: 8px; background: #72e5ba; border-radius: 50%; box-shadow: 0 0 10px #72e5ba; }
+
 h1 {
-  font-size: clamp(37px, 5.1vw, 65px); line-height: 1.35;
-  letter-spacing: -.8px; margin: 22px 0 14px; font-weight: 900;
+  font-size: clamp(34px, 4.8vw, 60px); line-height: 1.35;
+  letter-spacing: -.8px; margin: 20px 0 14px; font-weight: 900;
 }
 .gradient-text {
   background: linear-gradient(100deg, #71ddff, #9b9aff 60%, #d6b5ff);
   color: transparent; background-clip: text; -webkit-background-clip: text;
 }
-.subtitle { color: var(--muted); font-size: 17px; line-height: 2.1; max-width: 550px; }
-.actions { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 28px; }
-.features { display: flex; flex-wrap: wrap; gap: 22px; margin-top: 32px; color: #b8c6e2; font-size: 13px; }
-.feature { display: flex; align-items: center; gap: 8px; }
-.feature b { color: #76e3c0; }
+.subtitle { color: var(--muted); font-size: 16px; line-height: 2.1; max-width: 530px; }
+.actions { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 26px; }
 
+/* قسم الكوكب المتحرك المطور بالكامل عبر CSS */
 .space-art {
-  min-height: 360px; position: relative; display: grid; place-items: center;
+  height: 420px; position: relative; display: grid; place-items: center;
+}
+
+.planet-system {
+  position: relative; width: 320px; height: 320px; display: grid; place-items: center;
 }
 
 @keyframes orbitRotate {
@@ -152,96 +163,128 @@ h1 {
   to { transform: rotate(360deg); }
 }
 
-.orbit {
-  width: min(340px, 75vw); aspect-ratio: 1; border-radius: 50%;
-  border: 1px solid #7b9bff35; display: grid; place-items: center;
-  position: relative;
-  box-shadow: 0 0 90px #5a7dff0b, inset 0 0 60px #618aff0b;
-  animation: orbitRotate 25s linear infinite;
+@keyframes orbitCounter {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
 }
-.orbit:before, .orbit:after {
-  content: ""; position: absolute; border: 1px solid #80baff30;
-  border-radius: 50%; inset: 25px;
+
+.orbit-ring {
+  position: absolute; inset: 0; border: 1px dashed rgba(120, 170, 255, 0.25);
+  border-radius: 50%; animation: orbitRotate 30s linear infinite;
 }
-.orbit:after { inset: 55px; border-color: #b4a0ff35; }
-.planet {
-  width: 145px; height: 145px; border-radius: 50%;
+
+.planet-core {
+  width: 130px; height: 130px; border-radius: 50%;
   background:
-    radial-gradient(circle at 30% 25%, #c2edff, transparent 16%),
-    radial-gradient(circle at 35% 30%, #7bd8ff, #526de2 42%, #34215f 76%, #10142f);
-  box-shadow: inset -20px -15px 35px #030718b5, 0 0 75px #637dff52;
-  position: relative; z-index: 1;
-}
-.planet:after {
-  content: ""; position: absolute; width: 190px; height: 35px;
-  border: 7px solid #9bb8ff9c; border-left-color: #c2a9ff;
-  border-right-color: #6ad8ff; border-radius: 50%; top: 55px; left: -25px;
-  transform: rotate(-25deg); box-shadow: 0 0 22px #6dafff38;
+    radial-gradient(circle at 30% 25%, #c2edff, transparent 15%),
+    radial-gradient(circle at 35% 30%, #7bd8ff, #526de2 45%, #23154f 80%, #0a0d20);
+  box-shadow: inset -20px -15px 35px rgba(3, 7, 24, 0.9), 0 0 50px rgba(99, 125, 255, 0.4);
+  position: relative; z-index: 2;
 }
 
-@keyframes floatAnimation {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-6px); }
+.planet-core:after {
+  content: ""; position: absolute; width: 175px; height: 32px;
+  border: 6px solid rgba(155, 184, 255, 0.7); border-left-color: #c2a9ff;
+  border-right-color: #6ad8ff; border-radius: 50%; top: 49px; left: -22px;
+  transform: rotate(-22deg); box-shadow: 0 0 20px rgba(109, 175, 255, 0.4);
 }
 
-.float-card {
-  position: absolute; padding: 14px 18px; border: 1px solid var(--line);
-  border-radius: 14px; background: #101a33d9; backdrop-filter: blur(12px);
-  box-shadow: 0 15px 40px #0003; font-size: 13px;
-  animation: floatAnimation 4s ease-in-out infinite;
+.floating-node {
+  position: absolute; width: 155px; padding: 10px 14px; border: 1px solid var(--line);
+  border-radius: 14px; background: rgba(16, 26, 51, 0.88); backdrop-filter: blur(14px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5); font-size: 12px; text-align: center;
+  animation: orbitRotate 30s linear infinite reverse; z-index: 5;
 }
-.float-card strong { display: block; font-size: 15px; margin-bottom: 3px; }
-.float-card small { color: var(--muted); }
-.card-top { top: 13%; right: -20px; }
-.card-bottom { bottom: 12%; left: -20px; }
 
+.node-1 { top: -10px; left: 30px; }
+.node-2 { bottom: 10px; right: 20px; }
+
+.floating-node strong { display: block; font-size: 13px; color: #fff; margin-bottom: 2px; }
+.floating-node small { color: var(--muted); font-size: 11px; }
+
+/* شبكة بطاقات المميزات العشرة */
+.features-section {
+  width: min(1250px, 92%); margin: 50px auto 30px;
+}
+.section-title {
+  text-align: center; margin-bottom: 35px;
+}
+.section-title h2 { font-size: 28px; font-weight: 900; margin: 0 0 8px; }
+.section-title p { color: var(--muted); font-size: 14px; margin: 0; }
+
+.features-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;
+}
+
+.feature-card {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 20px;
+  padding: 24px; backdrop-filter: blur(16px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease;
+}
+.feature-card:hover {
+  transform: translateY(-5px); border-color: rgba(100, 202, 255, 0.5);
+  box-shadow: 0 15px 40px rgba(100, 202, 255, 0.15);
+}
+.feature-icon {
+  width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center;
+  font-size: 22px; background: rgba(100, 202, 255, 0.1); border: 1px solid rgba(100, 202, 255, 0.25);
+  margin-bottom: 16px;
+}
+.feature-card h3 { margin: 0 0 8px; font-size: 16px; font-weight: 800; color: #eaf0ff; }
+.feature-card p { margin: 0; font-size: 13px; color: var(--muted); line-height: 1.7; }
+
+/* لوحة التحكم والقوائم الجانبية (متوافقة مع اتجاه RTL وجعل القائمة في اليمين) */
 .page { width: min(1250px, 92%); margin: 40px auto 70px; }
 .page-head { display: flex; justify-content: space-between; align-items: center; gap: 20px; margin-bottom: 35px; }
 .page-head h1 { font-size: 30px; margin: 0 0 6px; }
 .page-head p { color: var(--muted); margin: 0; font-size: 14px; }
+
 .server-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 22px; }
 .server-card {
   padding: 30px 22px; text-align: center; border-radius: 22px;
   border: 1px solid var(--line);
-  background: linear-gradient(155deg, #182441c9, #0b1227db);
-  box-shadow: 0 12px 35px #0002; transition: transform .22s, border-color .22s;
+  background: linear-gradient(155deg, rgba(24, 36, 65, 0.8), rgba(11, 18, 39, 0.9));
+  box-shadow: 0 12px 35px rgba(0,0,0,0.3); transition: transform .22s, border-color .22s;
+  backdrop-filter: blur(12px);
 }
-.server-card:hover { transform: translateY(-5px); border-color: #75caff80; }
+.server-card:hover { transform: translateY(-5px); border-color: rgba(117, 202, 255, 0.6); }
 .server-icon {
   width: 90px; height: 90px; border-radius: 26px; object-fit: cover;
-  border: 2px solid #80cfff80; box-shadow: 0 0 25px #64baff20;
+  border: 2px solid rgba(128, 207, 255, 0.5); box-shadow: 0 0 25px rgba(100, 186, 255, 0.2);
 }
 .server-card h3 { margin: 16px 0 6px; font-size: 17px; overflow-wrap: anywhere; }
 .status { color: #78e3bc; font-size: 12px; margin-bottom: 12px; }
 .server-card .btn { margin-top: 12px; width: 100%; }
+
 .empty {
-  padding: 55px 25px; text-align: center; border: 1px dashed #7b9dca40;
-  background: #ffffff04; border-radius: 20px; color: var(--muted); font-size: 15px;
+  padding: 55px 25px; text-align: center; border: 1px dashed rgba(123, 157, 202, 0.3);
+  background: rgba(255,255,255,0.02); border-radius: 20px; color: var(--muted); font-size: 15px;
 }
 .empty span { display: block; font-size: 40px; margin-bottom: 12px; }
 
-/* جعل القائمة الجانبية في اليمين والمحتوى في اليسار بشكل متناسق مع العربية */
+/* ترتيب لوحة التحكم: القائمة الجانبية في اليمين والمحتوى في اليسار */
 .dashboard-layout {
-  display: grid; grid-template-columns: 310px 1fr; gap: 30px;
+  display: grid; grid-template-columns: 1fr 310px; gap: 30px;
   width: min(1480px, 97%); margin: 40px auto 70px; align-items: start;
 }
+.content-panel {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 24px; padding: 40px;
+  backdrop-filter: blur(16px); min-height: 700px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.4); order: 1;
+}
 .sidebar {
-  background: linear-gradient(155deg, #121c38dd, #080d1fff);
+  background: linear-gradient(155deg, rgba(18, 28, 56, 0.9), rgba(8, 13, 31, 0.95));
   border: 1px solid var(--line); border-radius: 24px; padding: 26px;
   display: flex; flex-direction: column; gap: 18px; backdrop-filter: blur(16px);
-  position: sticky; top: 25px; order: 1;
-}
-.content-panel {
-  background: linear-gradient(155deg, #15203acc, #0c1327dd);
-  border: 1px solid var(--line); border-radius: 24px; padding: 40px;
-  backdrop-filter: blur(16px); min-height: 700px;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.4); order: 2;
+  position: sticky; top: 25px; order: 2;
 }
 
 .sidebar-header { text-align: center; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
 .sidebar-icon {
   width: 75px; height: 75px; border-radius: 22px; object-fit: cover;
-  border: 2px solid #75caff80; box-shadow: 0 0 25px #64baff30; margin: 0 auto 10px; display: block;
+  border: 2px solid rgba(117, 202, 255, 0.5); box-shadow: 0 0 25px rgba(100, 186, 255, 0.2);
+  margin: 0 auto 10px; display: block;
 }
 .sidebar-header h3 { margin: 0 0 3px; font-size: 16px; overflow-wrap: anywhere; }
 .sidebar-header p { color: var(--muted); font-size: 12px; margin: 0; }
@@ -253,9 +296,9 @@ h1 {
   transition: all .15s ease; border: 1px solid transparent;
 }
 .menu-item:hover, .menu-item.active {
-  background: linear-gradient(115deg, #5bbfff1a, #8f82ff1a);
-  color: var(--text); border-color: #7acbff50;
-  box-shadow: 0 4px 18px #58baff15; transform: translateX(-3px);
+  background: linear-gradient(115deg, rgba(91, 191, 255, 0.12), rgba(143, 130, 255, 0.12));
+  color: var(--text); border-color: rgba(122, 203, 255, 0.3);
+  box-shadow: 0 4px 18px rgba(88, 186, 255, 0.1); transform: translateX(3px);
 }
 .menu-item span { font-size: 18px; }
 
@@ -264,11 +307,11 @@ h1 {
 .field-desc { font-size: 12px; color: var(--muted); margin-bottom: 6px; text-align: right; line-height: 1.6; }
 .form-control {
   width: 100%; padding: 12px 16px; border-radius: 12px;
-  background: #060a17; border: 1px solid var(--line); color: var(--text);
+  background: rgba(6, 10, 23, 0.8); border: 1px solid var(--line); color: var(--text);
   font-family: inherit; font-size: 14px; outline: none; transition: border-color .2s;
   text-align: right;
 }
-.form-control:focus { border-color: var(--blue); box-shadow: 0 0 15px #64baff30; }
+.form-control:focus { border-color: var(--blue); box-shadow: 0 0 15px rgba(100, 186, 255, 0.2); }
 
 select.form-control {
   appearance: none;
@@ -281,28 +324,20 @@ select.form-control {
   cursor: pointer;
 }
 
-/* خاصية اختيار عدة رتب أو رومات (Multiple Select) مع تحسين الشكل */
 select[multiple].form-control {
-  height: 140px;
-  background-image: none;
-  padding: 8px;
-  overflow-y: auto;
+  height: 140px; background-image: none; padding: 8px; overflow-y: auto;
 }
 select[multiple].form-control option {
-  padding: 8px 12px;
-  margin-bottom: 4px;
-  border-radius: 6px;
-  background: #0c1327;
+  padding: 8px 12px; margin-bottom: 4px; border-radius: 6px; background: #0c1327;
 }
 select[multiple].form-control option:checked {
-  background: linear-gradient(115deg, #64caff, #9b8cff);
-  color: #06101f;
-  font-weight: 700;
+  background: linear-gradient(115deg, #64caff, #9b8cff); color: #06101f; font-weight: 700;
 }
 
 .settings-section-card {
-  background: #080d1fe6; border: 1px solid var(--line); border-radius: 18px;
+  background: rgba(8, 13, 31, 0.7); border: 1px solid var(--line); border-radius: 18px;
   padding: 26px; margin-bottom: 24px; box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+  backdrop-filter: blur(10px);
 }
 .settings-section-header {
   display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--line);
@@ -311,8 +346,8 @@ select[multiple].form-control option:checked {
 
 /* شريط الحفظ العائم السفلي */
 .floating-save-bar {
-  position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%) translateY(100px);
-  background: rgba(10, 16, 35, 0.95); border: 1px solid #7acbff60; border-radius: 16px;
+  position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%) translateY(120px);
+  background: rgba(10, 16, 35, 0.95); border: 1px solid rgba(122, 203, 255, 0.4); border-radius: 16px;
   padding: 14px 28px; display: flex; align-items: center; gap: 24px;
   box-shadow: 0 15px 45px rgba(0,0,0,0.6); backdrop-filter: blur(16px);
   z-index: 1000; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -322,9 +357,7 @@ select[multiple].form-control option:checked {
 .save-dot { width: 10px; height: 10px; background: #f0b429; border-radius: 50%; box-shadow: 0 0 10px #f0b429; animation: pulse 1.5s infinite; }
 @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
 
-.switch {
-  position: relative; display: inline-block; width: 48px; height: 26px;
-}
+.switch { position: relative; display: inline-block; width: 48px; height: 26px; }
 .switch input { opacity: 0; width: 0; height: 0; }
 .slider {
   position: absolute; cursor: pointer; inset: 0;
@@ -337,23 +370,19 @@ select[multiple].form-control option:checked {
 input:checked + .slider { background: linear-gradient(115deg, #64caff, #9b8cff); }
 input:checked + .slider:before { transform: translateX(22px); }
 
-.cards-grid-3 {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 25px;
-}
+.cards-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 25px; }
 .card-item {
-  background: #080d1fe6; border: 1px solid var(--line); border-radius: 16px;
+  background: rgba(8, 13, 31, 0.7); border: 1px solid var(--line); border-radius: 16px;
   padding: 20px; display: flex; flex-direction: column; gap: 14px;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.25); backdrop-filter: blur(10px);
 }
-.card-header {
-  display: flex; justify-content: space-between; align-items: center;
-}
+.card-header { display: flex; justify-content: space-between; align-items: center; }
 .card-title { font-size: 15px; font-weight: 800; color: #e4eeff; display: flex; align-items: center; gap: 8px; }
 
 .security-card {
-  background: #080d1fe6; border: 1px solid var(--line); border-radius: 16px;
+  background: rgba(8, 13, 31, 0.7); border: 1px solid var(--line); border-radius: 16px;
   padding: 22px; display: flex; justify-content: space-between; align-items: center;
-  margin-bottom: 15px; box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+  margin-bottom: 15px; box-shadow: 0 8px 25px rgba(0,0,0,0.25); backdrop-filter: blur(10px);
 }
 .security-info h3 { margin: 0 0 5px; font-size: 16px; color: #e4eeff; text-align: right; }
 .security-info p { margin: 0; font-size: 13px; color: var(--muted); text-align: right; }
@@ -372,7 +401,6 @@ input:checked + .slider:before { transform: translateX(22px); }
 }
 .footer-links { display: flex; gap: 16px; align-items: center; }
 
-/* مصمم الصورة القابل للسحب بالماوس مع قيود داخل الصندوق */
 .canvas-container {
   width: 100%; height: 260px; background: #050816; border: 2px dashed var(--blue);
   border-radius: 16px; position: relative; overflow: hidden; margin-bottom: 20px;
@@ -386,7 +414,6 @@ input:checked + .slider:before { transform: translateX(22px); }
   border-color: #64caff; background: rgba(100, 202, 255, 0.1); border-radius: 8px;
 }
 
-/* صندوق الاختصارات */
 .variable-box {
   background: #060a17; border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin-bottom: 20px;
 }
@@ -400,11 +427,10 @@ input:checked + .slider:before { transform: translateX(22px); }
   .sidebar { position: static; order: 1; }
   .content-panel { order: 2; }
   .cards-grid-3 { grid-template-columns: 1fr; }
-  .hero { grid-template-columns: 1fr; padding-top: 50px; gap: 15px; }
-  .space-art { min-height: 310px; grid-row: 1; }
-  .orbit { width: 260px; }
-  .planet { width: 110px; height: 110px; }
-  .nav { padding: 15px 5%; }
+  .hero { grid-template-columns: 1fr; padding-top: 40px; gap: 20px; text-align: center; }
+  .actions { justify-content: center; }
+  .eyebrow { margin: auto; }
+  .subtitle { margin: auto; }
 }
 </style>
 <script>
@@ -528,28 +554,17 @@ function changeAvatarSize(size) {
   if (avCircle) {
     avCircle.style.width = size + 'px';
     avCircle.style.height = size + 'px';
-    if (size < 60) {
-      avCircle.style.fontSize = '20px';
-    } else if (size < 90) {
-      avCircle.style.fontSize = '32px';
-    } else {
-      avCircle.style.fontSize = '44px';
-    }
   }
 }
 
 function updateWelcomeTitle(val) {
   const titleEl = document.getElementById('previewTitle');
-  if (titleEl) {
-    titleEl.textContent = val || 'Welcome to the server';
-  }
+  if (titleEl) titleEl.textContent = val || 'Welcome to the server';
 }
 
 function updateWelcomeSub(val) {
   const subEl = document.getElementById('previewSub');
-  if (subEl) {
-    subEl.textContent = val || 'Username';
-  }
+  if (subEl) subEl.textContent = val || 'Username';
 }
 
 function previewLocalImage(input) {
@@ -579,7 +594,7 @@ function addTicketCategory(roleOptionsHTML, channelOptionsHTML) {
     </div>
     <div class="form-group">
       <label>اسم الفئة *</label>
-      <input type="text" class="form-control" name="cat_name_${categoryCount}" placeholder="أدخل اسم الفئة (مثل: الدعم الفني، الشكاوي)...">
+      <input type="text" class="form-control" name="cat_name_${categoryCount}" placeholder="أدخل اسم الفئة...">
     </div>
     <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 15px;">
       <div class="form-group">
@@ -599,7 +614,7 @@ function addTicketCategory(roleOptionsHTML, channelOptionsHTML) {
     </div>
     <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 15px;">
       <div class="form-group">
-        <label>رتب المسؤولين (اختر عدة رتب بالضغط على Ctrl) *</label>
+        <label>رتب المسؤولين (اختر عدة رتب بـ Ctrl) *</label>
         <select class="form-control" name="cat_staff_roles_${categoryCount}" multiple>
           ${roleOptionsHTML}
         </select>
@@ -691,21 +706,88 @@ def home():
           <div class="eyebrow"><span class="dot"></span> عالمك، إدارتك، تحكمك</div>
           <h1>ارتقِ بسيرفرك<br><span class="gradient-text">إلى عالم آخر.</span></h1>
           <p class="subtitle">
-            مرحباً بك في Sky Universe، لوحة تحكم متطورة مرتبة بقوائم في اليسار مع دعم اختيار عدة رتب في الأوامر والتذاكر.
+            مرحباً بك في Sky Universe، لوحة تحكم متطورة بتصميم فضي ومجرات فريد، تتيح لك إدارة سيرفر البوت واختيار الرتب المتعددة وإعدادات التذاكر والترحيب بكل احترافية.
           </p>
           <div class="actions">{actions}</div>
           <div class="features">
-            <div class="feature"><b>✦</b> القائمة في اليمين</div>
-            <div class="feature"><b>✦</b> اختيار عدة رتب (Multi-select)</div>
-            <div class="feature"><b>✦</b> زر دعم ديسكورد مباشر</div>
+            <div class="feature"><b>✦</b> واجهة زجاجية متجاوبة</div>
+            <div class="feature"><b>✦</b> كوكب متحرك وبطاقات عائمة</div>
+            <div class="feature"><b>✦</b> ربط مباشر مع Discord OAuth2</div>
           </div>
         </div>
         <div class="space-art">
-          <div class="orbit">
-            <div class="planet"></div>
+          <div class="planet-system">
+            <div class="orbit-ring"></div>
+            <div class="planet-core"></div>
+            <div class="floating-node node-1">
+              <strong>🌌 Sky Universe</strong>
+              <small>رحلتك تبدأ هنا</small>
+            </div>
+            <div class="floating-node node-2">
+              <strong>⚡ تحكم ذكي</strong>
+              <small>كل شيء في مكان واحد</small>
+            </div>
           </div>
-          <div class="float-card card-top"><strong>🌌 Sky Universe</strong><small>رحلتك تبدأ هنا</small></div>
-          <div class="float-card card-bottom"><strong>⚡ تحكم أذكى</strong><small>كل شيء في مكان واحد</small></div>
+        </div>
+      </section>
+
+      <!-- قسم بطاقات المميزات العشرة -->
+      <section class="features-section">
+        <div class="section-title">
+          <h2>مميزات لوحة تحكم Sky Universe</h2>
+          <p>أدوات متكاملة مصممة خصيصاً لتمنحك تحكماً كاملاً وغير محدود بسيرفرك</p>
+        </div>
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-icon">👋</div>
+            <h3>نظام الترحيب</h3>
+            <p>استقبال الأعضاء الجدد برسائل ترحيب نصية وصور مخصصة قابلة للتعديل والسحب.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🛡️</div>
+            <h3>الحماية المتقدمة</h3>
+            <p>أدوات مكافحة السبام والكلمات السيئة والروابط الضارة لحماية سيرفرك وتأمينه.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🎫</div>
+            <h3>نظام التذاكر</h3>
+            <p>تنظيم تذاكر الدعم الفني والشراء مع فئات متعددة، رومات سجل، ورتب مسؤولين.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">📂</div>
+            <h3>إدارة السيرفر</h3>
+            <p>الوصول الفوري إلى إعدادات السيرفر الأساسية والقنوات والرتب بشكل سلس وآمن.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">📊</div>
+            <h3>الإحصائيات المتقدمة</h3>
+            <p>عرض تفاصيل وحالة السيرفر والبوت لحظةً بلحظة لضمان استقرار وسلاسة العمل.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">⚡</div>
+            <h3>التحكم الذكي</h3>
+            <p>جمع كافة إعدادات البوت والخصائص في لوحة تحكم واحدة سهلة ومرنة.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">👑</div>
+            <h3>إدارة الرتب والصلاحيات</h3>
+            <p>التحكم الكامل بالرتب وصلاحيات الإشراف وتعيين الاستثناءات المتعددة بكل سهولة.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🌐</div>
+            <h3>إعدادات اللغة</h3>
+            <p>دعم كامل للغة العربية والإنجليزية لتجربة مستخدم مريحة ومصممة خصيصاً لك.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🎨</div>
+            <h3>تخصيص البطاقات والرسائل</h3>
+            <p>تعديل رسائل البوت ومظهرها ومواقع العناصر بفضل المصمم التفاعلي المرن.</p>
+          </div>
+          <div class="feature-card" style="cursor: pointer;" onclick="window.open('https://discord.gg/HuH8TtmGA', '_blank')">
+            <div class="feature-icon">💬</div>
+            <h3>الدعم الفني</h3>
+            <p>رابط مباشر وسريع للتوجه إلى مجتمع الدعم الفني عبر Discord لحل أي استفسار.</p>
+          </div>
         </div>
       </section>
     </main>
@@ -911,12 +993,12 @@ def render_server_page(guild_id, active_tab, tab_content_html):
     
     layout_content = f"""
     <div class="dashboard-layout">
-      {sidebar_html}
       <main class="content-panel">
         <form id="mainForm" method="POST" enctype="multipart/form-data">
           {tab_content_html}
         </form>
       </main>
+      {sidebar_html}
     </div>
     {floating_bar}
     """
@@ -954,7 +1036,6 @@ def s_welcome(guild_id):
       <div><h1>👋 إعدادات الترحيب</h1><p>قم بتكوين رسائل الترحيب وصور الترحيب المخصصة للأعضاء الجدد المنضمين إلى سيرفرك.</p></div>
     </div>
 
-    <!-- صندوق الاختصارات المتاحة -->
     <div class="variable-box">
       <div style="font-weight:800; color:#fff; margin-bottom:6px;">✨ الاختصارات المتاحة لاستخدامها في الرسائل:</div>
       <div>
@@ -965,7 +1046,6 @@ def s_welcome(guild_id):
       </div>
     </div>
 
-    <!-- بطاقة رسالة الترحيب -->
     <div class="settings-section-card">
       <div class="settings-section-header">
         <div class="settings-section-title"><span>💬</span> رسالة الترحيب النصية</div>
@@ -998,18 +1078,16 @@ def s_welcome(guild_id):
       </div>
     </div>
 
-    <!-- بطاقة مصمم صورة الترحيب التفاعلي -->
     <div class="settings-section-card">
       <div class="settings-section-header">
-        <div class="settings-section-title"><span>🎨</span> مصمم صورة الترحيب التفاعلي (تعديل النصوص والتكبير والسحب)</div>
+        <div class="settings-section-title"><span>🎨</span> مصمم صورة الترحيب التفاعلي</div>
         <label class="switch">
           <input type="checkbox" name="welcome_img_enabled" checked>
           <span class="slider"></span>
         </label>
       </div>
-      <div class="field-desc">يمكنك سحب العناصر بالماوس وتعديل الكلام المكتوب على الصورة مجاناً!</div>
+      <div class="field-desc">يمكنك سحب العناصر بالماوس وتعديل النص المكتوب وتغيير الحجم بكل سهولة!</div>
 
-      <!-- لوحة المعاينة والسحب بالماوس -->
       <div id="canvasPreview" class="canvas-container">
         <div id="dragAvatar" class="draggable-item" style="left: 40px; top: 40px;" onmousedown="startDrag(event, 'dragAvatar')">
           <div id="avatarCircle" style="width:85px; height:85px; border-radius:50%; background:#5865F2; display:grid; place-items:center; font-size:32px; box-shadow:0 0 20px rgba(88,101,242,0.5);">👤</div>
@@ -1020,15 +1098,14 @@ def s_welcome(guild_id):
         </div>
       </div>
 
-      <!-- خانات تعديل الكلام المكتوب على صورة الترحيب -->
       <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:15px;">
         <div class="form-group">
           <label>النص الرئيسي في الصورة</label>
-          <input type="text" class="form-control" name="welcome_img_title" value="Welcome to the server" placeholder="مثل: أهلاً بك في السيرفر" oninput="updateWelcomeTitle(this.value)">
+          <input type="text" class="form-control" name="welcome_img_title" value="Welcome to the server" oninput="updateWelcomeTitle(this.value)">
         </div>
         <div class="form-group">
           <label>النص الفرعي في الصورة</label>
-          <input type="text" class="form-control" name="welcome_img_sub" value="Username" placeholder="مثل: {username}" oninput="updateWelcomeSub(this.value)">
+          <input type="text" class="form-control" name="welcome_img_sub" value="Username" oninput="updateWelcomeSub(this.value)">
         </div>
       </div>
 
@@ -1250,7 +1327,6 @@ def s_tickets(guild_id):
       <div><h1>🎫 نظام التذاكر المتقدم</h1><p>إدارة فئات التذاكر المتعددة، رومات السجل، واختيار عدة رتب للمسؤولين.</p></div>
     </div>
 
-    <!-- حاوية الفئات المتعددة -->
     <div id="categoriesContainer">
       <div class="settings-section-card">
         <div class="settings-section-header">
@@ -1258,7 +1334,7 @@ def s_tickets(guild_id):
         </div>
         <div class="form-group">
           <label>اسم الفئة *</label>
-          <input type="text" class="form-control" name="cat_name_1" placeholder="أدخل اسم الفئة (مثل: الدعم الفني، الشكاوي)...">
+          <input type="text" class="form-control" name="cat_name_1" placeholder="أدخل اسم الفئة...">
         </div>
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 15px;">
           <div class="form-group">
@@ -1278,7 +1354,7 @@ def s_tickets(guild_id):
         </div>
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 15px;">
           <div class="form-group">
-            <label>رتب المسؤولين (اختر عدة رتب بالضغط على Ctrl) *</label>
+            <label>رتب المسؤولين (اختر عدة رتب بـ Ctrl) *</label>
             <select class="form-control" name="cat_staff_roles_1" multiple>
               {role_options if role_options else '<option value="">لا توجد رتب</option>'}
             </select>
@@ -1294,14 +1370,12 @@ def s_tickets(guild_id):
       </div>
     </div>
 
-    <!-- زر إضافة فئة جديدة -->
     <div style="margin-bottom: 25px;">
       <button type="button" class="btn btn-secondary" style="width: 100%; border: 2px dashed var(--blue); padding: 16px;" onclick="addTicketCategory('{role_options_js}', '{ch_options_js}')">
         + إضافة فئة جديدة
       </button>
     </div>
 
-    <!-- بطاقة صلاحيات المسؤولين والمستخدمين -->
     <div class="settings-section-card">
       <div class="settings-section-header">
         <div class="settings-section-title"><span>🛡️</span> صلاحيات التحكم داخل التذكرة</div>
