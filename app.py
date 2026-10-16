@@ -126,9 +126,9 @@ a { color: inherit; text-decoration: none; }
 .btn-discord:hover { background: #4752C4; }
 
 .hero {
-  width: min(1300px, 94%); margin: auto; padding: 50px 0 30px;
-  display: grid; grid-template-columns: 1fr 1fr;
-  align-items: center; gap: 30px; min-height: 580px;
+  width: min(1400px, 96%); margin: auto; padding: 40px 0 20px;
+  display: grid; grid-template-columns: 0.9fr 1.1fr;
+  align-items: center; gap: 20px; min-height: 650px;
 }
 
 .eyebrow {
@@ -139,23 +139,23 @@ a { color: inherit; text-decoration: none; }
 .dot { width: 8px; height: 8px; background: #72e5ba; border-radius: 50%; box-shadow: 0 0 10px #72e5ba; }
 
 h1 {
-  font-size: clamp(32px, 4.2vw, 54px); line-height: 1.35;
+  font-size: clamp(32px, 4vw, 52px); line-height: 1.35;
   letter-spacing: -.8px; margin: 18px 0 12px; font-weight: 900;
 }
 .gradient-text {
   background: linear-gradient(100deg, #71ddff, #9b9aff 60%, #d6b5ff);
   color: transparent; background-clip: text; -webkit-background-clip: text;
 }
-.subtitle { color: var(--muted); font-size: 15px; line-height: 2.0; max-width: 500px; }
+.subtitle { color: var(--muted); font-size: 15px; line-height: 2.0; max-width: 480px; }
 .actions { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 22px; }
 
-/* نظام الكوكب والبطاقات العشرة الددّارة حوله بمحيط دائري */
+/* تكبير الكوكب وتوسيع نطاق المدار بشكل واسع لمنع أي تداخل للبطاقات */
 .space-art {
-  height: 520px; position: relative; display: grid; place-items: center;
+  height: 660px; position: relative; display: grid; place-items: center;
 }
 
 .planet-system {
-  position: relative; width: 480px; height: 480px; display: grid; place-items: center;
+  position: relative; width: 620px; height: 620px; display: grid; place-items: center;
 }
 
 @keyframes orbitRotate {
@@ -170,57 +170,58 @@ h1 {
 
 .orbit-container {
   position: absolute; inset: 0;
-  animation: orbitRotate 45s linear infinite;
+  animation: orbitRotate 50s linear infinite;
   pointer-events: none;
 }
 .orbit-container:hover {
   animation-play-state: paused;
 }
 
+/* تكبير حجم الكوكب المنسق بالـ CSS */
 .planet-core {
-  width: 120px; height: 120px; border-radius: 50%;
+  width: 170px; height: 170px; border-radius: 50%;
   background:
     radial-gradient(circle at 30% 25%, #c2edff, transparent 15%),
     radial-gradient(circle at 35% 30%, #7bd8ff, #526de2 45%, #23154f 80%, #0a0d20);
-  box-shadow: inset -18px -14px 30px rgba(3, 7, 24, 0.9), 0 0 45px rgba(99, 125, 255, 0.4);
+  box-shadow: inset -24px -18px 40px rgba(3, 7, 24, 0.9), 0 0 60px rgba(99, 125, 255, 0.45);
   position: relative; z-index: 2;
 }
 
 .planet-core:after {
-  content: ""; position: absolute; width: 160px; height: 28px;
-  border: 5px solid rgba(155, 184, 255, 0.7); border-left-color: #c2a9ff;
-  border-right-color: #6ad8ff; border-radius: 50%; top: 46px; left: -20px;
-  transform: rotate(-22deg); box-shadow: 0 0 18px rgba(109, 175, 255, 0.4);
+  content: ""; position: absolute; width: 230px; height: 40px;
+  border: 7px solid rgba(155, 184, 255, 0.7); border-left-color: #c2a9ff;
+  border-right-color: #6ad8ff; border-radius: 50%; top: 65px; left: -30px;
+  transform: rotate(-22deg); box-shadow: 0 0 24px rgba(109, 175, 255, 0.4);
 }
 
 .orbit-card {
-  position: absolute; width: 145px; padding: 10px 12px; border: 1px solid var(--line);
+  position: absolute; width: 140px; padding: 10px 12px; border: 1px solid var(--line);
   border-radius: 14px; background: rgba(14, 23, 48, 0.94); backdrop-filter: blur(14px);
   box-shadow: 0 8px 25px rgba(0,0,0,0.5); font-size: 11px; text-align: center;
   pointer-events: auto; z-index: 5;
-  animation: counterRotate 45s linear infinite;
+  animation: counterRotate 50s linear infinite;
   transition: transform 0.2s, border-color 0.2s;
 }
 .orbit-card:hover {
-  border-color: var(--blue); transform: scale(1.08);
+  border-color: var(--blue); transform: scale(1.1);
   z-index: 20;
 }
 
 .orbit-card .icon { font-size: 16px; margin-bottom: 2px; display: block; }
 .orbit-card strong { display: block; font-size: 12px; color: #fff; margin-bottom: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.orbit-card p { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.orbit-card p { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
-/* توزيع البطاقات العشرة على مسار الدائرة بدقة (زوايا متساوية 36 درجة لكل بطاقة) */
-.card-pos-1  { top: 10px; left: 50%; transform: translate(-50%, 0); }
-.card-pos-2  { top: 40px; right: 85px; }
-.card-pos-3  { top: 135px; right: 15px; }
-.card-pos-4  { bottom: 135px; right: 15px; }
-.card-pos-5  { bottom: 40px; right: 85px; }
-.card-pos-6  { bottom: 10px; left: 50%; transform: translate(-50%, 0); }
-.card-pos-7  { bottom: 40px; left: 85px; }
-.card-pos-8  { bottom: 135px; left: 15px; }
-.card-pos-9  { top: 135px; left: 15px; }
-.card-pos-10 { top: 40px; left: 85px; }
+/* توزيع البطاقات العشر على مسار الدائرة الموسع بالكامل */
+.card-pos-1  { top: 0px; left: 50%; transform: translate(-50%, 0); }
+.card-pos-2  { top: 40px; right: 50px; }
+.card-pos-3  { top: 180px; right: -10px; }
+.card-pos-4  { bottom: 180px; right: -10px; }
+.card-pos-5  { bottom: 40px; right: 50px; }
+.card-pos-6  { bottom: 0px; left: 50%; transform: translate(-50%, 0); }
+.card-pos-7  { bottom: 40px; left: 50px; }
+.card-pos-8  { bottom: 180px; left: -10px; }
+.card-pos-9  { top: 180px; left: -10px; }
+.card-pos-10 { top: 40px; left: 50px; }
 
 /* لوحة التحكم والقوائم الجانبية */
 .page { width: min(1250px, 92%); margin: 40px auto 70px; }
@@ -697,19 +698,19 @@ def home():
           <div class="actions">{actions}</div>
           <div class="features">
             <div class="feature"><b>✦</b> واجهة زجاجية متجاوبة</div>
-            <div class="feature"><b>✦</b> كوكب متحرك وبطاقات مميزات تدور حوله</div>
+            <div class="feature"><b>✦</b> كوكب ضخم ومتحرك وبطاقات واسعة تدور حوله</div>
             <div class="feature"><b>✦</b> ربط مباشر مع Discord OAuth2</div>
           </div>
         </div>
         <div class="space-art">
           <div class="planet-system">
             <div class="planet-core"></div>
-            <!-- حاوية البطاقات العشرة الددّارة حول الكوكب بمحيط دائري متناسق -->
+            <!-- حاوية المدار الموسعة لتوزيع البطاقات بحرية تامة دون حشر -->
             <div class="orbit-container">
               <div class="orbit-card card-pos-1">
                 <span class="icon">👋</span>
                 <strong>نظام الترحيب</strong>
-                <p>استقبال الأعضاء الجدد برسائل</p>
+                <p>استقبال الأعضاء الجدد</p>
               </div>
               <div class="orbit-card card-pos-2">
                 <span class="icon">🛡️</span>
@@ -729,7 +730,7 @@ def home():
               <div class="orbit-card card-pos-5">
                 <span class="icon">📊</span>
                 <strong>الإحصائيات</strong>
-                <p>عرض تفاصيل وحالة السيرفر</p>
+                <p>عرض تفاصيل السيرفر</p>
               </div>
               <div class="orbit-card card-pos-6">
                 <span class="icon">⚡</span>
@@ -739,7 +740,7 @@ def home():
               <div class="orbit-card card-pos-7">
                 <span class="icon">👑</span>
                 <strong>إدارة الرتب</strong>
-                <p>صلاحيات الإشراف والاستثناءات</p>
+                <p>صلاحيات الإشراف</p>
               </div>
               <div class="orbit-card card-pos-8">
                 <span class="icon">🌐</span>
