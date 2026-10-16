@@ -185,19 +185,6 @@ h1 {
 .section-heading { text-align: center; margin-bottom: 35px; }
 .section-heading h2 { font-size: 28px; margin: 0 0 8px; }
 .section-heading p { color: var(--muted); margin: 0; font-size: 14px; }
-.feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-.feature-box {
-  padding: 28px; border-radius: 20px; border: 1px solid var(--line);
-  background: linear-gradient(145deg, #15203a99, #0c1327bb);
-  transition: transform .2s, border-color .2s;
-}
-.feature-box:hover { transform: translateY(-4px); border-color: #7acbff60; }
-.feature-icon {
-  width: 50px; height: 50px; border-radius: 14px; display: grid;
-  place-items: center; font-size: 24px; background: #6bbfff14; margin-bottom: 16px;
-}
-.feature-box h3 { margin: 0 0 8px; font-size: 17px; }
-.feature-box p { color: var(--muted); font-size: 14px; line-height: 1.9; margin: 0; }
 
 .page { width: min(1250px, 92%); margin: 40px auto 70px; }
 .page-head { display: flex; justify-content: space-between; align-items: center; gap: 20px; margin-bottom: 35px; }
@@ -224,7 +211,7 @@ h1 {
 }
 .empty span { display: block; font-size: 40px; margin-bottom: 12px; }
 
-/* القائمة في اليسار والمحتوى في اليمين تماماً */
+/* القائمة في اليسار والمحتوى في اليمين */
 .dashboard-layout {
   display: grid; grid-template-columns: 310px 1fr; gap: 30px;
   width: min(1480px, 97%); margin: 40px auto 70px; align-items: start;
@@ -357,6 +344,29 @@ input:checked + .slider:before { transform: translateX(22px); }
 }
 .footer-links { display: flex; gap: 16px; align-items: center; }
 
+/* مصمم الصورة القابل للسحب بالماوس (Interactive DragCanvas) */
+.canvas-container {
+  width: 100%; height: 260px; background: #050816; border: 2px dashed var(--blue);
+  border-radius: 16px; position: relative; overflow: hidden; margin-bottom: 20px;
+  background-size: cover; background-position: center; cursor: crosshair; user-select: none;
+}
+.draggable-item {
+  position: absolute; cursor: move; display: inline-block; padding: 4px;
+  border: 1px dashed transparent; transition: border 0.2s; z-index: 10;
+}
+.draggable-item:hover, .draggable-item.active {
+  border-color: #64caff; background: rgba(100, 202, 255, 0.1); border-radius: 8px;
+}
+
+/* صندوق الاختصارات */
+.variable-box {
+  background: #060a17; border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin-bottom: 20px;
+}
+.variable-tag {
+  display: inline-block; background: rgba(100,202,255,0.15); color: var(--blue);
+  padding: 2px 8px; border-radius: 6px; font-family: monospace; font-size: 13px; margin: 2px 4px; border: 1px solid rgba(100,202,255,0.3);
+}
+
 @media(max-width: 1050px) {
   .dashboard-layout { grid-template-columns: 1fr; }
   .sidebar { position: static; order: 2; }
@@ -366,7 +376,6 @@ input:checked + .slider:before { transform: translateX(22px); }
   .space-art { min-height: 310px; grid-row: 1; }
   .orbit { width: 260px; }
   .planet { width: 110px; height: 110px; }
-  .feature-grid { grid-template-columns: 1fr; }
   .nav { padding: 15px 5%; }
 }
 </style>
@@ -385,6 +394,55 @@ window.addEventListener('DOMContentLoaded', () => {
     el.addEventListener('change', triggerChange);
   });
 });
+
+// نظام السحب بالماوس لتصميم الصورة
+let activeDrag = null;
+let offsetX = 0, offsetY = 0;
+
+function startDrag(e, id) {
+  activeDrag = document.getElementById(id);
+  offsetX = e.clientX - activeDrag.offsetLeft;
+  offsetY = e.clientY - activeDrag.offsetTop;
+  document.addEventListener('mousemove', doDrag);
+  document.addEventListener('mouseup', stopDrag);
+}
+
+function doDrag(e) {
+  if (!activeDrag) return;
+  const parent = activeDrag.parentElement;
+  let x = e.clientX - offsetX;
+  let y = e.clientY - offsetY;
+  
+  if (x < 0) x = 0;
+  if (y < 0) y = 0;
+  if (x > parent.clientWidth - activeDrag.clientWidth) x = parent.clientWidth - activeDrag.clientWidth;
+  if (y > parent.clientHeight - activeDrag.clientHeight) y = parent.clientHeight - activeDrag.clientHeight;
+
+  activeDrag.style.left = x + 'px';
+  activeDrag.style.top = y + 'px';
+
+  if (activeDrag.id === 'dragAvatar') {
+    document.getElementById('avatar_left').value = Math.round(x);
+    document.getElementById('avatar_top').value = Math.round(y);
+  } else if (activeDrag.id === 'dragText') {
+    document.getElementById('text_left').value = Math.round(x);
+    document.getElementById('text_top').value = Math.round(y);
+  }
+  triggerChange();
+}
+
+function stopDrag() {
+  activeDrag = null;
+  document.removeEventListener('mousemove', doDrag);
+  document.removeEventListener('mouseup', stopDrag);
+}
+
+function updateBg(url) {
+  const canvas = document.getElementById('canvasPreview');
+  if (canvas) {
+    canvas.style.backgroundImage = 'url(' + url + ')';
+  }
+}
 </script>
 </head>
 <body>
@@ -460,12 +518,12 @@ def home():
           <div class="eyebrow"><span class="dot"></span> عالمك، إدارتك، تحكمك</div>
           <h1>ارتقِ بسيرفرك<br><span class="gradient-text">إلى عالم آخر.</span></h1>
           <p class="subtitle">
-            مرحباً بك في Sky Universe، لوحة تحكم متطورة مرتبة بقوائم في اليسار، مع وصف دقيق لكل خيار وزر دعم فني مباشر.
+            مرحباً بك في Sky Universe، لوحة تحكم متطورة مرتبة بقوائم في اليسار مع مصمم ترحب بالسحب بالماوس.
           </p>
           <div class="actions">{actions}</div>
           <div class="features">
             <div class="feature"><b>✦</b> القائمة في اليسار</div>
-            <div class="feature"><b>✦</b> وصف لكل الخيارات</div>
+            <div class="feature"><b>✦</b> مصمم بالماوس وتصميم تفاعلي</div>
             <div class="feature"><b>✦</b> زر دعم ديسكورد مباشر</div>
           </div>
         </div>
@@ -721,10 +779,21 @@ def s_welcome(guild_id):
       <div><h1>👋 إعدادات الترحيب</h1><p>قم بتكوين رسائل الترحيب وصور الترحيب المخصصة للأعضاء الجدد المنضمين إلى سيرفرك.</p></div>
     </div>
 
+    <!-- صندوق الاختصارات المتاحة -->
+    <div class="variable-box">
+      <div style="font-weight:800; color:#fff; margin-bottom:6px;">✨ الاختصارات المتاحة لاستخدامها في الرسائل:</div>
+      <div>
+        <span class="variable-tag">{{user}}</span> لإشارة (منشن) العضو الجديد.<br>
+        <span class="variable-tag">{{username}}</span> لكتابة اسم العضو نصياً.<br>
+        <span class="variable-tag">{{server}}</span> لكتابة اسم السيرفر تلقائياً.<br>
+        <span class="variable-tag">{{membercount}}</span> لطباعة عدد أعضاء السيرفر.
+      </div>
+    </div>
+
     <!-- بطاقة رسالة الترحيب -->
     <div class="settings-section-card">
       <div class="settings-section-header">
-        <div class="settings-section-title"><span>💬</span> رسالة الترحيب</div>
+        <div class="settings-section-title"><span>💬</span> رسالة الترحيب النصية</div>
         <label class="switch">
           <input type="checkbox" name="welcome_msg_enabled" checked>
           <span class="slider"></span>
@@ -732,15 +801,13 @@ def s_welcome(guild_id):
       </div>
       <div class="form-group">
         <label>نص رسالة الترحيب</label>
-        <div class="field-desc">اكتب رسالة ترحيب مخصصة تظهر عند دخول العضو الجديد. يمكنك استخدام المتغير ({{user}}) لإشارة العضو تلقائياً.</div>
-        <textarea class="form-control" name="welcome_msg" style="min-height: 90px;">مرحباً بك {{user}} في خادمنا الرائع! 🌸</textarea>
+        <textarea class="form-control" name="welcome_msg" style="min-height: 90px;">مرحباً بك {{user}} في سيرفر {{server}}! 🌸 أنت العضو رقم {{membercount}}</textarea>
       </div>
       <div class="form-group">
         <label>طريقة التوصيل</label>
-        <div class="field-desc">اختر ما إذا كنت تريد إرسال الترحيب في روم عام أو برسالة خاصة (DM).</div>
         <div style="display: flex; gap: 20px; margin-top: 8px;">
           <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer;">
-            <input type="radio" name="welcome_delivery" value="dm"> إرسال كرسالة خاصة 👑 <span style="font-size:11px; color:var(--gold);">ميزة بريميوم</span>
+            <input type="radio" name="welcome_delivery" value="dm"> إرسال كرسالة خاصة (DM)
           </label>
           <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer;">
             <input type="radio" name="welcome_delivery" value="channel" checked> إرسال إلى روم
@@ -749,7 +816,6 @@ def s_welcome(guild_id):
       </div>
       <div class="form-group">
         <label>اختر الروم</label>
-        <div class="field-desc">حدد الروم المخصص لإرسال رسائل الترحيب بداخله.</div>
         <select class="form-control" name="welcome_channel">
           <option value="">اختر الرومات...</option>
           {ch_options if ch_options else '<option value="">لا توجد رومات متاحة</option>'}
@@ -757,51 +823,50 @@ def s_welcome(guild_id):
       </div>
     </div>
 
-    <!-- بطاقة مصمم صورة الترحيب -->
+    <!-- بطاقة مصمم صورة الترحيب المطور مع السحب بالماوس -->
     <div class="settings-section-card">
       <div class="settings-section-header">
-        <div class="settings-section-title"><span>🎨</span> مصمم صورة الترحيب المتقدم</div>
+        <div class="settings-section-title"><span>🎨</span> مصمم صورة الترحيب التفاعلي (احرك بالماوس)</div>
         <label class="switch">
           <input type="checkbox" name="welcome_img_enabled" checked>
           <span class="slider"></span>
         </label>
       </div>
-      <div style="background:#050816; border:1px solid var(--line); border-radius:14px; padding:30px 20px; text-align:center; margin-bottom:20px;">
-        <div style="width:85px; height:85px; border-radius:50%; background:#5865F2; margin:0 auto 12px; display:grid; place-items:center; font-size:36px; box-shadow:0 0 25px rgba(88,101,242,0.4);">🖼️</div>
-        <div style="font-size:18px; font-weight:800; color:#fff;">Welcome to the server</div>
-        <div style="font-size:15px; color:var(--muted);">Username</div>
+      <div class="field-desc">ملاحظة: يمكنك سحب الصورة والنص بالماوس مباشرة لتغيير أماكنهم!</div>
+
+      <!-- لوحة المعاينة والسحب بالماوس -->
+      <div id="canvasPreview" class="canvas-container">
+        <div id="dragAvatar" class="draggable-item" style="left: 40px; top: 40px;" onmousedown="startDrag(event, 'dragAvatar')">
+          <div style="width:85px; height:85px; border-radius:50%; background:#5865F2; display:grid; place-items:center; font-size:32px; box-shadow:0 0 20px rgba(88,101,242,0.5);">👤</div>
+        </div>
+        <div id="dragText" class="draggable-item" style="left: 150px; top: 60px;" onmousedown="startDrag(event, 'dragText')">
+          <div style="font-size:22px; font-weight:900; color:#fff;">Welcome to the server</div>
+          <div style="font-size:16px; color:var(--blue);">Username</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>رابط صورة الخلفية (Background Image URL)</label>
+        <input type="url" class="form-control" placeholder="https://..." oninput="updateBg(this.value)">
       </div>
 
       <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
         <div class="form-group">
-          <label>عرض صورة العضو (Width)</label>
-          <input type="text" class="form-control" name="avatar_w" value="210">
+          <label>موضع صورة العضو (Left)</label>
+          <input type="number" id="avatar_left" class="form-control" name="avatar_left" value="40">
         </div>
         <div class="form-group">
-          <label>ارتفاع صورة العضو (Height)</label>
-          <input type="text" class="form-control" name="avatar_h" value="216">
+          <label>موضع صورة العضو (Top)</label>
+          <input type="number" id="avatar_top" class="form-control" name="avatar_top" value="40">
         </div>
         <div class="form-group">
-          <label>موضع صورة العضو (أعلى)</label>
-          <input type="text" class="form-control" name="avatar_top" value="27">
+          <label>موضع النص (Left)</label>
+          <input type="number" id="text_left" class="form-control" name="text_left" value="150">
         </div>
         <div class="form-group">
-          <label>موضع صورة العضو (يسار)</label>
-          <input type="text" class="form-control" name="avatar_left" value="7.59">
+          <label>موضع النص (Top)</label>
+          <input type="number" id="text_top" class="form-control" name="text_top" value="60">
         </div>
-        <div class="form-group">
-          <label>حجم خط اسم المستخدم</label>
-          <input type="text" class="form-control" name="username_size" value="50">
-        </div>
-        <div class="form-group">
-          <label>موضع اسم المستخدم (أعلى)</label>
-          <input type="text" class="form-control" name="username_top" value="100">
-        </div>
-      </div>
-
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:15px;">
-        <button type="button" class="btn btn-secondary">إعادة التعيين إلى الافتراضي ↺</button>
-        <button type="button" class="btn btn-primary">رفع خلفية مخصصة 🖼️</button>
       </div>
     </div>
     """
@@ -855,7 +920,6 @@ def s_security_edit(guild_id, sec_key):
     </div>
     <div class="form-group">
       <label>الرومات المستثناة</label>
-      <div class="field-desc">اختر الرومات التي تريد استثناءها بحيث لا يعمل فيها نظام الحماية هذا.</div>
       <select class="form-control" name="excluded_channels">
         <option value="">اختر الروم المستثنى...</option>
         {ch_options if ch_options else '<option value="">لا توجد رومات متاحة</option>'}
@@ -863,7 +927,6 @@ def s_security_edit(guild_id, sec_key):
     </div>
     <div class="form-group">
       <label>الرتب المستثناة</label>
-      <div class="field-desc">اختر الرتب الإدارية أو الخاصة المعفاة تماماً من عقوبات هذا النظام.</div>
       <select class="form-control" name="excluded_roles">
         <option value="">اختر الرتبة المستثناة...</option>
         {role_options if role_options else '<option value="">لا توجد رتب متاحة</option>'}
@@ -871,7 +934,6 @@ def s_security_edit(guild_id, sec_key):
     </div>
     <div class="form-group">
       <label>إجراءات العقوبة التلقائية</label>
-      <div class="field-desc">حدد العقوبة التلقائية التي يطبقها البوت عند رصد المخالفة.</div>
       <select class="form-control" name="punishment_action">
         <option value="warn">إرسال تحذير (Warn)</option>
         <option value="timeout">إسكات مؤقت - تايم آوت (Timeout)</option>
@@ -926,12 +988,10 @@ def s_command_edit(guild_id, cmd_name):
     </div>
     <div class="form-group">
       <label>الأسماء البديلة للأمر</label>
-      <div class="field-desc">أسماء إضافية أو اختصارات يمكن استخدامها لتشغيل نفس الأمر.</div>
       <input type="text" class="form-control" value="{cmd_name}">
     </div>
     <div class="form-group">
       <label>الرتب المفعلة لاستخدام الأمر</label>
-      <div class="field-desc">الرتب الوحيدة المسموح لها بتنفيذ هذا الأمر الإشرافي.</div>
       <select class="form-control" name="allowed_roles">
         <option value="">اختر الرتبة المسموحة...</option>
         {role_options if role_options else '<option value="">لا توجد رتب</option>'}
@@ -939,7 +999,6 @@ def s_command_edit(guild_id, cmd_name):
     </div>
     <div class="form-group">
       <label>الرومات المفعلة لاستخدام الأمر</label>
-      <div class="field-desc">الرومات المسموح فيها كتابة وتنفيذ هذا الأمر.</div>
       <select class="form-control" name="allowed_channels">
         <option value="">اختر الروم المسموح...</option>
         {ch_options if ch_options else '<option value="">لا توجد رومات</option>'}
@@ -957,10 +1016,7 @@ def s_logs(guild_id):
     logs_list = [
         ("حظر عضو", "log_ban"), ("مهلة عضو", "log_timeout"), ("طرد عضو", "log_kick"),
         ("إنضمام عضو", "log_join"), ("مغادرة عضو", "log_leave"), ("إلغاء حظر عضو", "log_unban"),
-        ("إعطاء رتبه", "log_role_give"), ("إزالة رتبه", "log_role_take"), ("تغيير اللقب", "log_name_change"),
-        ("إنشاء روم", "log_channel_create"), ("حذف روم", "log_channel_delete"), ("تعديل روم", "log_channel_update"),
-        ("ميوت صوتي", "log_voice_mute"), ("دفن صوتي", "log_voice_deaf"), ("طرد صوتي", "log_voice_disc"),
-        ("حذف رسالة", "log_msg_delete"), ("تعديل رسالة", "log_msg_update"), ("فك المهلة", "log_untimeout")
+        ("إعطاء رتبه", "log_role_give"), ("إزالة رتبه", "log_role_take"), ("تغيير اللقب", "log_name_change")
     ]
     cards_html = ""
     for title, prefix in logs_list:
@@ -975,7 +1031,6 @@ def s_logs(guild_id):
           </div>
           <div style="display: flex; flex-direction: column; gap: 6px;">
             <label style="color:var(--muted); font-size:12px; text-align:right;"># الروم</label>
-            <div class="field-desc" style="margin-bottom:2px;">حدد الروم المخصص لتسجيل هذا الحدث بدقة.</div>
             <select class="form-control" name="{prefix}_channel" style="padding: 10px 14px; font-size: 13px;">
               {empty_ch}
             </select>
@@ -994,29 +1049,15 @@ def s_logs(guild_id):
 def s_tickets(guild_id):
     html = f"""
     <div class="page-head" style="margin-bottom:25px;">
-      <div><h1>🎫 نظام التذاكر المتقدم</h1><p>تخصيص رسالة التذاكر، الأزرار، ورفع صور المرفقات.</p></div>
+      <div><h1>🎫 نظام التذاكر المتقدم</h1><p>تخصيص رسالة التذاكر والأزرار والخيارات.</p></div>
     </div>
     <div class="form-group">
       <label>رسالة التذاكر</label>
-      <div class="field-desc">نص الـ Embed الذي يظهر للأعضاء في روم التذاكر مع زر الفتح.</div>
       <textarea class="form-control" name="ticket_msg" style="min-height: 90px;">اضغط على الزر أدناه لفتح تذاكر الدعم الفني والمساعدة.</textarea>
     </div>
     <div class="form-group">
-      <label>رابط صورة التذاكر أو المرفق</label>
-      <div class="field-desc">يمكنك رفع أو لصق رابط صورة البانر أو الأيقونة الخاصة بالتذاكر.</div>
+      <label>رابط صورة التذاكر</label>
       <input type="url" class="form-control" name="ticket_img" placeholder="https://...">
-    </div>
-    <div class="form-group">
-      <label>طريقة إرسال التذكرة</label>
-      <div class="field-desc">حدد ما إذا كانت التذكرة تفتح كرسالة منفصلة أو كمرفق.</div>
-      <div style="display: flex; gap: 20px; margin-top: 8px;">
-        <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer;">
-          <input type="radio" name="ticket_mode" value="attachment"> كمرفق
-        </label>
-        <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer;">
-          <input type="radio" name="ticket_mode" value="separate" checked> رسالة منفصلة
-        </label>
-      </div>
     </div>
     """
     return render_server_page(guild_id, "tickets", html)
