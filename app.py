@@ -39,8 +39,8 @@ STYLE = """
 
 :root {
   --bg: #050816;
-  --panel: rgba(14, 23, 48, .78);
-  --line: rgba(120, 170, 255, .18);
+  --panel: rgba(14, 23, 48, .85);
+  --line: rgba(120, 170, 255, .22);
   --blue: #64caff;
   --purple: #9b8cff;
   --text: #f4f7ff;
@@ -73,31 +73,31 @@ body:before {
 a { color: inherit; text-decoration: none; }
 .nav {
   display: flex; justify-content: space-between; align-items: center;
-  gap: 18px; padding: 17px clamp(18px, 5vw, 70px);
+  gap: 18px; padding: 20px clamp(24px, 5vw, 60px);
   border-bottom: 1px solid var(--line);
-  background: rgba(5, 8, 22, .76);
+  background: rgba(5, 8, 22, .85);
   backdrop-filter: blur(18px); position: relative; z-index: 2;
 }
-.brand { display: flex; align-items: center; gap: 12px; }
+.brand { display: flex; align-items: center; gap: 14px; }
 .logo {
-  width: 46px; height: 46px; display: grid; place-items: center;
-  border-radius: 15px; font-size: 24px;
+  width: 50px; height: 50px; display: grid; place-items: center;
+  border-radius: 16px; font-size: 26px;
   background: linear-gradient(135deg, #53caff, #8271ff);
   box-shadow: 0 0 30px #4c9fff38;
 }
-.brand h2 { margin: 0; font-size: 20px; font-weight: 900; }
-.brand small { color: var(--muted); font-size: 11px; display: block; }
-.nav-right { display: flex; align-items: center; gap: 12px; }
+.brand h2 { margin: 0; font-size: 22px; font-weight: 900; }
+.brand small { color: var(--muted); font-size: 12px; display: block; }
+.nav-right { display: flex; align-items: center; gap: 14px; }
 .user-pill {
-  display: flex; align-items: center; gap: 9px; padding: 6px 13px;
+  display: flex; align-items: center; gap: 10px; padding: 8px 16px;
   background: #ffffff08; border: 1px solid var(--line); border-radius: 50px;
-  font-size: 13px;
+  font-size: 14px;
 }
-.user-pill img { width: 34px; height: 34px; border-radius: 50%; }
+.user-pill img { width: 36px; height: 36px; border-radius: 50%; }
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-  padding: 12px 21px; border-radius: 12px; text-decoration: none;
-  font-family: inherit; font-size: 14px; font-weight: 800;
+  padding: 13px 24px; border-radius: 14px; text-decoration: none;
+  font-family: inherit; font-size: 15px; font-weight: 800;
   transition: transform .2s, box-shadow .2s, border-color .2s;
   border: 1px solid transparent; cursor: pointer;
 }
@@ -111,17 +111,18 @@ a { color: inherit; text-decoration: none; }
   color: #e5edff; border-color: var(--line); background: #ffffff08;
 }
 .btn-secondary:hover { border-color: #7bcaff80; }
+
 .hero {
-  width: min(1100px, 92%); margin: auto; padding: 78px 0 65px;
+  width: min(1200px, 92%); margin: auto; padding: 78px 0 65px;
   display: grid; grid-template-columns: 1.15fr .85fr;
   align-items: center; gap: 45px; min-height: 580px;
 }
 .eyebrow {
-  display: inline-flex; align-items: center; gap: 9px; padding: 7px 13px;
+  display: inline-flex; align-items: center; gap: 9px; padding: 7px 14px;
   color: #b6dfff; border: 1px solid #67bfff35; background: #57baff0c;
-  border-radius: 50px; font-size: 12px; font-weight: 800;
+  border-radius: 50px; font-size: 13px; font-weight: 800;
 }
-.dot { width: 7px; height: 7px; background: #72e5ba; border-radius: 50%; }
+.dot { width: 8px; height: 8px; background: #72e5ba; border-radius: 50%; }
 h1 {
   font-size: clamp(37px, 5.1vw, 65px); line-height: 1.35;
   letter-spacing: -.8px; margin: 22px 0 14px; font-weight: 900;
@@ -130,11 +131,12 @@ h1 {
   background: linear-gradient(100deg, #71ddff, #9b9aff 60%, #d6b5ff);
   color: transparent; background-clip: text; -webkit-background-clip: text;
 }
-.subtitle { color: var(--muted); font-size: 16px; line-height: 2.1; max-width: 530px; }
-.actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
-.features { display: flex; flex-wrap: wrap; gap: 20px; margin-top: 32px; color: #b8c6e2; font-size: 12px; }
-.feature { display: flex; align-items: center; gap: 7px; }
+.subtitle { color: var(--muted); font-size: 17px; line-height: 2.1; max-width: 550px; }
+.actions { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 28px; }
+.features { display: flex; flex-wrap: wrap; gap: 22px; margin-top: 32px; color: #b8c6e2; font-size: 13px; }
+.feature { display: flex; align-items: center; gap: 8px; }
 .feature b { color: #76e3c0; }
+
 .space-art {
   min-height: 360px; position: relative; display: grid; place-items: center;
 }
@@ -154,8 +156,7 @@ h1 {
   background:
     radial-gradient(circle at 30% 25%, #c2edff, transparent 16%),
     radial-gradient(circle at 35% 30%, #7bd8ff, #526de2 42%, #34215f 76%, #10142f);
-  box-shadow: inset -20px -15px 35px #030718b5,
-              0 0 75px #637dff52;
+  box-shadow: inset -20px -15px 35px #030718b5, 0 0 75px #637dff52;
   position: relative; z-index: 1;
 }
 .planet:after {
@@ -165,112 +166,117 @@ h1 {
   transform: rotate(-25deg); box-shadow: 0 0 22px #6dafff38;
 }
 .float-card {
-  position: absolute; padding: 13px 17px; border: 1px solid var(--line);
+  position: absolute; padding: 14px 18px; border: 1px solid var(--line);
   border-radius: 14px; background: #101a33d9; backdrop-filter: blur(12px);
-  box-shadow: 0 15px 40px #0003; font-size: 12px;
+  box-shadow: 0 15px 40px #0003; font-size: 13px;
 }
-.float-card strong { display: block; font-size: 14px; margin-bottom: 3px; }
+.float-card strong { display: block; font-size: 15px; margin-bottom: 3px; }
 .float-card small { color: var(--muted); }
 .card-top { top: 13%; right: 0; }
 .card-bottom { bottom: 12%; left: 0; }
-.section { width: min(1100px, 92%); margin: 0 auto 70px; }
-.section-heading { text-align: center; margin-bottom: 28px; }
-.section-heading h2 { font-size: 25px; margin: 0 0 8px; }
-.section-heading p { color: var(--muted); margin: 0; font-size: 13px; }
-.feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+
+.section { width: min(1200px, 92%); margin: 0 auto 70px; }
+.section-heading { text-align: center; margin-bottom: 35px; }
+.section-heading h2 { font-size: 28px; margin: 0 0 8px; }
+.section-heading p { color: var(--muted); margin: 0; font-size: 14px; }
+.feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
 .feature-box {
-  padding: 25px; border-radius: 18px; border: 1px solid var(--line);
+  padding: 28px; border-radius: 20px; border: 1px solid var(--line);
   background: linear-gradient(145deg, #15203a99, #0c1327bb);
   transition: transform .2s, border-color .2s;
 }
 .feature-box:hover { transform: translateY(-4px); border-color: #7acbff60; }
 .feature-icon {
-  width: 46px; height: 46px; border-radius: 14px; display: grid;
-  place-items: center; font-size: 22px; background: #6bbfff14; margin-bottom: 15px;
+  width: 50px; height: 50px; border-radius: 14px; display: grid;
+  place-items: center; font-size: 24px; background: #6bbfff14; margin-bottom: 16px;
 }
-.feature-box h3 { margin: 0 0 7px; font-size: 16px; }
-.feature-box p { color: var(--muted); font-size: 13px; line-height: 1.9; margin: 0; }
-.page { width: min(1150px, 92%); margin: 40px auto 70px; }
-.page-head { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 28px; }
-.page-head h1 { font-size: 27px; margin: 0 0 5px; }
-.page-head p { color: var(--muted); margin: 0; font-size: 13px; }
-.server-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(235px, 1fr)); gap: 19px; }
+.feature-box h3 { margin: 0 0 8px; font-size: 17px; }
+.feature-box p { color: var(--muted); font-size: 14px; line-height: 1.9; margin: 0; }
+
+.page { width: min(1250px, 92%); margin: 40px auto 70px; }
+.page-head { display: flex; justify-content: space-between; align-items: center; gap: 20px; margin-bottom: 35px; }
+.page-head h1 { font-size: 30px; margin: 0 0 6px; }
+.page-head p { color: var(--muted); margin: 0; font-size: 14px; }
+.server-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 22px; }
 .server-card {
-  padding: 26px 20px; text-align: center; border-radius: 20px;
+  padding: 30px 22px; text-align: center; border-radius: 22px;
   border: 1px solid var(--line);
   background: linear-gradient(155deg, #182441c9, #0b1227db);
   box-shadow: 0 12px 35px #0002; transition: transform .22s, border-color .22s;
 }
 .server-card:hover { transform: translateY(-5px); border-color: #75caff80; }
 .server-icon {
-  width: 82px; height: 82px; border-radius: 24px; object-fit: cover;
+  width: 90px; height: 90px; border-radius: 26px; object-fit: cover;
   border: 2px solid #80cfff80; box-shadow: 0 0 25px #64baff20;
 }
-.server-card h3 { margin: 14px 0 4px; font-size: 16px; overflow-wrap: anywhere; }
-.status { color: #78e3bc; font-size: 11px; margin-bottom: 10px; }
-.server-card .btn { margin-top: 10px; width: 100%; }
+.server-card h3 { margin: 16px 0 6px; font-size: 17px; overflow-wrap: anywhere; }
+.status { color: #78e3bc; font-size: 12px; margin-bottom: 12px; }
+.server-card .btn { margin-top: 12px; width: 100%; }
 .empty {
-  padding: 45px 20px; text-align: center; border: 1px dashed #7b9dca40;
-  background: #ffffff04; border-radius: 18px; color: var(--muted);
+  padding: 55px 25px; text-align: center; border: 1px dashed #7b9dca40;
+  background: #ffffff04; border-radius: 20px; color: var(--muted); font-size: 15px;
 }
-.empty span { display: block; font-size: 35px; margin-bottom: 12px; }
+.empty span { display: block; font-size: 40px; margin-bottom: 12px; }
 
-/* تصميم لوحة التحكم مع القائمة الجانبية الجديدة */
+/* تصميم الواحة الواسعة والمنظمة للمدير */
 .dashboard-layout {
-  display: grid; grid-template-columns: 280px 1fr; gap: 25px;
-  width: min(1200px, 94%); margin: 40px auto 70px; align-items: start;
+  display: grid; grid-template-columns: 310px 1fr; gap: 30px;
+  width: min(1350px, 95%); margin: 40px auto 70px; align-items: start;
 }
 .sidebar {
-  background: linear-gradient(155deg, #121c38cc, #080d1fff);
-  border: 1px solid var(--line); border-radius: 22px; padding: 24px;
-  display: flex; flex-direction: column; gap: 20px; backdrop-filter: blur(14px);
+  background: linear-gradient(155deg, #121c38dd, #080d1fff);
+  border: 1px solid var(--line); border-radius: 24px; padding: 28px;
+  display: flex; flex-direction: column; gap: 22px; backdrop-filter: blur(16px);
+  position: sticky; top: 25px;
 }
-.sidebar-header { text-align: center; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
+.sidebar-header { text-align: center; padding-bottom: 20px; border-bottom: 1px solid var(--line); }
 .sidebar-icon {
-  width: 85px; height: 85px; border-radius: 26px; object-fit: cover;
-  border: 2px solid #75caff80; box-shadow: 0 0 25px #64baff25; margin: 0 auto 12px; display: block;
+  width: 95px; height: 95px; border-radius: 28px; object-fit: cover;
+  border: 2px solid #75caff80; box-shadow: 0 0 30px #64baff30; margin: 0 auto 14px; display: block;
 }
-.sidebar-header h3 { margin: 0 0 4px; font-size: 17px; overflow-wrap: anywhere; }
-.sidebar-header p { color: var(--muted); font-size: 12px; margin: 0; }
+.sidebar-header h3 { margin: 0 0 5px; font-size: 18px; overflow-wrap: anywhere; }
+.sidebar-header p { color: var(--muted); font-size: 13px; margin: 0; }
 
-.menu-list { display: flex; flex-direction: column; gap: 8px; }
+.menu-list { display: flex; flex-direction: column; gap: 10px; }
 .menu-item {
-  display: flex; align-items: center; gap: 12px; padding: 12px 16px;
-  border-radius: 12px; color: var(--muted); font-weight: 700; font-size: 14px;
+  display: flex; align-items: center; gap: 14px; padding: 14px 18px;
+  border-radius: 14px; color: var(--muted); font-weight: 700; font-size: 15px;
   transition: all .2s; border: 1px solid transparent;
 }
 .menu-item:hover, .menu-item.active {
   background: linear-gradient(115deg, #5bbfff1a, #8f82ff1a);
   color: var(--text); border-color: #7acbff50;
-  box-shadow: 0 5px 20px #58baff15; transform: translateX(-3px);
+  box-shadow: 0 6px 22px #58baff18; transform: translateX(-3px);
 }
-.menu-item span { font-size: 18px; }
+.menu-item span { font-size: 20px; }
 
 .content-panel {
-  background: linear-gradient(155deg, #15203a99, #0c1327bb);
-  border: 1px solid var(--line); border-radius: 22px; padding: 32px;
-  backdrop-filter: blur(14px); min-height: 500px;
+  background: linear-gradient(155deg, #15203acc, #0c1327dd);
+  border: 1px solid var(--line); border-radius: 24px; padding: 40px;
+  backdrop-filter: blur(16px); min-height: 650px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.4);
 }
-.form-group { margin-bottom: 22px; }
-.form-group label { display: block; font-size: 13px; font-weight: 700; color: #b8c6e2; margin-bottom: 8px; }
+.form-group { margin-bottom: 25px; }
+.form-group label { display: block; font-size: 14px; font-weight: 700; color: #cedbfa; margin-bottom: 10px; }
 .form-control {
-  width: 100%; padding: 12px 16px; border-radius: 12px;
+  width: 100%; padding: 14px 18px; border-radius: 14px;
   background: #060a17; border: 1px solid var(--line); color: var(--text);
-  font-family: inherit; font-size: 14px; outline: none; transition: border-color .2s;
+  font-family: inherit; font-size: 15px; outline: none; transition: border-color .2s;
 }
-.form-control:focus { border-color: var(--blue); box-shadow: 0 0 15px #64baff30; }
-textarea.form-control { resize: vertical; min-height: 100px; }
+.form-control:focus { border-color: var(--blue); box-shadow: 0 0 18px #64baff35; }
+textarea.form-control { resize: vertical; min-height: 120px; }
 select.form-control { cursor: pointer; }
 
-.footer { text-align: center; color: #7785a5; font-size: 11px; padding: 25px; border-top: 1px solid #ffffff0c; }
-@media(max-width: 850px) {
+.footer { text-align: center; color: #7785a5; font-size: 12px; padding: 30px; border-top: 1px solid #ffffff0c; }
+@media(max-width: 950px) {
   .dashboard-layout { grid-template-columns: 1fr; }
+  .sidebar { position: static; }
   .hero { grid-template-columns: 1fr; padding-top: 50px; gap: 15px; }
   .space-art { min-height: 310px; grid-row: 1; }
   .orbit { width: 260px; }
   .planet { width: 110px; height: 110px; }
   .feature-grid { grid-template-columns: 1fr; }
-  .nav { padding: 13px 5%; }
+  .nav { padding: 15px 5%; }
 }
 </style>
 </head>
@@ -340,13 +346,13 @@ def home():
           <h1>ارتقِ بسيرفرك<br><span class="gradient-text">إلى عالم آخر.</span></h1>
           <p class="subtitle">
             مرحباً بك في Sky Universe، لوحة تحكم تجمع أدوات إدارة
-            مجتمعك في تجربة سهلة، أنيقة، ومستلهمة من جمال الفضاء.
+            مجتمعك في تجربة واسعة، أنيقة، ومستلهمة من جمال الفضاء.
           </p>
           <div class="actions">{actions}</div>
           <div class="features">
-            <div class="feature"><b>✦</b> إدارة سهلة</div>
-            <div class="feature"><b>✦</b> تجربة سلسة</div>
-            <div class="feature"><b>✦</b> تصميم فضائي</div>
+            <div class="feature"><b>✦</b> إدارة دقيقة</div>
+            <div class="feature"><b>✦</b> لوحات واسعة</div>
+            <div class="feature"><b>✦</b> تصميم فضائي فاخر</div>
           </div>
         </div>
         <div class="space-art">
@@ -358,15 +364,15 @@ def home():
       <section class="section">
         <div class="section-heading">
           <h2>كل أدواتك في <span class="gradient-text">مكان واحد</span></h2>
-          <p>إدارة مجتمعك بتصميم عصري مستوحى من المجرات.</p>
+          <p>إدارة مجتمعك بتصميم عصري واسع ومريح.</p>
         </div>
         <div class="feature-grid">
           <div class="feature-box"><div class="feature-icon">🛡️</div>
-            <h3>الحماية والإدارة</h3><p>جهّز سيرفرك لإدارة أكثر تنظيماً، مع مساحة مخصصة لأدوات الحماية.</p></div>
+            <h3>الحماية والإدارة</h3><p>جهّز سيرفرك لإدارة أكثر تنظيماً مع أنظمة حماية ولغات مخصصة.</p></div>
           <div class="feature-box"><div class="feature-icon">🎫</div>
-            <h3>نظام التذاكر</h3><p>نظّم طلبات الدعم واجعل تجربة التواصل مع فريقك أوضح.</p></div>
-          <div class="feature-box"><div class="feature-icon">👋</div>
-            <h3>الترحيب بالأعضاء</h3><p>استقبل أعضاء مجتمعك وامنحهم بداية جميلة في السيرفر.</p></div>
+            <h3>نظام التذاكر</h3><p>نظّم طلبات الدعم برسائل، صور، وأزرار احترافية.</p></div>
+          <div class="feature-box"><div class="feature-icon">📊</div>
+            <h3>السجلات الدقيقة</h3><p>رصد دقيق لكافة أحداث السيرفر (رومات، رتب، باند، رسائل).</p></div>
         </div>
       </section>
     </main>
@@ -511,12 +517,11 @@ def get_server_context(guild_id):
     if not target_guild:
         return None, None
         
-    # جلب رومات السيرفر الحقيقية عبر بوت التوكن لتوفير اختيار دقيق
     channels = []
     if BOT_TOKEN:
         ch_res = discord_get(f"/guilds/{guild_id}/channels", BOT_TOKEN, "Bot")
         if ch_res and ch_res.status_code == 200:
-            channels = [c for c in ch_res.json() if c.get("type") == 0] # Text channels only
+            channels = [c for c in ch_res.json() if c.get("type") == 0]
             
     return target_guild, channels
 
@@ -537,7 +542,7 @@ def render_server_page(guild_id, active_tab, tab_content_html):
       <div class="sidebar-header">
         <img class="sidebar-icon" src="{icon_url}" alt="Server Icon">
         <h3>{guild_name}</h3>
-        <p>لوحة تحكم البوت</p>
+        <p>لوحة تحكم البوت الشاملة</p>
       </div>
       <div class="menu-list">
         <a class="menu-item {'active' if active_tab=='settings' else ''}" href="/server/{guild_id}/settings"><span>⚙️</span> الإعدادات واللغة</a>
@@ -566,18 +571,17 @@ def render_server_page(guild_id, active_tab, tab_content_html):
 @app.route("/server/<guild_id>/settings", methods=["GET", "POST"])
 def s_settings(guild_id):
     if request.method == "POST":
-        # حفظ الإعدادات واللغة
         pass
     html = f"""
-    <div class="page-head" style="margin-bottom:20px;">
-      <div><h1>⚙️ إعدادات السيرفر واللغة</h1><p>اختر لغة البوت الأساسية في السيرفر وإعدادات الربط العامة.</p></div>
+    <div class="page-head" style="margin-bottom:25px;">
+      <div><h1>⚙️ إعدادات السيرفر واللغة العامة</h1><p>اختر لغة البوت الأساسية في السيرفر وبادئة الأوامر.</p></div>
     </div>
     <form method="POST">
       <div class="form-group">
         <label>لغة البوت في السيرفر (Bot Language)</label>
         <select class="form-control" name="bot_lang">
-          <option value="ar">العربية (Arabic)</option>
-          <option value="en">الإنجليزية (English)</option>
+          <option value="ar">العربية (Arabic) 🇸🇦</option>
+          <option value="en">الإنجليزية (English) 🇺🇸</option>
         </select>
       </div>
       <div class="form-group">
@@ -594,7 +598,7 @@ def s_tickets(guild_id):
     if request.method == "POST":
         pass
     html = f"""
-    <div class="page-head" style="margin-bottom:20px;">
+    <div class="page-head" style="margin-bottom:25px;">
       <div><h1>🎫 نظام التذاكر المتقدم</h1><p>تخصيص رسالة التذاكر، الأزرار، والخيارات والصور.</p></div>
     </div>
     <form method="POST">
@@ -607,7 +611,7 @@ def s_tickets(guild_id):
         <input type="url" class="form-control" name="ticket_img" placeholder="https://example.com/image.png">
       </div>
       <div class="form-group">
-        <label>نص زر فتح التذكرة</label>
+        <label>نص ولون زر فتح التذكرة</label>
         <input type="text" class="form-control" name="btn_text" value="فتح تذكرة 🎫">
       </div>
       <button type="submit" class="btn btn-primary">حفظ ونشر رسالة التذاكر ✦</button>
@@ -621,7 +625,7 @@ def s_welcome(guild_id):
     ch_options = "".join([f'<option value="{c["id"]}">#{c["name"]}</option>' for c in channels])
     
     html = f"""
-    <div class="page-head" style="margin-bottom:20px;">
+    <div class="page-head" style="margin-bottom:25px;">
       <div><h1>👋 نظام الترحيب بالأعضاء</h1><p>استقبل أعضاءك برسائل وصور مخصصة في الروم المحدد.</p></div>
     </div>
     <form method="POST">
@@ -647,7 +651,7 @@ def s_welcome(guild_id):
 @app.route("/server/<guild_id>/security", methods=["GET", "POST"])
 def s_security(guild_id):
     html = f"""
-    <div class="page-head" style="margin-bottom:20px;">
+    <div class="page-head" style="margin-bottom:25px;">
       <div><h1>🛡️ إعدادات الحماية والأمان</h1><p>حماية السيرفر من السبام، الروابط الخبيثة، والتخريب.</p></div>
     </div>
     <form method="POST">
@@ -665,7 +669,7 @@ def s_security(guild_id):
           <option value="off">متوقف</option>
         </select>
       </div>
-      <button type="submit" class="btn btn-primary">حفظ الحماية ✦</button>
+      <button type="submit" class="btn btn-primary">حفظ إعدادات الحماية ✦</button>
     </form>
     """
     return render_server_page(guild_id, "security", html)
@@ -673,8 +677,8 @@ def s_security(guild_id):
 @app.route("/server/<guild_id>/commands", methods=["GET", "POST"])
 def s_commands(guild_id):
     html = f"""
-    <div class="page-head" style="margin-bottom:20px;">
-      <div><h1>🤖 الأوامر والتنبيهات المخصصة</h1><p>تخصيص ردود البوت التلقائية والتنبيهات.</p></div>
+    <div class="page-head" style="margin-bottom:25px;">
+      <div><h1>🤖 الأوامر والتنبيهات المخصصة</h1><p>تخصيص ردود البوت التلقائية والتنبيهات للسيرفر.</p></div>
     </div>
     <form method="POST">
       <div class="form-group">
@@ -695,29 +699,53 @@ def s_logs(guild_id):
     ch_options = "".join([f'<option value="{c["id"]}">#{c["name"]}</option>' for c in channels])
     
     html = f"""
-    <div class="page-head" style="margin-bottom:20px;">
-      <div><h1>📊 السجلات الدقيقة (Logs System)</h1><p>اختر الروم المناسب لكل حدث ليقوم البوت بتسجيل كافة التفاصيل بدقة تامة.</p></div>
+    <div class="page-head" style="margin-bottom:25px;">
+      <div><h1>📊 السجلات الدقيقة (Logs System)</h1><p>تخصيص ورصد دقيق لكل حدث داخل السيرفر مع التفاصيل الكاملة.</p></div>
     </div>
     <form method="POST">
       <div class="form-group">
-        <label>روم سجلات الأعضاء (دخول/خروج/بان)</label>
-        <select class="form-control" name="log_members">
+        <label>📁 روم لوق الرومات (إنشاء روم، حذف روم، تعديل روم مع التفاصيل)</label>
+        <select class="form-control" name="log_channels">
           {ch_options if ch_options else '<option value="">لا توجد رومات</option>'}
         </select>
       </div>
+      
       <div class="form-group">
-        <label>روم سجلات الرسائل (حذف/تعديل)</label>
+        <label>👑 روم لوق الرتب والأدوار (إعطاء رتبه، سحب رتبه، تعديل رتبه مع التفاصيل)</label>
+        <select class="form-control" name="log_roles">
+          {ch_options if ch_options else '<option value="">لا توجد رومات</option>'}
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label>🔨 روم لوق العقوبات (باند، فك باند، طرد، تايم آوت، فك تايم مع التفاصيل)</label>
+        <select class="form-control" name="log_punishments">
+          {ch_options if ch_options else '<option value="">لا توجد رومات</option>'}
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label>🔇 روم لوق الميوت والدفن والطرد من الروم مع التفاصيل</label>
+        <select class="form-control" name="log_voice_punishments">
+          {ch_options if ch_options else '<option value="">لا توجد رومات</option>'}
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label>✏️ روم لوق تغيير الأسماء والبروفايل مع التفاصيل</label>
+        <select class="form-control" name="log_names">
+          {ch_options if ch_options else '<option value="">لا توجد رومات</option>'}
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label>💬 روم لوق الرسائل (حذف رسالة، تعديل رسالة مع التفاصيل)</label>
         <select class="form-control" name="log_messages">
           {ch_options if ch_options else '<option value="">لا توجد رومات</option>'}
         </select>
       </div>
-      <div class="form-group">
-        <label>روم سجلات الرومات والأدوار (Channels & Roles Logs)</label>
-        <select class="form-control" name="log_moderation">
-          {ch_options if ch_options else '<option value="">لا توجد رومات</option>'}
-        </select>
-      </div>
-      <button type="submit" class="btn btn-primary">حفظ إعدادات السجلات بدقة ✦</button>
+      
+      <button type="submit" class="btn btn-primary" style="margin-top: 10px;">حفظ إعدادات السجلات الدقيقة ✦</button>
     </form>
     """
     return render_server_page(guild_id, "logs", html)
