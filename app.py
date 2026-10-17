@@ -51,8 +51,6 @@ REDIRECT_URI = os.environ.get(
     "https://sky-panel-z0b2.onrender.com/callback"
 ).strip()
 BOT_TOKEN = os.environ.get("DISCORD_TOKEN", "").strip()
-
-# مفتاح سري مشترك بين اللوحة والبوت
 BOT_API_KEY = os.environ.get("BOT_API_KEY", "").strip()
 
 API_ENDPOINT = "https://discord.com/api/v10"
@@ -106,7 +104,6 @@ _load_db()
 
 
 def commit_settings(guild_id, page_key, new_data):
-    """يحفظ إعدادات الصفحة ويرجع قائمة الحقول اللي تغيرت."""
     with _db_lock:
         guild = _STATE["guilds"].setdefault(guild_id, {})
         old = guild.get(page_key, {})
@@ -214,7 +211,6 @@ a { color: inherit; text-decoration: none; }
   color: #06101f; background: linear-gradient(115deg, #73dcff, #a6a0ff);
   box-shadow: 0 8px 28px #58baff38;
 }
-.btn-gold { color: #06101f; background: var(--gold); font-weight: 900; }
 .btn-green { color: #ffffff; background: var(--green); font-weight: 900; box-shadow: 0 4px 15px rgba(46, 213, 115, 0.4); }
 .btn-green:hover { background: #26af5f; }
 .btn-red { color: #ffffff; background: var(--red); font-weight: 900; box-shadow: 0 4px 15px rgba(255, 71, 87, 0.4); }
@@ -227,100 +223,6 @@ a { color: inherit; text-decoration: none; }
   color: #ffffff; background: #5865F2; box-shadow: 0 4px 20px rgba(88,101,242,0.4);
 }
 .btn-discord:hover { background: #4752C4; }
-
-.hero {
-  width: min(1350px, 95%); margin: auto; padding: 40px 0 20px;
-  display: grid; grid-template-columns: 0.85fr 1.15fr;
-  align-items: center; gap: 20px; min-height: 600px;
-}
-
-.eyebrow {
-  display: inline-flex; align-items: center; gap: 9px; padding: 7px 14px;
-  color: #b6dfff; border: 1px solid #67bfff35; background: #57baff0c;
-  border-radius: 50px; font-size: 13px; font-weight: 800; backdrop-filter: blur(8px);
-}
-.dot { width: 8px; height: 8px; background: #72e5ba; border-radius: 50%; box-shadow: 0 0 10px #72e5ba; }
-
-h1 {
-  font-size: clamp(32px, 4vw, 52px); line-height: 1.35;
-  letter-spacing: -.8px; margin: 18px 0 12px; font-weight: 900;
-}
-.gradient-text {
-  background: linear-gradient(100deg, #71ddff, #9b9aff 60%, #d6b5ff);
-  color: transparent; background-clip: text; -webkit-background-clip: text;
-}
-.subtitle { color: var(--muted); font-size: 15px; line-height: 2.0; max-width: 480px; }
-.actions { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 22px; }
-
-/* تصميم الكوكب والمدار */
-.space-art {
-  height: 580px; position: relative; display: grid; place-items: center;
-}
-.planet-system {
-  position: relative; width: 520px; height: 520px; display: grid; place-items: center;
-}
-.planet-core {
-  width: 150px; height: 150px; border-radius: 50%;
-  background:
-    radial-gradient(circle at 30% 25%, #c2edff, transparent 15%),
-    radial-gradient(circle at 35% 30%, #7bd8ff, #526de2 45%, #23154f 80%, #0a0d20);
-  box-shadow: inset -22px -16px 36px rgba(3, 7, 24, 0.9), 0 0 55px rgba(99, 125, 255, 0.45);
-  position: relative; z-index: 2;
-}
-.planet-core:after {
-  content: ""; position: absolute; width: 200px; height: 36px;
-  border: 6px solid rgba(155, 184, 255, 0.7); border-left-color: #c2a9ff;
-  border-right-color: #6ad8ff; border-radius: 50%; top: 57px; left: -25px;
-  transform: rotate(-22deg); box-shadow: 0 0 22px rgba(109, 175, 255, 0.4);
-}
-@keyframes mainOrbit {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-@keyframes fixText {
-  from { transform: rotate(360deg); }
-  to { transform: rotate(0deg); }
-}
-.orbit-container {
-  position: absolute; inset: 0;
-  animation: mainOrbit 45s linear infinite;
-  pointer-events: none;
-}
-.orbit-container:hover { animation-play-state: paused; }
-.orbit-container::before {
-  content: ""; position: absolute; inset: 50px; border-radius: 50%;
-  border: 1px dashed rgba(120, 170, 255, 0.15); pointer-events: none;
-}
-.orbit-node {
-  position: absolute; top: 50%; left: 50%; width: 130px; height: 75px;
-  margin-top: -37.5px; margin-left: -65px; pointer-events: auto;
-}
-.orbit-card {
-  width: 100%; height: 100%; padding: 8px 10px; border: 1px solid var(--line);
-  border-radius: 12px; background: rgba(14, 23, 48, 0.92); backdrop-filter: blur(14px);
-  box-shadow: 0 6px 20px rgba(0,0,0,0.4); font-size: 11px; text-align: center;
-  display: flex; flex-direction: column; justify-content: center; align-items: center;
-  animation: fixText 45s linear infinite;
-  transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
-}
-.orbit-card:hover {
-  border-color: var(--blue); transform: scale(1.12);
-  box-shadow: 0 10px 30px rgba(100, 202, 255, 0.3); z-index: 50;
-}
-.orbit-card .icon { font-size: 15px; line-height: 1; margin-bottom: 3px; display: block; }
-.orbit-card strong { display: block; font-size: 11px; color: #fff; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 110px; }
-.orbit-card p { margin: 0; color: var(--muted); font-size: 9.5px; line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-
-.node-1  { transform: rotate(0deg) translate(210px) rotate(0deg); }
-.node-2  { transform: rotate(36deg) translate(210px) rotate(-36deg); }
-.node-3  { transform: rotate(72deg) translate(210px) rotate(-72deg); }
-.node-4  { transform: rotate(108deg) translate(210px) rotate(-108deg); }
-.node-5  { transform: rotate(144deg) translate(210px) rotate(-144deg); }
-.node-6  { transform: rotate(180deg) translate(210px) rotate(-180deg); }
-.node-7  { transform: rotate(216deg) translate(210px) rotate(-216deg); }
-.node-8  { transform: rotate(252deg) translate(210px) rotate(-252deg); }
-.node-9  { transform: rotate(288deg) translate(210px) rotate(-288deg); }
-.node-10 { transform: rotate(324deg) translate(210px) rotate(-324deg); }
 
 .page { width: min(1350px, 95%); margin: 40px auto 70px; }
 .page-head { display: flex; justify-content: space-between; align-items: center; gap: 20px; margin-bottom: 35px; }
@@ -553,95 +455,8 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  setupDraggableElements();
-  updateCardPreview();
   hasUnsavedChanges = false;
 });
-
-function updateCardPreview() {
-  const avatar = document.getElementById('previewAvatar');
-  const nameEl = document.getElementById('previewName');
-  const msgEl = document.getElementById('previewMsg');
-  const previewBox = document.getElementById('previewBox');
-
-  if (avatar && document.getElementById('card_avatar_x')) {
-    avatar.style.left = document.getElementById('card_avatar_x').value + '%';
-    avatar.style.top = document.getElementById('card_avatar_y').value + '%';
-    const sz = document.getElementById('card_avatar_size').value + 'px';
-    avatar.style.width = sz;
-    avatar.style.height = sz;
-  }
-  if (nameEl && document.getElementById('card_name_x')) {
-    nameEl.style.left = document.getElementById('card_name_x').value + '%';
-    nameEl.style.top = document.getElementById('card_name_y').value + '%';
-    nameEl.style.fontSize = document.getElementById('card_name_size').value + 'px';
-  }
-  if (msgEl && document.getElementById('card_msg_x')) {
-    msgEl.style.left = document.getElementById('card_msg_x').value + '%';
-    msgEl.style.top = document.getElementById('card_msg_y').value + '%';
-    msgEl.style.fontSize = document.getElementById('card_msg_size').value + 'px';
-  }
-  const bgInput = document.getElementById('card_bg_input');
-  if (previewBox) {
-    const u = bgInput ? bgInput.value : '';
-    if (/^https:\/\//i.test(u)) {
-      previewBox.style.backgroundImage = 'url("' + u.replace(/["\\\n\r]/g, '') + '")';
-      previewBox.style.backgroundSize = 'cover';
-      previewBox.style.backgroundPosition = 'center';
-    } else {
-      previewBox.style.backgroundImage = 'none';
-    }
-  }
-}
-
-function setupDraggableElements() {
-  const box = document.getElementById('previewBox');
-  if (!box) return;
-
-  const items = [
-    { el: document.getElementById('previewAvatar'), xId: 'card_avatar_x', yId: 'card_avatar_y' },
-    { el: document.getElementById('previewName'), xId: 'card_name_x', yId: 'card_name_y' },
-    { el: document.getElementById('previewMsg'), xId: 'card_msg_x', yId: 'card_msg_y' }
-  ];
-
-  items.forEach(item => {
-    if (!item.el) return;
-    let isDragging = false;
-
-    item.el.addEventListener('mousedown', (e) => {
-      isDragging = true;
-      e.stopPropagation();
-    });
-
-    window.addEventListener('mousemove', (e) => {
-      if (!isDragging) return;
-      const rect = box.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-
-      let pctX = Math.round((x / rect.width) * 100);
-      let pctY = Math.round((y / rect.height) * 100);
-
-      pctX = Math.max(5, Math.min(95, pctX));
-      pctY = Math.max(10, Math.min(90, pctY));
-
-      document.getElementById(item.xId).value = pctX;
-      document.getElementById(item.yId).value = pctY;
-      updateCardPreview();
-      triggerChange();
-    });
-
-    window.addEventListener('mouseup', () => {
-      isDragging = false;
-    });
-  });
-
-  const inputs = ['card_avatar_x', 'card_avatar_y', 'card_avatar_size', 'card_name_x', 'card_name_y', 'card_name_size', 'card_msg_x', 'card_msg_y', 'card_msg_size', 'card_bg_input'];
-  inputs.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.addEventListener('input', () => { updateCardPreview(); triggerChange(); });
-  });
-}
 
 function setupTagSelector(containerId, hiddenInputId, dropdownId) {
   const container = document.getElementById(containerId);
@@ -683,7 +498,7 @@ function setupTagSelector(containerId, hiddenInputId, dropdownId) {
   function renderTags() {
     container.innerHTML = '';
     if (selectedValues.length === 0) {
-      container.textContent = 'اختر الرتب...';
+      container.textContent = 'اختر...';
       hiddenInput.value = '';
       return;
     }
@@ -728,10 +543,10 @@ function addTicketCategory(rolesJSON, channelOptionsHTML) {
     </div>
     <div class="form-group">
       <label>وصف التذكرة *</label>
-      <textarea class="form-control" name="cat_desc_${categoryCount}" placeholder="أدخل وصفاً تفصيلياً يظهر للمستخدمين..."></textarea>
+      <textarea class="form-control" name="cat_desc_${categoryCount}" placeholder="أدخل وصفاً تفصيلياً..."></textarea>
     </div>
     <div class="form-group">
-      <label>رابط أو صورة التذكرة (Image URL)</label>
+      <label>صورة التذكرة (Image URL)</label>
       <input type="url" class="form-control" name="cat_image_${categoryCount}" placeholder="https://...">
     </div>
     <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 15px;">
@@ -747,7 +562,7 @@ function addTicketCategory(rolesJSON, channelOptionsHTML) {
     <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 15px;">
       <div class="form-group">
         <label>رتب المسؤولين *</label>
-        <div class="tag-input-container" id="container_staff_${categoryCount}">اختر الرتب...</div>
+        <div class="tag-input-container" id="container_staff_${categoryCount}">اختر...</div>
         <input type="hidden" name="cat_staff_roles_${categoryCount}" id="input_staff_${categoryCount}">
         <div class="tag-select-dropdown" id="dropdown_staff_${categoryCount}">${rolesJSON}</div>
       </div>
@@ -942,27 +757,8 @@ def home():
         <div>
           <div class="eyebrow"><span class="dot"></span> عالمك، إدارتك، تحكمك</div>
           <h1>ارتقِ بسيرفرك<br><span class="gradient-text">إلى عالم آخر.</span></h1>
-          <p class="subtitle">
-            مرحباً بك في Sky Universe، لوحة تحكم متطورة بتصميم فضي ومجرات فريد، تتيح لك إدارة سيرفر البوت واختيار الرتب المتعددة وإعدادات التذاكر والترحيب بكل احترافية.
-          </p>
+          <p class="subtitle">مرحباً بك في Sky Universe، لوحة تحكم متطورة لإدارة سيرفرات ديسكورد.</p>
           <div class="actions">{actions}</div>
-        </div>
-        <div class="space-art">
-          <div class="planet-system">
-            <div class="planet-core"></div>
-            <div class="orbit-container">
-              <div class="orbit-node node-1"><div class="orbit-card"><span class="icon">👋</span><strong>نظام الترحيب</strong><p>استقبال الأعضاء الجدد</p></div></div>
-              <div class="orbit-node node-2"><div class="orbit-card"><span class="icon">🛡️</span><strong>الحماية المتقدمة</strong><p>مكافحة السبام والروابط</p></div></div>
-              <div class="orbit-node node-3"><div class="orbit-card"><span class="icon">🎫</span><strong>نظام التذاكر</strong><p>تنظيم الدعم والشراء</p></div></div>
-              <div class="orbit-node node-4"><div class="orbit-card"><span class="icon">📂</span><strong>إدارة السيرفر</strong><p>إعدادات القنوات والرتب</p></div></div>
-              <div class="orbit-node node-5"><div class="orbit-card"><span class="icon">📊</span><strong>الإحصائيات</strong><p>عرض تفاصيل السيرفر</p></div></div>
-              <div class="orbit-node node-6"><div class="orbit-card"><span class="icon">⚡</span><strong>التحكم الذكي</strong><p>إعدادات البوت والخصائص</p></div></div>
-              <div class="orbit-node node-7"><div class="orbit-card"><span class="icon">👑</span><strong>إدارة الرتب</strong><p>صلاحيات الإشراف</p></div></div>
-              <div class="orbit-node node-8"><div class="orbit-card"><span class="icon">🌐</span><strong>إعدادات اللغة</strong><p>دعم العربية والإنجليزية</p></div></div>
-              <div class="orbit-node node-9"><div class="orbit-card"><span class="icon">🎨</span><strong>تخصيص البطاقات</strong><p>تعديل رسائل ومظهر البوت</p></div></div>
-              <div class="orbit-node node-10" style="cursor: pointer;" onclick="window.open('https://discord.gg/HuH8TtmGA', '_blank', 'noopener')"><div class="orbit-card"><span class="icon">💬</span><strong>الدعم الفني</strong><p>مجتمع الدعم عبر Discord</p></div></div>
-            </div>
-          </div>
         </div>
       </section>
     </main>
@@ -972,16 +768,12 @@ def home():
 
 @app.route("/invite")
 def invite():
-    if not CLIENT_ID:
-        return "يرجى ضبط DISCORD_CLIENT_ID.", 500
     return redirect(BOT_INVITE_URL)
 
 
 @app.route("/login")
 @limiter.limit("10 per minute")
 def login():
-    if not CLIENT_ID or not CLIENT_SECRET:
-        return "يرجى ضبط بيانات الديسكورد.", 500
     state = secrets.token_urlsafe(24)
     session["oauth_state"] = state
     params = urlencode({
@@ -1033,7 +825,7 @@ def callback():
         session["csrf"] = secrets.token_urlsafe(32)
         return redirect("/")
     except Exception:
-        return "حدث خطأ أثناء الاتصال.", 502
+        return "حدث خطأ.", 502
 
 
 @app.route("/dashboard")
@@ -1052,11 +844,11 @@ def dashboard():
         icon = g.get("icon")
         icon_url = f"https://cdn.discordapp.com/icons/{gid}/{escape(str(icon))}.png" if icon else "https://cdn.discordapp.com/embed/avatars/0.png"
         cards.append(f'<article class="server-card"><img class="server-icon" src="{icon_url}"><h3>{name}</h3><div class="status">● البوت متصل</div><a class="btn btn-primary" href="/server/{gid}/settings">⚙️ إدارة السيرفر</a></article>')
-    grid = f'<div class="server-grid">{"".join(cards)}</div>' if cards else '<div class="empty"><span>🌌</span>ما لقينا سيرفرات فيها البوت وأنت أدمن فيها.</div>'
+    grid = f'<div class="server-grid">{"".join(cards)}</div>' if cards else '<div class="empty"><span>🌌</span>لا توجد سيرفرات مشتركة مع البوت وأنت مشرف فيها.</div>'
     return page("اختيار السيرفر", f'<main class="page"><div class="page-head"><h1>📂 سيرفراتك</h1></div>{grid}</main>')
 
 
-# ======================= إدارة السيرفر =======================
+# ======================= إدارة السيرفر والأقسام الكاملة =======================
 def get_server_context(guild_id):
     channels, roles = [], []
     if BOT_TOKEN:
@@ -1085,7 +877,6 @@ def parse_form():
 
 def validate_settings(guild_id, data):
     _, channels, roles = get_server_context(guild_id)
-    allowed = {str(c["id"]) for c in channels} | {str(r["id"]) for r in roles}
     for k, v in data.items():
         vals = v if isinstance(v, list) else [v]
         for item in vals:
@@ -1115,9 +906,9 @@ def render_server_page(guild_id, active_tab, tab_content_html, page_key=None):
     notice = ""
     box = "padding:12px 18px; border-radius:12px; margin-bottom:20px; font-weight:700; font-size:14px;"
     if saved == "1":
-        notice = f'<div style="{box} background:rgba(46,213,115,.12); border:1px solid rgba(46,213,115,.4);">✅ تم الحفظ، والبوت راح يطبّق التعديلات خلال ثواني.</div>'
+        notice = f'<div style="{box} background:rgba(46,213,115,.12); border:1px solid rgba(46,213,115,.4);">✅ تم الحفظ بنجاح، وتطبيق التعديلات قيد التنفيذ.</div>'
     elif saved == "0":
-        notice = f'<div style="{box} background:rgba(100,202,255,.1); border:1px solid rgba(100,202,255,.3);">ℹ️ ما فيه تعديلات جديدة للحفظ.</div>'
+        notice = f'<div style="{box} background:rgba(100,202,255,.1); border:1px solid rgba(100,202,255,.3);">ℹ️ لا توجد تغييرات جديدة للحفظ.</div>'
 
     sidebar_html = f"""
     <aside class="sidebar">
@@ -1127,11 +918,11 @@ def render_server_page(guild_id, active_tab, tab_content_html, page_key=None):
         <a class="menu-item {'active' if active_tab=='welcome' else ''}" href="/server/{guild_id}/welcome"><span>👋</span> نظام الترحيب</a>
         <a class="menu-item {'active' if active_tab=='security' else ''}" href="/server/{guild_id}/security"><span>🛡️</span> الحماية والأمان</a>
         <a class="menu-item {'active' if active_tab=='commands' else ''}" href="/server/{guild_id}/commands"><span>🤖</span> أوامر الإشراف</a>
-        <a class="menu-item {'active' if active_tab=='logs' else ''}" href="/server/{guild_id}/logs"><span>📊</span> السجلات</a>
+        <a class="menu-item {'active' if active_tab=='logs' else ''}" href="/server/{guild_id}/logs"><span>📊</span> السجلات (Logs)</a>
         <a class="menu-item {'active' if active_tab=='tickets' else ''}" href="/server/{guild_id}/tickets"><span>🎫</span> نظام التذاكر</a>
       </div>
       <div style="margin-top: auto; padding-top: 15px; border-top: 1px solid var(--line);">
-        <a class="btn btn-secondary" style="width: 100%; text-align: center;" href="/dashboard">← عودة</a>
+        <a class="btn btn-secondary" style="width: 100%; text-align: center;" href="/dashboard">← عودة للسيرفرات</a>
       </div>
     </aside>
     """
@@ -1139,15 +930,15 @@ def render_server_page(guild_id, active_tab, tab_content_html, page_key=None):
     floating_bar = f"""
     <script>window.COMMITTED_SETTINGS = {saved_json};</script>
     <div id="saveBar" class="floating-save-bar">
-      <div class="save-bar-info"><span class="save-dot"></span><span>تم اكتشاف تغييرات غير محفوظة!</span></div>
+      <div class="save-bar-info"><span class="save-dot"></span><span>تغييرات غير محفوظة!</span></div>
       <div style="display:flex; gap:10px;">
         <button type="submit" form="mainForm" class="btn btn-green" style="padding: 8px 22px;">حفظ</button>
-        <button type="button" onclick="revertToLastSaved()" class="btn btn-red" style="padding: 8px 20px;">عدم حفظ (إلغاء)</button>
+        <button type="button" onclick="revertToLastSaved()" class="btn btn-red" style="padding: 8px 20px;">إلغاء</button>
       </div>
     </div>
     """
 
-    return page(f"إدارة {guild_name}", f'<div class="dashboard-layout">{sidebar_html}<main class="content-panel"><form id="mainForm" method="POST" enctype="multipart/form-data"><input type="hidden" name="csrf_token" value="{csrf_token()}">{notice}{tab_content_html}</form></main></div>{floating_bar}')
+    return page(f"إدارة {guild_name}", f'<div class="dashboard-layout">{sidebar_html}<main class="content-panel"><form id="mainForm" method="POST"><input type="hidden" name="csrf_token" value="{csrf_token()}">{notice}{tab_content_html}</form></main></div>{floating_bar}')
 
 
 @app.route("/server/<guild_id>/settings", methods=["GET", "POST"])
@@ -1166,7 +957,7 @@ def s_settings(guild_id):
     <div class="settings-section-card">
       <div class="settings-section-header"><div class="settings-section-title"><span>🤖</span> الرتب التلقائية</div></div>
       <div class="form-group">
-        <label>👥 رتب المستخدمين</label>
+        <label>👥 رتب الأعضاء الجدد</label>
         <div class="tag-input-container" id="container_users">اختر الرتب...</div>
         <input type="hidden" name="auto_roles_users" id="input_users">
         <div class="tag-select-dropdown" id="dropdown_users">{role_options_str}</div>
@@ -1187,7 +978,7 @@ def s_welcome(guild_id):
     _, channels, _ = get_server_context(guild_id)
     ch_options = options_html(channels, "#")
     html = f"""
-    <div class="page-head"><div><h1>👋 نظام الترحيب</h1><p>تصميم بطاقة الترحيب ورسائل الأعضاء الجدد.</p></div></div>
+    <div class="page-head"><div><h1>👋 نظام الترحيب</h1><p>تخصيص رسائل الترحيب بالأعضاء.</p></div></div>
     <div class="settings-section-card">
       <div class="settings-section-header">
         <div class="settings-section-title"><span>👋</span> رسالة الترحيب</div>
@@ -1195,37 +986,12 @@ def s_welcome(guild_id):
       </div>
       <div class="form-group">
         <label>نص الرسالة</label>
-        <textarea class="form-control" name="welcome_msg" rows="3">مرحباً بك {{user}} في خادمنا الرائع! 🎉</textarea>
+        <textarea class="form-control" name="welcome_msg" rows="3">مرحباً بك {{user}} في سيرفرنا! 🎉</textarea>
       </div>
       <div class="form-group">
-        <label>روم الترحيب</label>
-        <select class="form-control" name="welcome_channel"><option value="">اختر الروم...</option>{ch_options}</select>
+        <label>قناة الترحيب</label>
+        <select class="form-control" name="welcome_channel"><option value="">اختر القناة...</option>{ch_options}</select>
       </div>
-    </div>
-
-    <div class="settings-section-card">
-      <div class="settings-section-header">
-        <div class="settings-section-title"><span>🎨</span> مصمم بطاقة الترحيب (اسحب العناصر بالماوس)</div>
-        <label class="switch"><input type="checkbox" name="welcome_image_enabled" checked><span class="slider"></span></label>
-      </div>
-      <div id="previewBox" style="background: rgba(6, 10, 23, 0.9); border: 1px solid var(--line); border-radius: 16px; height: 300px; margin-bottom: 20px; position: relative; overflow: hidden; user-select: none;">
-        <div id="previewAvatar" style="position: absolute; left: 50%; top: 35%; transform: translate(-50%, -50%); width: 80px; height: 80px; border-radius: 50%; background: #5865F2; display: grid; place-items: center; font-size: 28px; border: 3px solid #73dcff; cursor: grab;">🎮</div>
-        <div id="previewName" style="position: absolute; left: 50%; top: 62%; transform: translate(-50%, -50%); font-size: 18px; font-weight: 800; color: #fff; cursor: grab;">Username</div>
-        <div id="previewMsg" style="position: absolute; left: 50%; top: 78%; transform: translate(-50%, -50%); font-size: 13px; font-weight: 600; color: var(--blue); cursor: grab;">Welcome to the server!</div>
-      </div>
-      <div class="form-group">
-        <label>رابط صورة الخلفية (Background URL)</label>
-        <input type="url" class="form-control" id="card_bg_input" name="welcome_bg_url" placeholder="https://...">
-      </div>
-      <input type="hidden" id="card_avatar_x" name="card_avatar_x" value="50">
-      <input type="hidden" id="card_avatar_y" name="card_avatar_y" value="35">
-      <input type="hidden" id="card_avatar_size" name="card_avatar_size" value="80">
-      <input type="hidden" id="card_name_x" name="card_name_x" value="50">
-      <input type="hidden" id="card_name_y" name="card_name_y" value="62">
-      <input type="hidden" id="card_name_size" name="card_name_size" value="18">
-      <input type="hidden" id="card_msg_x" name="card_msg_x" value="50">
-      <input type="hidden" id="card_msg_y" name="card_msg_y" value="78">
-      <input type="hidden" id="card_msg_size" name="card_msg_size" value="13">
     </div>
     """
     return render_server_page(guild_id, "welcome", html)
@@ -1234,19 +1000,66 @@ def s_welcome(guild_id):
 @app.route("/server/<guild_id>/security", methods=["GET", "POST"])
 @guild_access
 def s_security(guild_id):
-    return render_server_page(guild_id, "security", '<div class="page-head"><h1>🛡️ الحماية والأمان</h1></div><div class="empty"><span>🛡️</span>إعدادات الأمان مفعلة بالكامل.</div>')
+    sec_items = [
+        ("كشف الكلمات السيئة", "bad_words", "فلترة وحظر الكلمات النابية والسيئة تلقائياً"),
+        ("كشف السبام", "spam", "منع التكرار المفرط وإزعاج الأعضاء"),
+        ("فلترة الروابط", "links", "التحكم في الروابط المسموحة والمحظورة"),
+        ("سبام المنشن", "mention_spam", "حماية الشات من الإشارات المتكررة")
+    ]
+    list_html = "".join([f"""
+    <div class="security-card">
+      <div class="security-info"><h3>{title}</h3><p>{desc}</p></div>
+      <div style="display:flex; align-items:center; gap:14px;">
+        <label class="switch"><input type="checkbox" name="sec_{key}" checked><span class="slider"></span></label>
+      </div>
+    </div>""" for title, key, desc in sec_items])
+    return render_server_page(guild_id, "security", f'<div class="page-head"><h1>🛡️ الحماية والأمان</h1></div>{list_html}')
 
 
 @app.route("/server/<guild_id>/commands", methods=["GET", "POST"])
 @guild_access
 def s_commands(guild_id):
-    return render_server_page(guild_id, "commands", '<div class="page-head"><h1>🤖 أوامر الإشراف</h1></div><div class="empty"><span>🤖</span>جميع أوامر الإشراف جاهزة.</div>')
+    cmds = [
+        ("ban", "حظر عضو من السيرفر"), ("unban", "إلغاء حظر عضو"), ("clear", "مسح الرسائل"),
+        ("hide", "إخفاء قناة معينة"), ("show", "إظهار قناة معينة"), ("lock", "قفل القناة"),
+        ("unlock", "فتح القناة"), ("timeout", "إسكات عضو مؤقتاً"), ("warn", "تحذير عضو")
+    ]
+    cards_html = "".join([f"""
+    <div class="card-item">
+      <div class="card-header">
+        <div class="card-title">/{cmd}</div>
+        <label class="switch"><input type="checkbox" name="cmd_{cmd}" checked><span class="slider"></span></label>
+      </div>
+      <div style="font-size: 13px; color: var(--muted); text-align: right;">{desc}</div>
+    </div>""" for cmd, desc in cmds])
+    return render_server_page(guild_id, "commands", f'<div class="page-head"><h1>🤖 أوامر الإشراف</h1></div><div class="cards-grid-3">{cards_html}</div>')
 
 
 @app.route("/server/<guild_id>/logs", methods=["GET", "POST"])
 @guild_access
 def s_logs(guild_id):
-    return render_server_page(guild_id, "logs", '<div class="page-head"><h1>📊 السجلات</h1></div><div class="empty"><span>📊</span>نظام السجلات متصل ومستقر.</div>')
+    _, channels, _ = get_server_context(guild_id)
+    ch_options = options_html(channels, "#")
+    
+    logs_list = [
+        ("حظر عضو", "log_ban"), ("طرد عضو", "log_kick"), ("انضمام عضو", "log_join"),
+        ("مغادرة عضو", "log_leave"), ("حذف رسالة", "log_msg_delete"), ("تعديل رسالة", "log_msg_edit"),
+        ("إنشاء قناة", "log_channel_create"), ("حذف قناة", "log_channel_delete")
+    ]
+
+    cards_html = "".join([f"""
+    <div class="card-item">
+      <div class="card-header">
+        <div class="card-title"><span>📊</span> {title}</div>
+        <label class="switch"><input type="checkbox" name="{prefix}_enabled" checked><span class="slider"></span></label>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <label style="color:var(--muted); font-size:12px; text-align:right;">قناة السجل</label>
+        <select class="form-control" name="{prefix}_channel" style="padding: 10px 14px; font-size: 13px;"><option value="">اختر القناة...</option>{ch_options}</select>
+      </div>
+    </div>""" for title, prefix in logs_list])
+
+    return render_server_page(guild_id, "logs", f'<div class="page-head"><h1>📊 السجلات (Logs)</h1></div><div class="cards-grid-3">{cards_html}</div>')
 
 
 @app.route("/server/<guild_id>/tickets", methods=["GET", "POST"])
@@ -1260,7 +1073,7 @@ def s_tickets(guild_id):
 
     html = f"""
     <div class="page-head" style="margin-bottom:25px;">
-      <div><h1>🎫 نظام التذاكر المتقدم</h1><p>إدارة فئات التذاكر وتخصيص الأوصاف والصور ورتب المسؤولين بكل احترافية.</p></div>
+      <div><h1>🎫 نظام التذاكر المتقدم</h1><p>إدارة فئات التذاكر وتخصيص رتب المسؤولين.</p></div>
     </div>
 
     <div id="categoriesContainer">
@@ -1270,15 +1083,11 @@ def s_tickets(guild_id):
         </div>
         <div class="form-group">
           <label>اسم الفئة *</label>
-          <input type="text" class="form-control" name="cat_name_1" placeholder="أدخل اسم الفئة (مثل: الدعم الفني)...">
+          <input type="text" class="form-control" name="cat_name_1" placeholder="مثال: الدعم الفني">
         </div>
         <div class="form-group">
           <label>وصف التذكرة *</label>
-          <textarea class="form-control" name="cat_desc_1" placeholder="أدخل وصفاً تفصيلياً يظهر للمستخدمين عند فتح التذكرة..."></textarea>
-        </div>
-        <div class="form-group">
-          <label>رابط أو صورة التذكرة (Image URL)</label>
-          <input type="url" class="form-control" name="cat_image_1" placeholder="https://...">
+          <textarea class="form-control" name="cat_desc_1" placeholder="وصف يظهر للمستخدم..."></textarea>
         </div>
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 15px;">
           <div class="form-group">
@@ -1293,7 +1102,7 @@ def s_tickets(guild_id):
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 15px;">
           <div class="form-group">
             <label>رتب المسؤولين *</label>
-            <div class="tag-input-container" id="container_staff_1">اختر الرتب...</div>
+            <div class="tag-input-container" id="container_staff_1">اختر...</div>
             <input type="hidden" name="cat_staff_roles_1" id="input_staff_1">
             <div class="tag-select-dropdown" id="dropdown_staff_1">{role_options_str}</div>
           </div>
