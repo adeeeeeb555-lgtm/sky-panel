@@ -1,7 +1,11 @@
 import os
 import re
+import json
+import time
 import hmac
 import secrets
+import tempfile
+import threading
 import requests
 from datetime import timedelta
 from functools import wraps
@@ -14,7 +18,10 @@ from flask_limiter.util import get_remote_address
 
 app = Flask(__name__)
 
-SECRET = os.environ.get("SESSION_SECRET", "vZRj3Y11P3hh2CoeIk0VdWwH88icJOQK")
+# ======================= الإعدادات الأمنية =======================
+SECRET = os.environ.get("SESSION_SECRET", "")
+if len(SECRET) < 32:
+    raise RuntimeError("اضبط SESSION_SECRET (32 حرف أو أكثر) في متغيرات البيئة")
 app.secret_key = SECRET
 
 LOCAL_DEV = os.environ.get("LOCAL_DEV") == "1"
@@ -45,6 +52,9 @@ REDIRECT_URI = os.environ.get(
 ).strip()
 BOT_TOKEN = os.environ.get("DISCORD_TOKEN", "").strip()
 
+# مفتاح سري مشترك بين اللوحة والبوت (غير توكن البوت)
+BOT_API_KEY = os.environ.get("BOT_API_KEY", "").strip()
+
 API_ENDPOINT = "https://discord.com/api/v10"
 BOT_PERMISSIONS = os.environ.get("BOT_PERMISSIONS", "8")
 
@@ -59,14 +69,61 @@ BOT_INVITE_URL = (
 )
 
 GUILD_ID_RE = re.compile(r"^\d{15,25}$")
+KEY_RE = re.compile(r"^[a-z0-9_]{1,64}$")
 SEC_KEYS = {"bad_words", "spam", "links", "mention_spam"}
 CMD_NAMES = {
     "ban", "unban", "clear", "hide", "show", "lock", "unlock", "move", "role",
     "setnick", "timeout", "untimeout", "vkick", "warn", "unwarn", "warns", "vmute"
 }
 
-# قاعدة بيانات الحفظ الرسمية
-COMMITTED_SETTINGS_DB = {}
+# ======================= تخزين الإعدادات + سجل التعديلات =======================
+# مهم: شغّل اللوحة بـ worker واحد:  gunicorn app:app --workers 1 --threads 4
+DATA_FILE = os.environ.get("DATA_FILE", "settings_db.json")
+_db_lock = threading.Lock()
+_STATE = {"rev": 0, "guilds": {}, "log": []}
+
+
+def _load_db():
+    try:
+        with open(DATA_FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        if isinstance(data, dict):
+            _STATE["rev"] = int(data.get("rev", 0))
+            _STATE["guilds"] = data.get("guilds", {})
+            _STATE["log"] = data.get("log", [])
+    except (FileNotFoundError, ValueError):
+        pass
+
+
+def _save_db():
+    d = os.path.dirname(os.path.abspath(DATA_FILE))
+    fd, tmp = tempfile.mkstemp(dir=d, suffix=".tmp")
+    with os.fdopen(fd, "w", encoding="utf-8") as f:
+        json.dump(_STATE, f, ensure_ascii=False)
+    os.replace(tmp, DATA_FILE)  # كتابة آمنة
+
+
+_load_db()
+
+
+def commit_settings(guild_id, page_key, new_data):
+    """يحفظ إعدادات الصفحة ويرجع قائمة الحقول اللي تغيرت (فاضية = ما تغير شي)."""
+    with _db_lock:
+        guild = _STATE["guilds"].setdefault(guild_id, {})
+        old = guild.get(page_key, {})
+        changed = sorted(k for k in (set(old) | set(new_data)) if old.get(k) != new_data.get(k))
+        if not changed:
+            return []
+        guild[page_key] = new_data
+        _STATE["rev"] += 1
+        _STATE["log"].append({
+            "rev": _STATE["rev"], "guild_id": guild_id, "page": page_key,
+            "changed": changed, "ts": int(time.time()),
+        })
+        _STATE["log"] = _STATE["log"][-200:]
+        _save_db()
+        return changed
+
 
 STYLE = r"""
 <!DOCTYPE html>
@@ -450,35 +507,60 @@ function triggerChange() {
   if (bar) bar.classList.add('visible');
 }
 
-/* زر عدم الحفظ / إلغاء التعديلات: يرجع كل شيء لآخر نسخة محفوظة رسمياً */
+/* عدم الحفظ: يعيد تحميل الصفحة من آخر نسخة محفوظة */
 function revertToLastSaved() {
   hasUnsavedChanges = false;
   const bar = document.getElementById('saveBar');
   if (bar) bar.classList.remove('visible');
-  
-  const committedData = window.COMMITTED_SETTINGS || {};
-  const form = document.getElementById('mainForm');
-  if (!form) return;
+  window.location.href = window.location.pathname;
+}
 
-  for (const [key, value] of Object.entries(committedData)) {
-    const field = form.elements[key];
-    if (field) {
-      if (field.type === 'checkbox' || field.type === 'radio') {
-        field.checked = (field.value === value);
-      } else {
-        field.value = value;
-      }
+/* يطبق آخر إعدادات محفوظة على الفورم عند فتح الصفحة */
+function applySavedSettings() {
+  const saved = window.COMMITTED_SETTINGS;
+  const form = document.getElementById('mainForm');
+  if (!saved || !form) return;
+
+  // رجّع فئات التذاكر الإضافية
+  const addBtn = form.querySelector('[data-roles]');
+  if (addBtn) {
+    let max = 1;
+    Object.keys(saved).forEach(k => {
+      const m = k.match(/^cat_name_(\d+)$/);
+      if (m) max = Math.max(max, parseInt(m[1], 10));
+    });
+    while (categoryCount < max) addTicketCategory(addBtn.dataset.roles, addBtn.dataset.channels);
+  }
+
+  for (const el of Array.from(form.elements)) {
+    if (!el.name || el.name === 'csrf_token' || el.type === 'submit' || el.type === 'button') continue;
+    const has = Object.prototype.hasOwnProperty.call(saved, el.name);
+    if (el.type === 'checkbox') { el.checked = has; continue; }  // غيابه = مطفي
+    if (!has) continue;
+    const v = saved[el.name];
+    if (el.tagName === 'SELECT' && el.multiple) {
+      const arr = Array.isArray(v) ? v : [v];
+      Array.from(el.options).forEach(o => { o.selected = arr.includes(o.value); });
+    } else if (el.type === 'radio') {
+      el.checked = (el.value === v);
+    } else {
+      el.value = Array.isArray(v) ? v[0] : v;
     }
   }
-  updateCardPreview();
+
+  hasUnsavedChanges = false;
+  const bar = document.getElementById('saveBar');
+  if (bar) bar.classList.remove('visible');
 }
 
 window.addEventListener('DOMContentLoaded', () => {
+  applySavedSettings();
+
   const form = document.getElementById('mainForm');
   if (form) {
     form.addEventListener('input', triggerChange);
     form.addEventListener('change', triggerChange);
-    
+
     form.addEventListener('submit', () => {
       hasUnsavedChanges = false;
       const bar = document.getElementById('saveBar');
@@ -505,6 +587,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
   setupDraggableElements();
   updateCardPreview();
+  hasUnsavedChanges = false;
 });
 
 function updateCardPreview() {
@@ -531,10 +614,15 @@ function updateCardPreview() {
     msgEl.style.fontSize = document.getElementById('card_msg_size').value + 'px';
   }
   const bgInput = document.getElementById('card_bg_input');
-  if (bgInput && bgInput.value && previewBox) {
-    previewBox.style.backgroundImage = `url(${bgInput.value})`;
-    previewBox.style.backgroundSize = 'cover';
-    previewBox.style.backgroundPosition = 'center';
+  if (previewBox) {
+    const u = bgInput ? bgInput.value : '';
+    if (/^https:\/\//i.test(u)) {
+      previewBox.style.backgroundImage = 'url("' + u.replace(/["\\\n\r]/g, '') + '")';
+      previewBox.style.backgroundSize = 'cover';
+      previewBox.style.backgroundPosition = 'center';
+    } else {
+      previewBox.style.backgroundImage = 'none';
+    }
   }
 }
 
@@ -628,22 +716,27 @@ function setupTagSelector(containerId, hiddenInputId, dropdownId) {
   function renderTags() {
     container.innerHTML = '';
     if (selectedValues.length === 0) {
-      container.innerHTML = 'اختر الرتب...';
+      container.textContent = 'اختر الرتب...';
       hiddenInput.value = '';
       return;
     }
     selectedValues.forEach(val => {
-      const opt = dropdown.querySelector(`[data-value="${val}"]`);
+      const opt = Array.from(dropdown.querySelectorAll('.tag-option')).find(o => o.dataset.value === val);
       const name = opt ? opt.textContent : val;
       const badge = document.createElement('div');
       badge.className = 'tag-badge';
-      badge.innerHTML = `${name} <span class="remove-tag">&times;</span>`;
-      badge.querySelector('.remove-tag').addEventListener('click', (e) => {
+      const label = document.createElement('span');
+      label.textContent = name;
+      const x = document.createElement('span');
+      x.className = 'remove-tag';
+      x.textContent = '×';
+      x.addEventListener('click', (e) => {
         e.stopPropagation();
         selectedValues = selectedValues.filter(v => v !== val);
         renderTags();
         triggerChange();
       });
+      badge.append(label, x);
       container.appendChild(badge);
     });
     hiddenInput.value = JSON.stringify(selectedValues);
@@ -739,6 +832,7 @@ function addTicketCategory(rolesJSON, channelOptionsHTML) {
 """
 
 
+# ======================= أدوات الحماية =======================
 @app.after_request
 def security_headers(resp):
     resp.headers["Content-Security-Policy"] = (
@@ -773,7 +867,7 @@ def csrf_protect():
             return
         expected = session.get("csrf")
         sent = request.form.get("csrf_token") or request.headers.get("X-CSRF-Token", "")
-        if not expected or not hmac.compare_digest(sent, expected):
+        if not expected or not hmac.compare_digest(sent.encode(), expected.encode()):
             abort(403)
 
 
@@ -821,15 +915,48 @@ def discord_get(path, token, token_type="Bearer"):
         return None
 
 
+# ======================= API البوت (مزامنة الإعدادات) =======================
+def bot_auth(f):
+    @wraps(f)
+    def w(*a, **kw):
+        if not BOT_API_KEY:
+            return jsonify({"error": "BOT_API_KEY not configured"}), 503
+        sent = request.headers.get("X-API-Key", "")
+        if not hmac.compare_digest(sent.encode(), BOT_API_KEY.encode()):
+            return jsonify({"error": "Unauthorized"}), 401
+        return f(*a, **kw)
+    return w
+
+
+@app.route("/api/bot/settings", methods=["GET"])
+@limiter.exempt
+@bot_auth
+def api_all_settings():
+    with _db_lock:
+        return jsonify({"rev": _STATE["rev"], "guilds": _STATE["guilds"]})
+
+
 @app.route("/api/bot/settings/<guild_id>", methods=["GET"])
-def api_get_guild_settings(guild_id):
-    auth_header = request.headers.get("Authorization", "")
-    if BOT_TOKEN and auth_header != f"Bot {BOT_TOKEN}":
-        return jsonify({"error": "Unauthorized"}), 401
-    settings = COMMITTED_SETTINGS_DB.get(guild_id, {})
-    return jsonify({"guild_id": guild_id, "settings": settings}), 200
+@limiter.exempt
+@bot_auth
+def api_guild_settings(guild_id):
+    with _db_lock:
+        return jsonify({"guild_id": guild_id, "settings": _STATE["guilds"].get(guild_id, {})})
 
 
+@app.route("/api/bot/updates", methods=["GET"])
+@limiter.exempt
+@bot_auth
+def api_updates():
+    since = request.args.get("since", default=0, type=int)
+    with _db_lock:
+        return jsonify({
+            "rev": _STATE["rev"],
+            "updates": [u for u in _STATE["log"] if u["rev"] > since],
+        })
+
+
+# ======================= الصفحات العامة =======================
 @app.route("/")
 def home():
     user = session.get("user")
@@ -865,76 +992,16 @@ def home():
           <div class="planet-system">
             <div class="planet-core"></div>
             <div class="orbit-container">
-              <div class="orbit-node node-1">
-                <div class="orbit-card">
-                  <span class="icon">👋</span>
-                  <strong>نظام الترحيب</strong>
-                  <p>استقبال الأعضاء الجدد</p>
-                </div>
-              </div>
-              <div class="orbit-node node-2">
-                <div class="orbit-card">
-                  <span class="icon">🛡️</span>
-                  <strong>الحماية المتقدمة</strong>
-                  <p>مكافحة السبام والروابط</p>
-                </div>
-              </div>
-              <div class="orbit-node node-3">
-                <div class="orbit-card">
-                  <span class="icon">🎫</span>
-                  <strong>نظام التذاكر</strong>
-                  <p>تنظيم الدعم والشراء</p>
-                </div>
-              </div>
-              <div class="orbit-node node-4">
-                <div class="orbit-card">
-                  <span class="icon">📂</span>
-                  <strong>إدارة السيرفر</strong>
-                  <p>إعدادات القنوات والرتب</p>
-                </div>
-              </div>
-              <div class="orbit-node node-5">
-                <div class="orbit-card">
-                  <span class="icon">📊</span>
-                  <strong>الإحصائيات</strong>
-                  <p>عرض تفاصيل السيرفر</p>
-                </div>
-              </div>
-              <div class="orbit-node node-6">
-                <div class="orbit-card">
-                  <span class="icon">⚡</span>
-                  <strong>التحكم الذكي</strong>
-                  <p>إعدادات البوت والخصائص</p>
-                </div>
-              </div>
-              <div class="orbit-node node-7">
-                <div class="orbit-card">
-                  <span class="icon">👑</span>
-                  <strong>إدارة الرتب</strong>
-                  <p>صلاحيات الإشراف</p>
-                </div>
-              </div>
-              <div class="orbit-node node-8">
-                <div class="orbit-card">
-                  <span class="icon">🌐</span>
-                  <strong>إعدادات اللغة</strong>
-                  <p>دعم العربية والإنجليزية</p>
-                </div>
-              </div>
-              <div class="orbit-node node-9">
-                <div class="orbit-card">
-                  <span class="icon">🎨</span>
-                  <strong>تخصيص البطاقات</strong>
-                  <p>تعديل رسائل ومظهر البوت</p>
-                </div>
-              </div>
-              <div class="orbit-node node-10" style="cursor: pointer;" onclick="window.open('https://discord.gg/HuH8TtmGA', '_blank', 'noopener')">
-                <div class="orbit-card">
-                  <span class="icon">💬</span>
-                  <strong>الدعم الفني</strong>
-                  <p>مجتمع الدعم عبر Discord</p>
-                </div>
-              </div>
+              <div class="orbit-node node-1"><div class="orbit-card"><span class="icon">👋</span><strong>نظام الترحيب</strong><p>استقبال الأعضاء الجدد</p></div></div>
+              <div class="orbit-node node-2"><div class="orbit-card"><span class="icon">🛡️</span><strong>الحماية المتقدمة</strong><p>مكافحة السبام والروابط</p></div></div>
+              <div class="orbit-node node-3"><div class="orbit-card"><span class="icon">🎫</span><strong>نظام التذاكر</strong><p>تنظيم الدعم والشراء</p></div></div>
+              <div class="orbit-node node-4"><div class="orbit-card"><span class="icon">📂</span><strong>إدارة السيرفر</strong><p>إعدادات القنوات والرتب</p></div></div>
+              <div class="orbit-node node-5"><div class="orbit-card"><span class="icon">📊</span><strong>الإحصائيات</strong><p>عرض تفاصيل السيرفر</p></div></div>
+              <div class="orbit-node node-6"><div class="orbit-card"><span class="icon">⚡</span><strong>التحكم الذكي</strong><p>إعدادات البوت والخصائص</p></div></div>
+              <div class="orbit-node node-7"><div class="orbit-card"><span class="icon">👑</span><strong>إدارة الرتب</strong><p>صلاحيات الإشراف</p></div></div>
+              <div class="orbit-node node-8"><div class="orbit-card"><span class="icon">🌐</span><strong>إعدادات اللغة</strong><p>دعم العربية والإنجليزية</p></div></div>
+              <div class="orbit-node node-9"><div class="orbit-card"><span class="icon">🎨</span><strong>تخصيص البطاقات</strong><p>تعديل رسائل ومظهر البوت</p></div></div>
+              <div class="orbit-node node-10" style="cursor: pointer;" onclick="window.open('https://discord.gg/HuH8TtmGA', '_blank', 'noopener')"><div class="orbit-card"><span class="icon">💬</span><strong>الدعم الفني</strong><p>مجتمع الدعم عبر Discord</p></div></div>
             </div>
           </div>
         </div>
@@ -946,15 +1013,22 @@ def home():
 
 @app.route("/invite")
 def invite():
+    if not CLIENT_ID:
+        return "يرجى ضبط DISCORD_CLIENT_ID في متغيرات البيئة.", 500
     return redirect(BOT_INVITE_URL)
 
 
 @app.route("/login")
 @limiter.limit("10 per minute")
 def login():
+    if not CLIENT_ID or not CLIENT_SECRET:
+        return "يرجى ضبط DISCORD_CLIENT_ID و DISCORD_CLIENT_SECRET.", 500
     state = secrets.token_urlsafe(24)
     session["oauth_state"] = state
-    params = urlencode({"client_id": CLIENT_ID, "redirect_uri": REDIRECT_URI, "response_type": "code", "scope": "identify guilds", "state": state})
+    params = urlencode({
+        "client_id": CLIENT_ID, "redirect_uri": REDIRECT_URI,
+        "response_type": "code", "scope": "identify guilds", "state": state,
+    })
     return redirect(f"https://discord.com/oauth2/authorize?{params}")
 
 
@@ -963,28 +1037,59 @@ def login():
 def callback():
     expected = session.pop("oauth_state", None)
     got = request.args.get("state", "")
-    if not expected or not hmac.compare_digest(got, expected):
-        return "طلب غير صالح (state).", 400
+    if not expected or not hmac.compare_digest(got.encode(), expected.encode()):
+        return "طلب غير صالح (state). حاول تسجيل الدخول من جديد.", 400
+    if request.args.get("error"):
+        return "تم إلغاء تسجيل الدخول أو رفضه من Discord.", 400
     code = request.args.get("code")
     if not code:
         return "لم يتم استلام كود التحقق.", 400
 
     try:
-        r = requests.post(f"{API_ENDPOINT}/oauth2/token", data={"client_id": CLIENT_ID, "client_secret": CLIENT_SECRET, "grant_type": "authorization_code", "code": code, "redirect_uri": REDIRECT_URI}, headers={"Content-Type": "application/x-www-form-urlencoded"}, timeout=15)
+        r = requests.post(
+            f"{API_ENDPOINT}/oauth2/token",
+            data={"client_id": CLIENT_ID, "client_secret": CLIENT_SECRET,
+                  "grant_type": "authorization_code", "code": code, "redirect_uri": REDIRECT_URI},
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+            timeout=15,
+        )
         if r.status_code != 200:
             return "فشل تسجيل الدخول.", 502
         access_token = r.json().get("access_token")
+        if not access_token:
+            return "لم يتم استلام رمز الدخول.", 502
+
         user_res = discord_get("/users/@me", access_token)
         guilds_res = discord_get("/users/@me/guilds", access_token)
+        if (not user_res or user_res.status_code != 200
+                or not guilds_res or guilds_res.status_code != 200):
+            return "تعذر جلب بيانات حساب Discord.", 502
+
         u = user_res.json()
-        admin_guilds = {g["id"]: {"name": g.get("name", ""), "icon": g.get("icon")} for g in guilds_res.json() if (int(g.get("permissions", 0)) & 0x8) == 0x8 or g.get("owner", False)}
+        admin_guilds = {
+            g["id"]: {"name": g.get("name", ""), "icon": g.get("icon")}
+            for g in guilds_res.json()
+            if (int(g.get("permissions", 0)) & 0x8) == 0x8 or g.get("owner", False)
+        }
+
+        # إلغاء التوكن فوراً، ما نحتاجه بعد جلب البيانات
+        try:
+            requests.post(
+                f"{API_ENDPOINT}/oauth2/token/revoke",
+                data={"client_id": CLIENT_ID, "client_secret": CLIENT_SECRET,
+                      "token": access_token, "token_type_hint": "access_token"},
+                timeout=10,
+            )
+        except requests.RequestException:
+            pass
+
         session.clear()
         session.permanent = True
         session["user"] = {"id": u.get("id"), "username": u.get("username"), "avatar": u.get("avatar")}
         session["guilds"] = admin_guilds
         session["csrf"] = secrets.token_urlsafe(32)
         return redirect("/")
-    except:
+    except (requests.RequestException, ValueError):
         return "تعذر الاتصال بـ Discord.", 502
 
 
@@ -1008,6 +1113,7 @@ def dashboard():
     return page("اختيار السيرفر", f'<main class="page"><div class="page-head"><h1>📂 سيرفراتك</h1></div>{grid}</main>')
 
 
+# ======================= صفحات إدارة السيرفر =======================
 def get_server_context(guild_id):
     channels, roles = [], []
     if BOT_TOKEN:
@@ -1022,26 +1128,73 @@ def get_server_context(guild_id):
     return session["guilds"][guild_id], channels, roles
 
 
-def handle_form_post(guild_id):
-    if request.method == "POST":
-        form_data = request.form.to_dict(flat=False)
-        clean_data = {k: v[0] if len(v) == 1 else v for k, v in form_data.items() if k != "csrf_token"}
-        if request.form.get("action_type") == "save":
-            COMMITTED_SETTINGS_DB[guild_id] = clean_data
+def parse_form():
+    data = {}
+    for k in request.form.keys():
+        if k == "csrf_token":
+            continue
+        if not KEY_RE.match(k):
+            abort(400)
+        vals = request.form.getlist(k)
+        data[k] = vals[0] if len(vals) == 1 else vals
+    if len(data) > 400:
+        abort(400)
+    return data
 
 
-def render_server_page(guild_id, active_tab, tab_content_html):
+def validate_settings(guild_id, data):
+    """ما نثق بأي قيمة من الفورم: الرومات والرتب لازم تكون من نفس السيرفر."""
+    _, channels, roles = get_server_context(guild_id)
+    allowed = {str(c["id"]) for c in channels} | {str(r["id"]) for r in roles}
+    for k, v in data.items():
+        vals = v if isinstance(v, list) else [v]
+        for item in vals:
+            if len(item) > 2000:
+                abort(400)
+            if k.endswith("_url") or k.startswith("cat_image_"):
+                if item and not item.lower().startswith("https://"):
+                    abort(400)
+            if "channel" in k or "role" in k:
+                tokens = [item]
+                if item.startswith("["):
+                    try:
+                        tokens = json.loads(item)
+                    except ValueError:
+                        abort(400)
+                    if not isinstance(tokens, list):
+                        abort(400)
+                for t in tokens:
+                    t = str(t)
+                    if t and t not in ("on", "off") and t not in allowed:
+                        abort(400)
+
+
+def render_server_page(guild_id, active_tab, tab_content_html, page_key=None):
+    page_key = page_key or active_tab
+
     if request.method == "POST":
-        handle_form_post(guild_id)
-    
+        data = parse_form()
+        validate_settings(guild_id, data)
+        changed = commit_settings(guild_id, page_key, data)
+        return redirect(f"{request.path}?saved={'1' if changed else '0'}")
+
     target_guild = session["guilds"][guild_id]
     guild_name = escape(str(target_guild.get("name", "السيرفر")))
     icon = target_guild.get("icon")
     icon_url = f"https://cdn.discordapp.com/icons/{guild_id}/{escape(str(icon))}.png" if icon else "https://cdn.discordapp.com/embed/avatars/0.png"
 
-    current_settings = COMMITTED_SETTINGS_DB.get(guild_id, {})
-    import json
-    committed_json = json.dumps(current_settings)
+    with _db_lock:
+        saved_page = _STATE["guilds"].get(guild_id, {}).get(page_key)  # None = عمرها ما انحفظت
+    saved_json = (json.dumps(saved_page, ensure_ascii=False)
+                  .replace("<", "\\u003c").replace(">", "\\u003e").replace("&", "\\u0026"))
+
+    saved = request.args.get("saved")
+    notice = ""
+    box = "padding:12px 18px; border-radius:12px; margin-bottom:20px; font-weight:700; font-size:14px;"
+    if saved == "1":
+        notice = f'<div style="{box} background:rgba(46,213,115,.12); border:1px solid rgba(46,213,115,.4);">✅ تم الحفظ، والبوت راح يطبّق التعديلات خلال ثواني.</div>'
+    elif saved == "0":
+        notice = f'<div style="{box} background:rgba(100,202,255,.1); border:1px solid rgba(100,202,255,.3);">ℹ️ ما فيه تعديلات جديدة للحفظ.</div>'
 
     sidebar_html = f"""
     <aside class="sidebar">
@@ -1061,17 +1214,17 @@ def render_server_page(guild_id, active_tab, tab_content_html):
     """
 
     floating_bar = f"""
-    <script>window.COMMITTED_SETTINGS = {committed_json};</script>
+    <script>window.COMMITTED_SETTINGS = {saved_json};</script>
     <div id="saveBar" class="floating-save-bar">
       <div class="save-bar-info"><span class="save-dot"></span><span>تم اكتشاف تغييرات غير محفوظة!</span></div>
       <div style="display:flex; gap:10px;">
-        <button type="submit" name="action_type" value="save" form="mainForm" class="btn btn-green" style="padding: 8px 22px;">حفظ</button>
+        <button type="submit" form="mainForm" class="btn btn-green" style="padding: 8px 22px;">حفظ</button>
         <button type="button" onclick="revertToLastSaved()" class="btn btn-red" style="padding: 8px 20px;">عدم حفظ (إلغاء)</button>
       </div>
     </div>
     """
 
-    return page(f"إدارة {guild_name}", f'<div class="dashboard-layout">{sidebar_html}<main class="content-panel"><form id="mainForm" method="POST" enctype="multipart/form-data"><input type="hidden" name="csrf_token" value="{csrf_token()}">{tab_content_html}</form></main></div>{floating_bar}')
+    return page(f"إدارة {guild_name}", f'<div class="dashboard-layout">{sidebar_html}<main class="content-panel"><form id="mainForm" method="POST" enctype="multipart/form-data"><input type="hidden" name="csrf_token" value="{csrf_token()}">{notice}{tab_content_html}</form></main></div>{floating_bar}')
 
 
 @app.route("/server/<guild_id>/settings", methods=["GET", "POST"])
@@ -1134,7 +1287,7 @@ def s_welcome(guild_id):
       </div>
       <div class="form-group">
         <label>نص رسالة الترحيب</label>
-        <textarea class="form-control" name="welcome_msg" rows="3" placeholder="مرحباً بك {{user}} في سيرفرنا!">مرحباً بك {{user}} في خادمنا الرائع! 🎉</textarea>
+        <textarea class="form-control" name="welcome_msg" rows="3" maxlength="1000" placeholder="مرحباً بك {{user}} في سيرفرنا!">مرحباً بك {{user}} في خادمنا الرائع! 🎉</textarea>
         <div class="field-desc" style="margin-top:6px;">
           ✨ الاختصارات: <code>{{user}}</code> للإشارة إلى العضو، <code>{{username}}</code> لاسم العضو، <code>{{server}}</code> لاسم السيرفر، <code>{{membercount}}</code> لعدد الأعضاء.
         </div>
@@ -1154,7 +1307,6 @@ def s_welcome(guild_id):
         <label class="switch"><input type="checkbox" name="welcome_image_enabled" checked><span class="slider"></span></label>
       </div>
 
-      <!-- صندوق المعاينة التفاعلية مع السحب والإفلات -->
       <div id="previewBox" style="background: rgba(6, 10, 23, 0.9); border: 1px solid var(--line); border-radius: 16px; height: 300px; margin-bottom: 20px; position: relative; overflow: hidden; user-select: none;">
         <div id="previewAvatar" style="position: absolute; left: 50%; top: 35%; transform: translate(-50%, -50%); width: 80px; height: 80px; border-radius: 50%; background: #5865F2; display: grid; place-items: center; font-size: 28px; border: 3px solid #73dcff; box-shadow: 0 0 20px rgba(100,186,255,0.4); cursor: grab;">🎮</div>
         <div id="previewName" style="position: absolute; left: 50%; top: 62%; transform: translate(-50%, -50%); font-size: 18px; font-weight: 800; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.8); cursor: grab;">Username</div>
@@ -1166,7 +1318,6 @@ def s_welcome(guild_id):
         <input type="url" class="form-control" id="card_bg_input" name="welcome_bg_url" placeholder="https://...">
       </div>
 
-      <!-- لوحة التحكم بالإحداثيات والأحجام -->
       <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 15px;">
         <div style="background: rgba(255,255,255,0.02); padding: 14px; border-radius: 12px; border: 1px solid var(--line);">
           <label style="color:var(--blue); font-weight:800; margin-bottom:10px; display:block;">👤 صورة العضو</label>
@@ -1228,7 +1379,7 @@ def s_security_edit(guild_id, sec_key):
     <div class="form-group"><label>الرتب المستثناة</label><select class="form-control" name="excluded_roles" multiple>{role_options}</select></div>
     <div class="form-group"><label>إجراءات العقوبة</label><select class="form-control" name="punishment_action"><option value="warn">تحذير</option><option value="timeout">تايم آوت</option><option value="ban">حظر</option></select></div>
     """
-    return render_server_page(guild_id, "security", html)
+    return render_server_page(guild_id, "security", html, page_key=f"security-edit:{sec_key}")
 
 
 @app.route("/server/<guild_id>/commands", methods=["GET", "POST"])
@@ -1263,11 +1414,11 @@ def s_command_edit(guild_id, cmd_name):
     role_options = options_html(roles, "@")
     html = f"""
     <div class="page-head" style="margin-bottom:25px;"><div><h1>✎ تعديل أمر: /{escape(cmd_name)}</h1></div><a class="btn btn-secondary" href="/server/{guild_id}/commands">← عودة</a></div>
-    <div class="form-group"><label>الأسماء البديلة</label><input type="text" class="form-control" name="aliases" value="{escape(cmd_name)}"></div>
+    <div class="form-group"><label>الأسماء البديلة</label><input type="text" class="form-control" name="aliases" value="{escape(cmd_name)}" maxlength="100"></div>
     <div class="form-group"><label>الرتب المسموحة</label><select class="form-control" name="allowed_roles" multiple>{role_options}</select></div>
     <div class="form-group"><label>الرومات المسموحة</label><select class="form-control" name="allowed_channels" multiple>{ch_options}</select></div>
     """
-    return render_server_page(guild_id, "commands", html)
+    return render_server_page(guild_id, "commands", html, page_key=f"command-edit:{cmd_name}")
 
 
 @app.route("/server/<guild_id>/logs", methods=["GET", "POST"])
@@ -1327,7 +1478,7 @@ def s_tickets(guild_id):
         </div>
         <div class="form-group">
           <label>اسم الفئة *</label>
-          <input type="text" class="form-control" name="cat_name_1" placeholder="أدخل اسم الفئة...">
+          <input type="text" class="form-control" name="cat_name_1" maxlength="100" placeholder="أدخل اسم الفئة...">
         </div>
         <div class="form-group">
           <label>وصف التذكرة *</label>
@@ -1386,5 +1537,6 @@ def logout():
 
 
 if __name__ == "__main__":
+    # للتجربة المحلية فقط. على Render: gunicorn app:app --workers 1 --threads 4
     port = int(os.environ.get("PORT", 5000))
     app.run(host="127.0.0.1" if LOCAL_DEV else "0.0.0.0", port=port, debug=False)
