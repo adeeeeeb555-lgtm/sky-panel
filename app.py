@@ -978,10 +978,39 @@ def s_welcome(guild_id):
     _, channels, _ = get_server_context(guild_id)
     ch_options = options_html(channels, "#")
     html = f"""
-    <div class="page-head" style="margin-bottom:25px;"><div><h1>👋 إعدادات الترحيب</h1></div></div>
+    <div class="page-head" style="margin-bottom:25px;">
+      <div><h1>👋 نظام الترحيب</h1><p>قم بتكوين رسائل الترحيب المخصصة للأعضاء المنضمين إلى سيرفرك.</p></div>
+    </div>
     <div class="settings-section-card">
-      <div class="form-group"><label>نص رسالة الترحيب</label><textarea class="form-control" name="welcome_msg">مرحباً بك {{user}}</textarea></div>
-      <div class="form-group"><label>اختر الروم</label><select class="form-control" name="welcome_channel"><option value="">اختر...</option>{ch_options}</select></div>
+      <div class="settings-section-header">
+        <div class="settings-section-title"><span>👋</span> رسالة الترحيب</div>
+        <label class="switch"><input type="checkbox" name="welcome_enabled" checked><span class="slider"></span></label>
+      </div>
+      <div class="form-group">
+        <label>نص رسالة الترحيب</label>
+        <textarea class="form-control" name="welcome_msg" rows="4" placeholder="مرحباً بك {user} في سيرفرنا!">مرحباً بك {{user}} في خادمنا الرائع! 🎉</textarea>
+        <div class="field-desc" style="margin-top:6px;">
+          ✨ الاختصارات المتاحة: <code>{{user}}</code> للإشارة إلى العضو، <code>{{username}}</code> لاسم العضو، <code>{{server}}</code> لاسم السيرفر، <code>{{membercount}}</code> لعدد الأعضاء.
+        </div>
+      </div>
+      <div class="form-group">
+        <label>طريقة التوصيل</label>
+        <div style="display: flex; gap: 20px; align-items: center; margin-top: 8px;">
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; font-weight: normal;">
+            <input type="radio" name="welcome_delivery" value="dm"> إرسال كرسالة خاصة (DM)
+          </label>
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; font-weight: normal;">
+            <input type="radio" name="welcome_delivery" value="channel" checked> إرسال إلى روم
+          </label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>اختر الروم</label>
+        <select class="form-control" name="welcome_channel">
+          <option value="">اختر الرومات...</option>
+          {ch_options}
+        </select>
+      </div>
     </div>
     """
     return render_server_page(guild_id, "welcome", html)
