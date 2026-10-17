@@ -352,7 +352,7 @@ select.form-control {
   background-repeat: no-repeat; background-position: left 14px center; background-size: 16px; cursor: pointer;
 }
 
-/* تعديل شكل فقاعة التاغ ليصير الـ X على اليسار والنص على اليمين */
+/* تعديل شكل التاغ ليكون النص على اليمين وعلامة الـ X على اليسار */
 .tag-input-container {
   background: rgba(6, 10, 23, 0.85); border: 1px solid var(--line); border-radius: 12px;
   padding: 8px 12px; min-height: 50px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; cursor: pointer;
@@ -448,6 +448,7 @@ function triggerChange() {
   hasUnsavedChanges = true;
   const bar = document.getElementById('saveBar');
   if (bar) bar.classList.add('visible');
+  saveToLocalStorage();
 }
 
 function resetFormValues() {
@@ -456,9 +457,54 @@ function resetFormValues() {
   if (bar) bar.classList.remove('visible');
   const form = document.getElementById('mainForm');
   if (form) form.reset();
+  localStorage.removeItem(window.location.pathname + '_form');
+  // مسح التاغات الظاهرة
+  document.querySelectorAll('.tag-input-container').forEach(c => c.innerHTML = 'اختر الرتب...');
+  document.querySelectorAll('input[type="hidden"][id^="input_"]').forEach(i => i.value = '');
+}
+
+function saveToLocalStorage() {
+  const form = document.getElementById('mainForm');
+  if (!form) return;
+  const formData = new FormData(form);
+  const data = {};
+  formData.forEach((value, key) => {
+    if (key !== 'csrf_token') data[key] = value;
+  });
+  localStorage.setItem(window.location.pathname + '_form', JSON.stringify(data));
+}
+
+function loadFromLocalStorage() {
+  const saved = localStorage.getItem(window.location.pathname + '_form');
+  if (!saved) return;
+  try {
+    const data = JSON.parse(saved);
+    const form = document.getElementById('mainForm');
+    if (!form) return;
+    for (const [key, value] of Object.entries(data)) {
+      const field = form.elements[key];
+      if (field) {
+        if (field.type === 'checkbox' || field.type === 'radio') {
+          field.checked = (field.value === value);
+        } else {
+          field.value = value;
+          // لو حقل مخفي خاص بالرتب، نقوم بإعادة بناء التاغات تلقائياً
+          if (key.includes('roles') || key.includes('auto_roles')) {
+            try {
+              const vals = JSON.parse(value);
+              const containerId = 'container_' + key.replace('auto_roles_', '').replace('cat_staff_roles_', 'staff_');
+              // سيتم معالجتها عبر setupTagSelector
+            } catch(e) {}
+          }
+        }
+      }
+    }
+  } catch(e) {}
 }
 
 window.addEventListener('DOMContentLoaded', () => {
+  loadFromLocalStorage();
+
   const form = document.getElementById('mainForm');
   if (form) {
     form.addEventListener('input', triggerChange);
@@ -466,12 +512,12 @@ window.addEventListener('DOMContentLoaded', () => {
     
     form.addEventListener('submit', () => {
       hasUnsavedChanges = false;
+      localStorage.removeItem(window.location.pathname + '_form');
       const bar = document.getElementById('saveBar');
       if (bar) bar.classList.remove('visible');
     });
   }
 
-  // منع المغادرة إذا كان هناك تغييرات غير محفوظة
   window.addEventListener('beforeunload', (e) => {
     if (hasUnsavedChanges) {
       e.preventDefault();
@@ -479,7 +525,6 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // منع الضغط على الروابط الجانبية لو فيه تعديلات غير محفوظة
   document.querySelectorAll('.sidebar a, .nav a').forEach(link => {
     link.addEventListener('click', (e) => {
       if (hasUnsavedChanges) {
@@ -498,6 +543,14 @@ function setupTagSelector(containerId, hiddenInputId, dropdownId) {
   if (!container || !dropdown || !hiddenInput) return;
 
   let selectedValues = [];
+  
+  // استرجاع القيم الم حفظة محلياً لوجدت
+  if (hiddenInput.value) {
+    try {
+      selectedValues = JSON.parse(hiddenInput.value);
+      renderTags();
+    } catch(e) {}
+  }
 
   container.addEventListener('click', () => {
     dropdown.classList.toggle('show');
@@ -512,7 +565,6 @@ function setupTagSelector(containerId, hiddenInputId, dropdownId) {
   dropdown.querySelectorAll('.tag-option').forEach(opt => {
     opt.addEventListener('click', () => {
       const val = opt.dataset.value;
-      const name = opt.textContent;
       if (!selectedValues.includes(val)) {
         selectedValues.push(val);
         renderTags();
@@ -524,6 +576,11 @@ function setupTagSelector(containerId, hiddenInputId, dropdownId) {
 
   function renderTags() {
     container.innerHTML = '';
+    if (selectedValues.length === 0) {
+      container.innerHTML = 'اختر الرتب...';
+      hiddenInput.value = '';
+      return;
+    }
     selectedValues.forEach(val => {
       const opt = dropdown.querySelector(`[data-value="${val}"]`);
       const name = opt ? opt.textContent : val;
@@ -917,15 +974,13 @@ def get_server_context(guild_id):
 def handle_form_post(guild_id):
     if request.method == "POST":
         form_data = request.form.to_dict(flat=False)
-        # حفظ البيانات مؤقتاً في قاعدة بيانات الطلبات المعلقة فقط، ولا ترسل للبوت إلا عند الضغط المباشر على حفظ
         PENDING_SETTINGS_DB[guild_id] = form_data
-        if "save_action" in form_data or request.form.get("action_type") == "save":
+        if request.form.get("action_type") == "save":
             SERVER_SETTINGS_DB[guild_id] = form_data
 
 
 def render_server_page(guild_id, active_tab, tab_content_html):
     if request.method == "POST":
-        # الاعتماد الفعلي يتم فقط عند إرسال النموذج وزر الحفظ
         handle_form_post(guild_id)
     target_guild = session["guilds"][guild_id]
     guild_name = escape(str(target_guild.get("name", "السيرفر")))
@@ -1044,6 +1099,24 @@ def s_welcome(guild_id):
           <option value="">اختر الرومات...</option>
           {ch_options}
         </select>
+      </div>
+    </div>
+
+    <div class="settings-section-card">
+      <div class="settings-section-header">
+        <div class="settings-section-title"><span>🖼️</span> مصمم صورة الترحيب</div>
+        <label class="switch"><input type="checkbox" name="welcome_image_enabled" checked><span class="slider"></span></label>
+      </div>
+      <div style="background: rgba(6, 10, 23, 0.9); border: 1px solid var(--line); border-radius: 16px; padding: 40px 20px; text-align: center; margin-bottom: 20px; position: relative;">
+        <div style="width: 90px; height: 90px; border-radius: 50%; background: #5865F2; margin: 0 auto 15px; display: grid; place-items: center; font-size: 32px; border: 3px solid #73dcff; box-shadow: 0 0 25px rgba(100,186,255,0.4);">
+          🎮
+        </div>
+        <h3 style="margin: 0; font-size: 20px; color: #fff;">Welcome Username</h3>
+        <p style="color: var(--muted); font-size: 13px; margin: 5px 0 0;">معاينة بطاقة الترحيب الافتراضية</p>
+      </div>
+      <div class="form-group">
+        <label>صورة الخلفية (Background Image URL أو رفع ملف)</label>
+        <input type="url" class="form-control" name="welcome_bg_url" placeholder="https://...">
       </div>
     </div>
     """
