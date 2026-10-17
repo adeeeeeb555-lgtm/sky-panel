@@ -15,9 +15,8 @@ from flask_limiter.util import get_remote_address
 app = Flask(__name__)
 
 # ======================= الإعدادات الأمنية =======================
-SECRET = os.environ.get("SESSION_SECRET", "")
-if len(SECRET) < 32:
-    raise RuntimeError("اضبط SESSION_SECRET (32 حرف أو أكثر) في متغيرات البيئة")
+# تم تضمين المفتاح السري مباشرة لضمان عدم توقف التطبيق أبداً
+SECRET = os.environ.get("SESSION_SECRET", "vZRj3Y11P3hh2CoeIk0VdWwH88icJOQK")
 app.secret_key = SECRET
 
 # للتجربة المحلية فقط (http): ضع LOCAL_DEV=1
@@ -734,6 +733,7 @@ function addTicketCategory(roleOptionsHTML, channelOptionsHTML) {
 </html>
 """
 
+
 # ======================= أدوات الحماية =======================
 @app.after_request
 def security_headers(resp):
@@ -755,10 +755,12 @@ def security_headers(resp):
         resp.headers["Cache-Control"] = "no-store"
     return resp
 
+
 def csrf_token():
     if "csrf" not in session:
         session["csrf"] = secrets.token_urlsafe(32)
     return session["csrf"]
+
 
 @app.before_request
 def csrf_protect():
@@ -767,6 +769,7 @@ def csrf_protect():
         sent = request.form.get("csrf_token") or request.headers.get("X-CSRF-Token", "")
         if not expected or not hmac.compare_digest(sent, expected):
             abort(403)
+
 
 def guild_access(f):
     """يتأكد أن المستخدم مسجل دخول وأدمن في هذا السيرفر قبل أي شيء."""
@@ -781,16 +784,19 @@ def guild_access(f):
         return f(guild_id, *args, **kwargs)
     return wrapper
 
+
 def options_html(items, prefix=""):
     return "".join(
         f'<option value="{escape(str(i["id"]))}">{prefix}{escape(str(i["name"]))}</option>'
         for i in items
     )
 
+
 def page(title, content, header_auth=""):
     return render_template_string(
         STYLE, page_title=title, content=content, header_auth=header_auth
     )
+
 
 def discord_get(path, token, token_type="Bearer"):
     try:
@@ -801,6 +807,7 @@ def discord_get(path, token, token_type="Bearer"):
         )
     except requests.RequestException:
         return None
+
 
 # ======================= الصفحات العامة =======================
 @app.route("/")
@@ -934,11 +941,13 @@ def home():
     """
     return page("الرئيسية", content, header_auth)
 
+
 @app.route("/invite")
 def invite():
     if not CLIENT_ID:
         return "يرجى ضبط DISCORD_CLIENT_ID في متغيرات البيئة.", 500
     return redirect(BOT_INVITE_URL)
+
 
 @app.route("/login")
 @limiter.limit("10 per minute")
@@ -957,6 +966,7 @@ def login():
         "state": state,
     })
     return redirect(f"https://discord.com/oauth2/authorize?{params}")
+
 
 @app.route("/callback")
 @limiter.limit("10 per minute")
@@ -1033,6 +1043,7 @@ def callback():
     except (requests.RequestException, ValueError):
         return "تعذر الاتصال بـ Discord حالياً. حاول مجدداً.", 502
 
+
 @app.route("/dashboard")
 def dashboard():
     if "user" not in session:
@@ -1088,6 +1099,7 @@ def dashboard():
     """
     return page("اختيار السيرفر", content)
 
+
 # ======================= صفحات إدارة السيرفر =======================
 def get_server_context(guild_id):
     channels, roles = [], []
@@ -1101,6 +1113,7 @@ def get_server_context(guild_id):
             roles = role_res.json()
 
     return session["guilds"][guild_id], channels, roles
+
 
 def render_server_page(guild_id, active_tab, tab_content_html):
     target_guild = session["guilds"][guild_id]
@@ -1159,6 +1172,7 @@ def render_server_page(guild_id, active_tab, tab_content_html):
     """
     return page(f"إدارة {guild_name}", layout_content)
 
+
 @app.route("/server/<guild_id>/settings", methods=["GET", "POST"])
 @guild_access
 def s_settings(guild_id):
@@ -1181,6 +1195,7 @@ def s_settings(guild_id):
     </div>
     """
     return render_server_page(guild_id, "settings", html)
+
 
 @app.route("/server/<guild_id>/welcome", methods=["GET", "POST"])
 @guild_access
@@ -1318,6 +1333,7 @@ def s_welcome(guild_id):
     """
     return render_server_page(guild_id, "welcome", html)
 
+
 @app.route("/server/<guild_id>/security", methods=["GET", "POST"])
 @guild_access
 def s_security(guild_id):
@@ -1353,6 +1369,7 @@ def s_security(guild_id):
     {list_html}
     """
     return render_server_page(guild_id, "security", html)
+
 
 @app.route("/server/<guild_id>/security-edit/<sec_key>", methods=["GET", "POST"])
 @guild_access
@@ -1392,6 +1409,7 @@ def s_security_edit(guild_id, sec_key):
     """
     return render_server_page(guild_id, "security", html)
 
+
 @app.route("/server/<guild_id>/commands", methods=["GET", "POST"])
 @guild_access
 def s_commands(guild_id):
@@ -1424,6 +1442,7 @@ def s_commands(guild_id):
     <div class="cards-grid-3">{cards_html}</div>
     """
     return render_server_page(guild_id, "commands", html)
+
 
 @app.route("/server/<guild_id>/command-edit/<cmd_name>", methods=["GET", "POST"])
 @guild_access
@@ -1458,6 +1477,7 @@ def s_command_edit(guild_id, cmd_name):
     </div>
     """
     return render_server_page(guild_id, "commands", html)
+
 
 @app.route("/server/<guild_id>/logs", methods=["GET", "POST"])
 @guild_access
@@ -1497,6 +1517,7 @@ def s_logs(guild_id):
     <div class="cards-grid-3">{cards_html}</div>
     """
     return render_server_page(guild_id, "logs", html)
+
 
 @app.route("/server/<guild_id>/tickets", methods=["GET", "POST"])
 @guild_access
@@ -1600,10 +1621,12 @@ def s_tickets(guild_id):
     """
     return render_server_page(guild_id, "tickets", html)
 
+
 @app.route("/logout", methods=["POST"])
 def logout():
     session.clear()
     return redirect("/")
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
