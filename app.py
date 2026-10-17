@@ -66,6 +66,7 @@ CMD_NAMES = {
 }
 
 SERVER_SETTINGS_DB = {}
+PENDING_SETTINGS_DB = {}
 
 STYLE = r"""
 <!DOCTYPE html>
@@ -351,14 +352,15 @@ select.form-control {
   background-repeat: no-repeat; background-position: left 14px center; background-size: 16px; cursor: pointer;
 }
 
+/* تعديل شكل فقاعة التاغ ليصير الـ X على اليسار والنص على اليمين */
 .tag-input-container {
   background: rgba(6, 10, 23, 0.85); border: 1px solid var(--line); border-radius: 12px;
   padding: 8px 12px; min-height: 50px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; cursor: pointer;
 }
 .tag-badge {
   background: linear-gradient(115deg, #64caff, #9b8cff); color: #06101f;
-  padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: 800;
-  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 12px; border-radius: 8px; font-size: 12px; font-weight: 800;
+  display: inline-flex; align-items: center; gap: 8px; flex-direction: row-reverse;
 }
 .tag-badge .remove-tag {
   cursor: pointer; font-size: 14px; font-weight: 900; color: #06101f;
@@ -369,7 +371,7 @@ select.form-control {
 }
 .tag-select-dropdown.show { display: block; }
 .tag-option {
-  padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; color: var(--text);
+  padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; color: var(--text); text-align: right;
 }
 .tag-option:hover { background: rgba(100,202,255,0.2); }
 
@@ -440,12 +442,16 @@ input:checked + .slider:before { transform: translateX(22px); }
 .footer-links { display: flex; gap: 16px; align-items: center; }
 </style>
 <script>
+let hasUnsavedChanges = false;
+
 function triggerChange() {
+  hasUnsavedChanges = true;
   const bar = document.getElementById('saveBar');
   if (bar) bar.classList.add('visible');
 }
 
 function resetFormValues() {
+  hasUnsavedChanges = false;
   const bar = document.getElementById('saveBar');
   if (bar) bar.classList.remove('visible');
   const form = document.getElementById('mainForm');
@@ -457,7 +463,32 @@ window.addEventListener('DOMContentLoaded', () => {
   if (form) {
     form.addEventListener('input', triggerChange);
     form.addEventListener('change', triggerChange);
+    
+    form.addEventListener('submit', () => {
+      hasUnsavedChanges = false;
+      const bar = document.getElementById('saveBar');
+      if (bar) bar.classList.remove('visible');
+    });
   }
+
+  // منع المغادرة إذا كان هناك تغييرات غير محفوظة
+  window.addEventListener('beforeunload', (e) => {
+    if (hasUnsavedChanges) {
+      e.preventDefault();
+      e.returnValue = '';
+    }
+  });
+
+  // منع الضغط على الروابط الجانبية لو فيه تعديلات غير محفوظة
+  document.querySelectorAll('.sidebar a, .nav a').forEach(link => {
+    link.addEventListener('click', (e) => {
+      if (hasUnsavedChanges) {
+        if (!confirm('تنبيه: لديك تعديلات غير محفوظة! هل أنت متأكد من مغادرة الصفحة دون حفظ؟')) {
+          e.preventDefault();
+        }
+      }
+    });
+  });
 });
 
 function setupTagSelector(containerId, hiddenInputId, dropdownId) {
@@ -886,13 +917,16 @@ def get_server_context(guild_id):
 def handle_form_post(guild_id):
     if request.method == "POST":
         form_data = request.form.to_dict(flat=False)
-        if guild_id not in SERVER_SETTINGS_DB:
-            SERVER_SETTINGS_DB[guild_id] = {}
-        SERVER_SETTINGS_DB[guild_id].update(form_data)
+        # حفظ البيانات مؤقتاً في قاعدة بيانات الطلبات المعلقة فقط، ولا ترسل للبوت إلا عند الضغط المباشر على حفظ
+        PENDING_SETTINGS_DB[guild_id] = form_data
+        if "save_action" in form_data or request.form.get("action_type") == "save":
+            SERVER_SETTINGS_DB[guild_id] = form_data
 
 
 def render_server_page(guild_id, active_tab, tab_content_html):
-    handle_form_post(guild_id)
+    if request.method == "POST":
+        # الاعتماد الفعلي يتم فقط عند إرسال النموذج وزر الحفظ
+        handle_form_post(guild_id)
     target_guild = session["guilds"][guild_id]
     guild_name = escape(str(target_guild.get("name", "السيرفر")))
     icon = target_guild.get("icon")
@@ -917,9 +951,9 @@ def render_server_page(guild_id, active_tab, tab_content_html):
 
     floating_bar = """
     <div id="saveBar" class="floating-save-bar">
-      <div class="save-bar-info"><span class="save-dot"></span><span>تم اكتشاف تغييرات!</span></div>
+      <div class="save-bar-info"><span class="save-dot"></span><span>تم اكتشاف تغييرات غير محفوظة!</span></div>
       <div style="display:flex; gap:10px;">
-        <button type="submit" form="mainForm" class="btn btn-green" style="padding: 8px 22px;">حفظ</button>
+        <button type="submit" name="action_type" value="save" form="mainForm" class="btn btn-green" style="padding: 8px 22px;">حفظ</button>
         <button type="button" form="mainForm" onclick="resetFormValues()" class="btn btn-red" style="padding: 8px 20px;">إلغاء</button>
       </div>
     </div>
@@ -988,7 +1022,7 @@ def s_welcome(guild_id):
       </div>
       <div class="form-group">
         <label>نص رسالة الترحيب</label>
-        <textarea class="form-control" name="welcome_msg" rows="4" placeholder="مرحباً بك {user} في سيرفرنا!">مرحباً بك {{user}} في خادمنا الرائع! 🎉</textarea>
+        <textarea class="form-control" name="welcome_msg" rows="4" placeholder="مرحباً بك {{user}} في سيرفرنا!">مرحباً بك {{user}} في خادمنا الرائع! 🎉</textarea>
         <div class="field-desc" style="margin-top:6px;">
           ✨ الاختصارات المتاحة: <code>{{user}}</code> للإشارة إلى العضو، <code>{{username}}</code> لاسم العضو، <code>{{server}}</code> لاسم السيرفر، <code>{{membercount}}</code> لعدد الأعضاء.
         </div>
