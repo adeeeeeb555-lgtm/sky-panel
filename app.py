@@ -44,6 +44,8 @@ STYLE = """
   --blue: #64caff;
   --purple: #9b8cff;
   --gold: #f0b429;
+  --green: #2ed573;
+  --red: #ff4757;
   --text: #f4f7ff;
   --muted: #9baaca;
 }
@@ -116,6 +118,10 @@ a { color: inherit; text-decoration: none; }
   box-shadow: 0 8px 28px #58baff38;
 }
 .btn-gold { color: #06101f; background: var(--gold); font-weight: 900; }
+.btn-green { color: #ffffff; background: var(--green); font-weight: 900; box-shadow: 0 4px 15px rgba(46, 213, 115, 0.4); }
+.btn-green:hover { background: #26af5f; }
+.btn-red { color: #ffffff; background: var(--red); font-weight: 900; box-shadow: 0 4px 15px rgba(255, 71, 87, 0.4); }
+.btn-red:hover { background: #e03847; }
 .btn-secondary {
   color: #e5edff; border-color: var(--line); background: rgba(255,255,255,0.05);
   backdrop-filter: blur(10px);
@@ -233,7 +239,7 @@ h1 {
 .node-9  { transform: rotate(288deg) translate(210px) rotate(-288deg); }
 .node-10 { transform: rotate(324deg) translate(210px) rotate(-324deg); }
 
-/* إعادة توزيع لوحة التحكم والقائمة الجانبية لتكون القائمة يميناً والمحتوى يساراً بوضوح وسعة */
+/* الصفحة ولوحة التحكم */
 .page { width: min(1350px, 95%); margin: 40px auto 70px; }
 .page-head { display: flex; justify-content: space-between; align-items: center; gap: 20px; margin-bottom: 35px; }
 .page-head h1 { font-size: 30px; margin: 0 0 6px; }
@@ -262,7 +268,7 @@ h1 {
 }
 .empty span { display: block; font-size: 40px; margin-bottom: 12px; }
 
-/* التوزيع الهيكلي: القائمة يميناً والمحتوى يساراً وسيع وبدون حشر */
+/* توزيع العرض القائمة يمينا والمحتوى يساراً */
 .dashboard-layout {
   display: grid; grid-template-columns: 300px 1fr; gap: 30px;
   width: 100%; margin: 40px auto 70px; align-items: start; direction: rtl;
@@ -316,25 +322,18 @@ h1 {
 .form-control:focus { border-color: var(--blue); box-shadow: 0 0 15px rgba(100, 186, 255, 0.2); }
 
 select.form-control {
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
+  appearance: none; -webkit-appearance: none; -moz-appearance: none;
   background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239baaca' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-  background-repeat: no-repeat;
-  background-position: left 14px center;
-  background-size: 16px;
-  cursor: pointer;
+  background-repeat: no-repeat; background-position: left 14px center; background-size: 16px; cursor: pointer;
 }
 
-/* حل مشكلة طفح القائمة متعددة الاختيارات والخروج من الشاشة */
 select[multiple].form-control {
   height: 180px; background-image: none; padding: 10px; overflow-y: auto; overflow-x: hidden;
   direction: rtl; text-align: right;
 }
 select[multiple].form-control option {
   padding: 10px 14px; margin-bottom: 6px; border-radius: 8px; background: rgba(12, 19, 39, 0.9);
-  color: var(--text); font-size: 13px; font-weight: 600; cursor: pointer;
-  white-space: normal; word-break: break-all;
+  color: var(--text); font-size: 13px; font-weight: 600; cursor: pointer; white-space: normal; word-break: break-all;
 }
 select[multiple].form-control option:checked {
   background: linear-gradient(115deg, #64caff, #9b8cff) !important; color: #06101f !important; font-weight: 800;
@@ -350,16 +349,17 @@ select[multiple].form-control option:checked {
 }
 .settings-section-title { font-size: 16px; font-weight: 800; color: #e4eeff; display: flex; align-items: center; gap: 10px; }
 
+/* شريط الحفظ العائم بالألوان الأخضر والأحمر والنقطة الخضراء */
 .floating-save-bar {
   position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%) translateY(120px);
-  background: rgba(10, 16, 35, 0.95); border: 1px solid rgba(122, 203, 255, 0.4); border-radius: 16px;
+  background: rgba(10, 16, 35, 0.95); border: 1px solid rgba(46, 213, 115, 0.4); border-radius: 16px;
   padding: 14px 28px; display: flex; align-items: center; gap: 24px;
   box-shadow: 0 15px 45px rgba(0,0,0,0.6); backdrop-filter: blur(16px);
   z-index: 1000; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 .floating-save-bar.visible { transform: translateX(-50%) translateY(0); }
 .save-bar-info { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 700; color: #e4eeff; }
-.save-dot { width: 10px; height: 10px; background: #f0b429; border-radius: 50%; box-shadow: 0 0 10px #f0b429; animation: pulse 1.5s infinite; }
+.save-dot { width: 10px; height: 10px; background: var(--green); border-radius: 50%; box-shadow: 0 0 10px var(--green); animation: pulse 1.5s infinite; }
 @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
 
 .switch { position: relative; display: inline-block; width: 48px; height: 26px; }
@@ -450,20 +450,29 @@ function saveState() {
   const avatarLeft = document.getElementById('avatar_left');
   const avatarTop = document.getElementById('avatar_top');
   const avatarSize = document.getElementById('avatar_size');
-  const textLeft = document.getElementById('text_left');
-  const textTop = document.getElementById('text_top');
+  
+  const titleText = document.getElementById('welcome_img_title');
+  const titleLeft = document.getElementById('title_left');
+  const titleTop = document.getElementById('title_top');
+
+  const subText = document.getElementById('welcome_img_sub');
+  const subLeft = document.getElementById('sub_left');
+  const subTop = document.getElementById('sub_top');
+
   const bgUrl = document.getElementById('bg_url_input');
 
-  if (avatarLeft && avatarTop && textLeft && textTop) {
-    initialPositions = {
-      avatarLeft: avatarLeft.value,
-      avatarTop: avatarTop.value,
-      avatarSize: avatarSize ? avatarSize.value : '85',
-      textLeft: textLeft.value,
-      textTop: textTop.value,
-      bgUrl: bgUrl ? bgUrl.value : ''
-    };
-  }
+  initialPositions = {
+    avatarLeft: avatarLeft ? avatarLeft.value : '40',
+    avatarTop: avatarTop ? avatarTop.value : '40',
+    avatarSize: avatarSize ? avatarSize.value : '85',
+    titleText: titleText ? titleText.value : 'Welcome to the server',
+    titleLeft: titleLeft ? titleLeft.value : '150',
+    titleTop: titleTop ? titleTop.value : '50',
+    subText: subText ? subText.value : 'Username',
+    subLeft: subLeft ? subLeft.value : '150',
+    subTop: subTop ? subTop.value : '90',
+    bgUrl: bgUrl ? bgUrl.value : ''
+  };
 }
 
 function resetPositions() {
@@ -471,25 +480,42 @@ function resetPositions() {
   if (bar) bar.classList.remove('visible');
 
   if (initialPositions.avatarLeft !== undefined) {
-    document.getElementById('avatar_left').value = initialPositions.avatarLeft;
-    document.getElementById('avatar_top').value = initialPositions.avatarTop;
+    if(document.getElementById('avatar_left')) document.getElementById('avatar_left').value = initialPositions.avatarLeft;
+    if(document.getElementById('avatar_top')) document.getElementById('avatar_top').value = initialPositions.avatarTop;
     if (document.getElementById('avatar_size')) {
       document.getElementById('avatar_size').value = initialPositions.avatarSize;
       changeAvatarSize(initialPositions.avatarSize);
     }
-    document.getElementById('text_left').value = initialPositions.textLeft;
-    document.getElementById('text_top').value = initialPositions.textTop;
+
+    if(document.getElementById('welcome_img_title')) {
+      document.getElementById('welcome_img_title').value = initialPositions.titleText;
+      updateWelcomeTitle(initialPositions.titleText);
+    }
+    if(document.getElementById('title_left')) document.getElementById('title_left').value = initialPositions.titleLeft;
+    if(document.getElementById('title_top')) document.getElementById('title_top').value = initialPositions.titleTop;
+
+    if(document.getElementById('welcome_img_sub')) {
+      document.getElementById('welcome_img_sub').value = initialPositions.subText;
+      updateWelcomeSub(initialPositions.subText);
+    }
+    if(document.getElementById('sub_left')) document.getElementById('sub_left').value = initialPositions.subLeft;
+    if(document.getElementById('sub_top')) document.getElementById('sub_top').value = initialPositions.subTop;
 
     const dragAvatar = document.getElementById('dragAvatar');
-    const dragText = document.getElementById('dragText');
+    const dragTitle = document.getElementById('dragTitle');
+    const dragUsername = document.getElementById('dragUsername');
 
     if (dragAvatar) {
       dragAvatar.style.left = initialPositions.avatarLeft + 'px';
       dragAvatar.style.top = initialPositions.avatarTop + 'px';
     }
-    if (dragText) {
-      dragText.style.left = initialPositions.textLeft + 'px';
-      dragText.style.top = initialPositions.textTop + 'px';
+    if (dragTitle) {
+      dragTitle.style.left = initialPositions.titleLeft + 'px';
+      dragTitle.style.top = initialPositions.titleTop + 'px';
+    }
+    if (dragUsername) {
+      dragUsername.style.left = initialPositions.subLeft + 'px';
+      dragUsername.style.top = initialPositions.subTop + 'px';
     }
 
     if (initialPositions.bgUrl !== undefined) {
@@ -532,11 +558,14 @@ function doDrag(e) {
   activeDrag.style.top = y + 'px';
 
   if (activeDrag.id === 'dragAvatar') {
-    document.getElementById('avatar_left').value = Math.round(x);
-    document.getElementById('avatar_top').value = Math.round(y);
-  } else if (activeDrag.id === 'dragText') {
-    document.getElementById('text_left').value = Math.round(x);
-    document.getElementById('text_top').value = Math.round(y);
+    if(document.getElementById('avatar_left')) document.getElementById('avatar_left').value = Math.round(x);
+    if(document.getElementById('avatar_top')) document.getElementById('avatar_top').value = Math.round(y);
+  } else if (activeDrag.id === 'dragTitle') {
+    if(document.getElementById('title_left')) document.getElementById('title_left').value = Math.round(x);
+    if(document.getElementById('title_top')) document.getElementById('title_top').value = Math.round(y);
+  } else if (activeDrag.id === 'dragUsername') {
+    if(document.getElementById('sub_left')) document.getElementById('sub_left').value = Math.round(x);
+    if(document.getElementById('sub_top')) document.getElementById('sub_top').value = Math.round(y);
   }
   triggerChange();
 }
@@ -993,8 +1022,8 @@ def render_server_page(guild_id, active_tab, tab_content_html):
         <span>تم اكتشاف تغييرات! يرجى الحفظ أو الإلغاء.</span>
       </div>
       <div style="display:flex; gap:10px;">
-        <button type="submit" form="mainForm" onclick="saveState()" class="btn btn-gold" style="padding: 8px 20px;">حفظ</button>
-        <button type="button" form="mainForm" onclick="resetPositions()" class="btn btn-secondary" style="padding: 8px 18px;">إلغاء</button>
+        <button type="submit" form="mainForm" onclick="saveState()" class="btn btn-green" style="padding: 8px 22px;">حفظ</button>
+        <button type="button" form="mainForm" onclick="resetPositions()" class="btn btn-red" style="padding: 8px 20px;">إلغاء</button>
       </div>
     </div>
     """
@@ -1094,59 +1123,75 @@ def s_welcome(guild_id):
           <span class="slider"></span>
         </label>
       </div>
-      <div class="field-desc">يمكنك سحب العناصر بالماوس وتعديل النص المكتوب وتغيير الحجم بكل سهولة!</div>
+      <div class="field-desc">يمكنك سحب صورة العضو وكلام الترحيب واسم العضو بشكل منفصل بالماوس وتغيير الموضع وحفظها بسهولة!</div>
 
       <div id="canvasPreview" class="canvas-container">
+        <!-- صورة العضو -->
         <div id="dragAvatar" class="draggable-item" style="left: 40px; top: 40px;" onmousedown="startDrag(event, 'dragAvatar')">
           <div id="avatarCircle" style="width:85px; height:85px; border-radius:50%; background:#5865F2; display:grid; place-items:center; font-size:32px; box-shadow:0 0 20px rgba(88,101,242,0.5);">👤</div>
         </div>
-        <div id="dragText" class="draggable-item" style="left: 150px; top: 60px;" onmousedown="startDrag(event, 'dragText')">
+        <!-- كلام الترحيب المنفصل -->
+        <div id="dragTitle" class="draggable-item" style="left: 150px; top: 50px;" onmousedown="startDrag(event, 'dragTitle')">
           <div id="previewTitle" style="font-size:22px; font-weight:900; color:#fff;">Welcome to the server</div>
-          <div id="previewSub" style="font-size:16px; color:var(--blue);">Username</div>
+        </div>
+        <!-- اسم العضو المنفصل -->
+        <div id="dragUsername" class="draggable-item" style="left: 150px; top: 90px;" onmousedown="startDrag(event, 'dragUsername')">
+          <div id="previewSub" style="font-size:16px; font-weight:700; color:var(--blue);">Username</div>
         </div>
       </div>
 
       <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:15px;">
         <div class="form-group">
-          <label>النص الرئيسي في الصورة</label>
-          <input type="text" class="form-control" name="welcome_img_title" value="Welcome to the server" oninput="updateWelcomeTitle(this.value)">
+          <label>كلام الترحيب في الصورة</label>
+          <input type="text" id="welcome_img_title" class="form-control" name="welcome_img_title" value="Welcome to the server" oninput="updateWelcomeTitle(this.value)">
         </div>
         <div class="form-group">
-          <label>النص الفرعي في الصورة</label>
-          <input type="text" class="form-control" name="welcome_img_sub" value="Username" oninput="updateWelcomeSub(this.value)">
+          <label>اسم العضو (نص تجريبي)</label>
+          <input type="text" id="welcome_img_sub" class="form-control" name="welcome_img_sub" value="Username" oninput="updateWelcomeSub(this.value)">
         </div>
       </div>
 
       <div class="form-group">
-        <label>رفع صورة خلفية من جهازك (الملفات)</label>
+        <label>رفع صورة خلفية من جهازك</label>
         <input type="file" class="form-control" accept="image/*" onchange="previewLocalImage(this)">
       </div>
 
       <div class="form-group">
-        <label>أو ضع رابط صورة خلفية مباشرة (Background Image URL)</label>
+        <label>أو رابط صورة خلفية مباشرة (Background Image URL)</label>
         <input type="url" id="bg_url_input" class="form-control" placeholder="https://..." oninput="updateBg(this.value)">
       </div>
 
-      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+      <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:12px;">
         <div class="form-group">
-          <label>حجم صورة العضو (بالبكسل)</label>
+          <label>حجم العضو (px)</label>
           <input type="number" id="avatar_size" class="form-control" name="avatar_size" value="85" min="40" max="180" oninput="changeAvatarSize(this.value)">
         </div>
         <div class="form-group">
-          <label>موضع صورة العضو (Left)</label>
+          <label>موضع العضو (X)</label>
           <input type="number" id="avatar_left" class="form-control" name="avatar_left" value="40">
         </div>
         <div class="form-group">
-          <label>موضع صورة العضو (Top)</label>
+          <label>موضع العضو (Y)</label>
           <input type="number" id="avatar_top" class="form-control" name="avatar_top" value="40">
         </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:12px;">
         <div class="form-group">
-          <label>موضع النص (Left)</label>
-          <input type="number" id="text_left" class="form-control" name="text_left" value="150">
+          <label>الترحيب (X)</label>
+          <input type="number" id="title_left" class="form-control" name="title_left" value="150">
         </div>
         <div class="form-group">
-          <label>موضع النص (Top)</label>
-          <input type="number" id="text_top" class="form-control" name="text_top" value="60">
+          <label>الترحيب (Y)</label>
+          <input type="number" id="title_top" class="form-control" name="title_top" value="50">
+        </div>
+        <div class="form-group">
+          <label>الاسم (X)</label>
+          <input type="number" id="sub_left" class="form-control" name="sub_left" value="150">
+        </div>
+        <div class="form-group">
+          <label>الاسم (Y)</label>
+          <input type="number" id="sub_top" class="form-control" name="sub_top" value="90">
         </div>
       </div>
     </div>
