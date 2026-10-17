@@ -195,6 +195,76 @@ h1 {
 .subtitle { color: var(--muted); font-size: 15px; line-height: 2.0; max-width: 480px; }
 .actions { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 22px; }
 
+/* تصميم الكوكب والمدار */
+.space-art {
+  height: 580px; position: relative; display: grid; place-items: center;
+}
+.planet-system {
+  position: relative; width: 520px; height: 520px; display: grid; place-items: center;
+}
+.planet-core {
+  width: 150px; height: 150px; border-radius: 50%;
+  background:
+    radial-gradient(circle at 30% 25%, #c2edff, transparent 15%),
+    radial-gradient(circle at 35% 30%, #7bd8ff, #526de2 45%, #23154f 80%, #0a0d20);
+  box-shadow: inset -22px -16px 36px rgba(3, 7, 24, 0.9), 0 0 55px rgba(99, 125, 255, 0.45);
+  position: relative; z-index: 2;
+}
+.planet-core:after {
+  content: ""; position: absolute; width: 200px; height: 36px;
+  border: 6px solid rgba(155, 184, 255, 0.7); border-left-color: #c2a9ff;
+  border-right-color: #6ad8ff; border-radius: 50%; top: 57px; left: -25px;
+  transform: rotate(-22deg); box-shadow: 0 0 22px rgba(109, 175, 255, 0.4);
+}
+@keyframes mainOrbit {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes fixText {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+.orbit-container {
+  position: absolute; inset: 0;
+  animation: mainOrbit 45s linear infinite;
+  pointer-events: none;
+}
+.orbit-container:hover { animation-play-state: paused; }
+.orbit-container::before {
+  content: ""; position: absolute; inset: 50px; border-radius: 50%;
+  border: 1px dashed rgba(120, 170, 255, 0.15); pointer-events: none;
+}
+.orbit-node {
+  position: absolute; top: 50%; left: 50%; width: 130px; height: 75px;
+  margin-top: -37.5px; margin-left: -65px; pointer-events: auto;
+}
+.orbit-card {
+  width: 100%; height: 100%; padding: 8px 10px; border: 1px solid var(--line);
+  border-radius: 12px; background: rgba(14, 23, 48, 0.92); backdrop-filter: blur(14px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.4); font-size: 11px; text-align: center;
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+  animation: fixText 45s linear infinite;
+  transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+.orbit-card:hover {
+  border-color: var(--blue); transform: scale(1.12);
+  box-shadow: 0 10px 30px rgba(100, 202, 255, 0.3); z-index: 50;
+}
+.orbit-card .icon { font-size: 15px; line-height: 1; margin-bottom: 3px; display: block; }
+.orbit-card strong { display: block; font-size: 11px; color: #fff; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 110px; }
+.orbit-card p { margin: 0; color: var(--muted); font-size: 9.5px; line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.node-1  { transform: rotate(0deg) translate(210px) rotate(0deg); }
+.node-2  { transform: rotate(36deg) translate(210px) rotate(-36deg); }
+.node-3  { transform: rotate(72deg) translate(210px) rotate(-72deg); }
+.node-4  { transform: rotate(108deg) translate(210px) rotate(-108deg); }
+.node-5  { transform: rotate(144deg) translate(210px) rotate(-144deg); }
+.node-6  { transform: rotate(180deg) translate(210px) rotate(-180deg); }
+.node-7  { transform: rotate(216deg) translate(210px) rotate(-216deg); }
+.node-8  { transform: rotate(252deg) translate(210px) rotate(-252deg); }
+.node-9  { transform: rotate(288deg) translate(210px) rotate(-288deg); }
+.node-10 { transform: rotate(324deg) translate(210px) rotate(-324deg); }
+
 .page { width: min(1350px, 95%); margin: 40px auto 70px; }
 .page-head { display: flex; justify-content: space-between; align-items: center; gap: 20px; margin-bottom: 35px; }
 .page-head h1 { font-size: 30px; margin: 0 0 6px; }
@@ -647,8 +717,92 @@ def home():
         <div>
           <div class="eyebrow"><span class="dot"></span> عالمك، إدارتك، تحكمك</div>
           <h1>ارتقِ بسيرفرك<br><span class="gradient-text">إلى عالم آخر.</span></h1>
-          <p class="subtitle">مرحباً بك في Sky Universe، لوحة تحكم متطورة بتصميم فضي ومجرات فريد.</p>
+          <p class="subtitle">
+            مرحباً بك في Sky Universe، لوحة تحكم متطورة بتصميم فضي ومجرات فريد، تتيح لك إدارة سيرفر البوت واختيار الرتب المتعددة وإعدادات التذاكر والترحيب بكل احترافية.
+          </p>
           <div class="actions">{actions}</div>
+          <div class="features">
+            <div class="feature"><b>✦</b> واجهة زجاجية متجاوبة</div>
+            <div class="feature"><b>✦</b> كوكب وبطاقات دائرية موزعة بدقة</div>
+            <div class="feature"><b>✦</b> ربط مباشر مع Discord OAuth2</div>
+          </div>
+        </div>
+        <div class="space-art">
+          <div class="planet-system">
+            <div class="planet-core"></div>
+            <div class="orbit-container">
+              <div class="orbit-node node-1">
+                <div class="orbit-card">
+                  <span class="icon">👋</span>
+                  <strong>نظام الترحيب</strong>
+                  <p>استقبال الأعضاء الجدد</p>
+                </div>
+              </div>
+              <div class="orbit-node node-2">
+                <div class="orbit-card">
+                  <span class="icon">🛡️</span>
+                  <strong>الحماية المتقدمة</strong>
+                  <p>مكافحة السبام والروابط</p>
+                </div>
+              </div>
+              <div class="orbit-node node-3">
+                <div class="orbit-card">
+                  <span class="icon">🎫</span>
+                  <strong>نظام التذاكر</strong>
+                  <p>تنظيم الدعم والشراء</p>
+                </div>
+              </div>
+              <div class="orbit-node node-4">
+                <div class="orbit-card">
+                  <span class="icon">📂</span>
+                  <strong>إدارة السيرفر</strong>
+                  <p>إعدادات القنوات والرتب</p>
+                </div>
+              </div>
+              <div class="orbit-node node-5">
+                <div class="orbit-card">
+                  <span class="icon">📊</span>
+                  <strong>الإحصائيات</strong>
+                  <p>عرض تفاصيل السيرفر</p>
+                </div>
+              </div>
+              <div class="orbit-node node-6">
+                <div class="orbit-card">
+                  <span class="icon">⚡</span>
+                  <strong>التحكم الذكي</strong>
+                  <p>إعدادات البوت والخصائص</p>
+                </div>
+              </div>
+              <div class="orbit-node node-7">
+                <div class="orbit-card">
+                  <span class="icon">👑</span>
+                  <strong>إدارة الرتب</strong>
+                  <p>صلاحيات الإشراف</p>
+                </div>
+              </div>
+              <div class="orbit-node node-8">
+                <div class="orbit-card">
+                  <span class="icon">🌐</span>
+                  <strong>إعدادات اللغة</strong>
+                  <p>دعم العربية والإنجليزية</p>
+                </div>
+              </div>
+              <div class="orbit-node node-9">
+                <div class="orbit-card">
+                  <span class="icon">🎨</span>
+                  <strong>تخصيص البطاقات</strong>
+                  <p>تعديل رسائل ومظهر البوت</p>
+                </div>
+              </div>
+              <div class="orbit-node node-10" style="cursor: pointer;" onclick="window.open('https://discord.gg/HuH8TtmGA', '_blank', 'noopener')">
+                <div class="orbit-card">
+                  <span class="icon">💬</span>
+                  <strong>الدعم الفني</strong>
+                  <p>مجتمع الدعم عبر Discord</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
     </main>
