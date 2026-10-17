@@ -6,7 +6,7 @@ import requests
 from datetime import timedelta
 from functools import wraps
 from urllib.parse import urlencode
-from flask import Flask, redirect, request, session, render_template_string, abort
+from flask import Flask, redirect, request, session, render_template_string, abort, jsonify
 from markupsafe import escape
 from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_limiter import Limiter
@@ -66,6 +66,9 @@ CMD_NAMES = {
     "ban", "unban", "clear", "hide", "show", "lock", "unlock", "move", "role",
     "setnick", "timeout", "untimeout", "vkick", "warn", "unwarn", "warns", "vmute"
 }
+
+# قاعدة بيانات مؤقتة لحفظ إعدادات السيرفرات لكي يقرأها البوت
+SERVER_SETTINGS_DB = {}
 
 STYLE = r"""
 <!DOCTYPE html>
@@ -195,7 +198,6 @@ h1 {
 .subtitle { color: var(--muted); font-size: 15px; line-height: 2.0; max-width: 480px; }
 .actions { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 22px; }
 
-/* الكوكب والمدار الدائري الهندسي */
 .space-art {
   height: 580px; position: relative; display: grid; place-items: center;
 }
@@ -279,7 +281,6 @@ h1 {
 .node-9  { transform: rotate(288deg) translate(210px) rotate(-288deg); }
 .node-10 { transform: rotate(324deg) translate(210px) rotate(-324deg); }
 
-/* الصفحة ولوحة التحكم */
 .page { width: min(1350px, 95%); margin: 40px auto 70px; }
 .page-head { display: flex; justify-content: space-between; align-items: center; gap: 20px; margin-bottom: 35px; }
 .page-head h1 { font-size: 30px; margin: 0 0 6px; }
@@ -308,7 +309,6 @@ h1 {
 }
 .empty span { display: block; font-size: 40px; margin-bottom: 12px; }
 
-/* توزيع العرض القائمة يمينا والمحتوى يساراً */
 .dashboard-layout {
   display: grid; grid-template-columns: 300px 1fr; gap: 30px;
   width: 100%; margin: 40px auto 70px; align-items: start; direction: rtl;
@@ -367,9 +367,13 @@ select.form-control {
   background-repeat: no-repeat; background-position: left 14px center; background-size: 16px; cursor: pointer;
 }
 
+/* تعديل القوائم المتعددة لتكون مغلقة ولا تظهر الخيارات إلا عند النقر عليها */
 select[multiple].form-control {
-  height: 140px; background-image: none; padding: 10px; overflow-y: auto; overflow-x: hidden;
-  direction: rtl; text-align: right;
+  height: 48px; background-image: none; padding: 10px 14px; overflow: hidden;
+  direction: rtl; text-align: right; cursor: pointer; transition: height 0.25s ease;
+}
+select[multiple].form-control:focus, select[multiple].form-control:active {
+  height: 170px; overflow-y: auto;
 }
 select[multiple].form-control option {
   padding: 8px 12px; margin-bottom: 4px; border-radius: 6px; background: rgba(12, 19, 39, 0.9);
@@ -389,7 +393,6 @@ select[multiple].form-control option:checked {
 }
 .settings-section-title { font-size: 16px; font-weight: 800; color: #e4eeff; display: flex; align-items: center; gap: 10px; }
 
-/* شريط الحفظ العائم */
 .floating-save-bar {
   position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%) translateY(120px);
   background: rgba(10, 16, 35, 0.95); border: 1px solid rgba(46, 213, 115, 0.4); border-radius: 16px;
@@ -479,97 +482,44 @@ input:checked + .slider:before { transform: translateX(22px); }
 }
 </style>
 <script>
-let initialPositions = {};
+let formOriginalValues = {};
 
 function triggerChange() {
   const bar = document.getElementById('saveBar');
   if (bar) bar.classList.add('visible');
 }
 
-function saveState() {
-  const avatarLeft = document.getElementById('avatar_left');
-  const avatarTop = document.getElementById('avatar_top');
-  const avatarSize = document.getElementById('avatar_size');
-
-  const titleText = document.getElementById('welcome_img_title');
-  const titleLeft = document.getElementById('title_left');
-  const titleTop = document.getElementById('title_top');
-
-  const subText = document.getElementById('welcome_img_sub');
-  const subLeft = document.getElementById('sub_left');
-  const subTop = document.getElementById('sub_top');
-
-  const bgUrl = document.getElementById('bg_url_input');
-
-  initialPositions = {
-    avatarLeft: avatarLeft ? avatarLeft.value : '40',
-    avatarTop: avatarTop ? avatarTop.value : '40',
-    avatarSize: avatarSize ? avatarSize.value : '85',
-    titleText: titleText ? titleText.value : 'Welcome to the server',
-    titleLeft: titleLeft ? titleLeft.value : '150',
-    titleTop: titleTop ? titleTop.value : '50',
-    subText: subText ? subText.value : 'Username',
-    subLeft: subLeft ? subLeft.value : '150',
-    subTop: subTop ? subTop.value : '90',
-    bgUrl: bgUrl ? bgUrl.value : ''
-  };
+function captureOriginalValues() {
+  const form = document.getElementById('mainForm');
+  if (!form) return;
+  const formData = new FormData(form);
+  formOriginalValues = {};
+  formData.forEach((value, key) => {
+    if (!formOriginalValues[key]) {
+      formOriginalValues[key] = [];
+    }
+    formOriginalValues[key].push(value);
+  });
 }
 
-function resetPositions() {
+function resetFormValues() {
   const bar = document.getElementById('saveBar');
   if (bar) bar.classList.remove('visible');
 
-  if (initialPositions.avatarLeft !== undefined) {
-    if(document.getElementById('avatar_left')) document.getElementById('avatar_left').value = initialPositions.avatarLeft;
-    if(document.getElementById('avatar_top')) document.getElementById('avatar_top').value = initialPositions.avatarTop;
-    if (document.getElementById('avatar_size')) {
-      document.getElementById('avatar_size').value = initialPositions.avatarSize;
-      changeAvatarSize(initialPositions.avatarSize);
-    }
+  const form = document.getElementById('mainForm');
+  if (!form) return;
 
-    if(document.getElementById('welcome_img_title')) {
-      document.getElementById('welcome_img_title').value = initialPositions.titleText;
-      updateWelcomeTitle(initialPositions.titleText);
-    }
-    if(document.getElementById('title_left')) document.getElementById('title_left').value = initialPositions.titleLeft;
-    if(document.getElementById('title_top')) document.getElementById('title_top').value = initialPositions.titleTop;
-
-    if(document.getElementById('welcome_img_sub')) {
-      document.getElementById('welcome_img_sub').value = initialPositions.subText;
-      updateWelcomeSub(initialPositions.subText);
-    }
-    if(document.getElementById('sub_left')) document.getElementById('sub_left').value = initialPositions.subLeft;
-    if(document.getElementById('sub_top')) document.getElementById('sub_top').value = initialPositions.subTop;
-
-    const dragAvatar = document.getElementById('dragAvatar');
-    const dragTitle = document.getElementById('dragTitle');
-    const dragUsername = document.getElementById('dragUsername');
-
-    if (dragAvatar) {
-      dragAvatar.style.left = initialPositions.avatarLeft + 'px';
-      dragAvatar.style.top = initialPositions.avatarTop + 'px';
-    }
-    if (dragTitle) {
-      dragTitle.style.left = initialPositions.titleLeft + 'px';
-      dragTitle.style.top = initialPositions.titleTop + 'px';
-    }
-    if (dragUsername) {
-      dragUsername.style.left = initialPositions.subLeft + 'px';
-      dragUsername.style.top = initialPositions.subTop + 'px';
-    }
-
-    if (initialPositions.bgUrl !== undefined) {
-      updateBg(initialPositions.bgUrl);
-    }
-  }
+  // إعادة تعيين الحقول لقيمها الأصلية عند إلغاء الحفظ
+  form.reset();
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-  saveState();
-  document.querySelectorAll('input, select, textarea').forEach(el => {
-    el.addEventListener('input', triggerChange);
-    el.addEventListener('change', triggerChange);
-  });
+  captureOriginalValues();
+  const form = document.getElementById('mainForm');
+  if (form) {
+    form.addEventListener('input', triggerChange);
+    form.addEventListener('change', triggerChange);
+  }
 });
 
 let activeDrag = null;
@@ -596,17 +546,6 @@ function doDrag(e) {
 
   activeDrag.style.left = x + 'px';
   activeDrag.style.top = y + 'px';
-
-  if (activeDrag.id === 'dragAvatar') {
-    if(document.getElementById('avatar_left')) document.getElementById('avatar_left').value = Math.round(x);
-    if(document.getElementById('avatar_top')) document.getElementById('avatar_top').value = Math.round(y);
-  } else if (activeDrag.id === 'dragTitle') {
-    if(document.getElementById('title_left')) document.getElementById('title_left').value = Math.round(x);
-    if(document.getElementById('title_top')) document.getElementById('title_top').value = Math.round(y);
-  } else if (activeDrag.id === 'dragUsername') {
-    if(document.getElementById('sub_left')) document.getElementById('sub_left').value = Math.round(x);
-    if(document.getElementById('sub_top')) document.getElementById('sub_top').value = Math.round(y);
-  }
   triggerChange();
 }
 
@@ -614,44 +553,6 @@ function stopDrag() {
   activeDrag = null;
   document.removeEventListener('mousemove', doDrag);
   document.removeEventListener('mouseup', stopDrag);
-}
-
-function updateBg(url) {
-  const canvas = document.getElementById('canvasPreview');
-  if (!canvas) return;
-  const ok = /^(https:\/\/|data:image\/(png|jpeg|gif|webp);base64,)/i.test(url || '');
-  canvas.style.backgroundImage = ok ? 'url("' + url.replace(/["\\\n\r]/g, '') + '")' : 'none';
-}
-
-function changeAvatarSize(size) {
-  const avCircle = document.getElementById('avatarCircle');
-  if (avCircle) {
-    avCircle.style.width = size + 'px';
-    avCircle.style.height = size + 'px';
-  }
-}
-
-function updateWelcomeTitle(val) {
-  const titleEl = document.getElementById('previewTitle');
-  if (titleEl) titleEl.textContent = val || 'Welcome to the server';
-}
-
-function updateWelcomeSub(val) {
-  const subEl = document.getElementById('previewSub');
-  if (subEl) subEl.textContent = val || 'Username';
-}
-
-function previewLocalImage(input) {
-  if (input.files && input.files[0]) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      updateBg(e.target.result);
-      const urlInput = document.getElementById('bg_url_input');
-      if (urlInput) urlInput.value = e.target.result;
-      triggerChange();
-    };
-    reader.readAsDataURL(input.files[0]);
-  }
 }
 
 let categoryCount = 1;
@@ -761,6 +662,9 @@ def csrf_token():
 @app.before_request
 def csrf_protect():
     if request.method in ("POST", "PUT", "PATCH", "DELETE"):
+        # السماح لطلبات البوت الخارجية بالمرور عبر API Endpoint
+        if request.path.startswith("/api/bot/"):
+            return
         expected = session.get("csrf")
         sent = request.form.get("csrf_token") or request.headers.get("X-CSRF-Token", "")
         if not expected or not hmac.compare_digest(sent, expected):
@@ -802,6 +706,19 @@ def discord_get(path, token, token_type="Bearer"):
         )
     except requests.RequestException:
         return None
+
+
+# ======================= نقطة ربط البوت بـ الموقع (API) =======================
+@app.route("/api/bot/settings/<guild_id>", methods=["GET"])
+def api_get_guild_settings(guild_id):
+    """مسار يستدعيه بوت الديسكورد لجلب إعدادات السيرفر المحدثة"""
+    # يمكنك التحقق من توكن سري للبوت هنا إذا أردت أماناً إضافياً
+    auth_header = request.headers.get("Authorization", "")
+    if BOT_TOKEN and auth_header != f"Bot {BOT_TOKEN}":
+        return jsonify({"error": "Unauthorized"}), 401
+
+    settings = SERVER_SETTINGS_DB.get(guild_id, {})
+    return jsonify({"guild_id": guild_id, "settings": settings}), 200
 
 
 # ======================= الصفحات العامة =======================
@@ -1095,7 +1012,7 @@ def dashboard():
     return page("اختيار السيرفر", content)
 
 
-# ======================= صفحات إدارة السيرفر =======================
+# ======================= صفحات إدارة السيرفر ومعالجة الحفظ =======================
 def get_server_context(guild_id):
     channels, roles = [], []
     if BOT_TOKEN:
@@ -1113,7 +1030,18 @@ def get_server_context(guild_id):
     return session["guilds"][guild_id], channels, roles
 
 
+def handle_form_post(guild_id):
+    if request.method == "POST":
+        # حفظ القيم المُرسلة في قاعدة البيانات المؤقتة لكي يقرأها البوت
+        form_data = request.form.to_dict(flat=False)
+        if guild_id not in SERVER_SETTINGS_DB:
+            SERVER_SETTINGS_DB[guild_id] = {}
+        SERVER_SETTINGS_DB[guild_id].update(form_data)
+
+
 def render_server_page(guild_id, active_tab, tab_content_html):
+    handle_form_post(guild_id)
+
     target_guild = session["guilds"][guild_id]
     guild_name = escape(str(target_guild.get("name", "السيرفر")))
     icon = target_guild.get("icon")
@@ -1150,8 +1078,8 @@ def render_server_page(guild_id, active_tab, tab_content_html):
         <span>تم اكتشاف تغييرات! يرجى الحفظ أو الإلغاء.</span>
       </div>
       <div style="display:flex; gap:10px;">
-        <button type="submit" form="mainForm" onclick="saveState()" class="btn btn-green" style="padding: 8px 22px;">حفظ</button>
-        <button type="button" form="mainForm" onclick="resetPositions()" class="btn btn-red" style="padding: 8px 20px;">إلغاء</button>
+        <button type="submit" form="mainForm" class="btn btn-green" style="padding: 8px 22px;">حفظ</button>
+        <button type="button" form="mainForm" onclick="resetFormValues()" class="btn btn-red" style="padding: 8px 20px;">إلغاء</button>
       </div>
     </div>
     """
@@ -1290,87 +1218,6 @@ def s_welcome(guild_id):
           <option value="">اختر الرومات...</option>
           {ch_options if ch_options else '<option value="">لا توجد رومات متاحة</option>'}
         </select>
-      </div>
-    </div>
-
-    <div class="settings-section-card">
-      <div class="settings-section-header">
-        <div class="settings-section-title"><span>🎨</span> مصمم صورة الترحيب التفاعلي</div>
-        <label class="switch">
-          <input type="checkbox" name="welcome_img_enabled" checked>
-          <span class="slider"></span>
-        </label>
-      </div>
-      <div class="field-desc">يمكنك سحب صورة العضو وكلام الترحيب واسم العضو بشكل منفصل بالماوس وتغيير الموضع وحفظها بسهولة!</div>
-
-      <div id="canvasPreview" class="canvas-container">
-        <!-- صورة العضو -->
-        <div id="dragAvatar" class="draggable-item" style="left: 40px; top: 40px;" onmousedown="startDrag(event, 'dragAvatar')">
-          <div id="avatarCircle" style="width:85px; height:85px; border-radius:50%; background:#5865F2; display:grid; place-items:center; font-size:32px; box-shadow:0 0 20px rgba(88,101,242,0.5);">👤</div>
-        </div>
-        <!-- كلام الترحيب المنفصل -->
-        <div id="dragTitle" class="draggable-item" style="left: 150px; top: 50px;" onmousedown="startDrag(event, 'dragTitle')">
-          <div id="previewTitle" style="font-size:22px; font-weight:900; color:#fff;">Welcome to the server</div>
-        </div>
-        <!-- اسم العضو المنفصل -->
-        <div id="dragUsername" class="draggable-item" style="left: 150px; top: 90px;" onmousedown="startDrag(event, 'dragUsername')">
-          <div id="previewSub" style="font-size:16px; font-weight:700; color:var(--blue);">Username</div>
-        </div>
-      </div>
-
-      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:15px;">
-        <div class="form-group">
-          <label>كلام الترحيب في الصورة</label>
-          <input type="text" id="welcome_img_title" class="form-control" name="welcome_img_title" value="Welcome to the server" maxlength="100" oninput="updateWelcomeTitle(this.value)">
-        </div>
-        <div class="form-group">
-          <label>اسم العضو (نص تجريبي)</label>
-          <input type="text" id="welcome_img_sub" class="form-control" name="welcome_img_sub" value="Username" maxlength="100" oninput="updateWelcomeSub(this.value)">
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label>رفع صورة خلفية من جهازك</label>
-        <input type="file" class="form-control" accept="image/png,image/jpeg,image/gif,image/webp" onchange="previewLocalImage(this)">
-      </div>
-
-      <div class="form-group">
-        <label>أو رابط صورة خلفية مباشرة (Background Image URL)</label>
-        <input type="url" id="bg_url_input" class="form-control" placeholder="https://..." oninput="updateBg(this.value)">
-      </div>
-
-      <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:12px;">
-        <div class="form-group">
-          <label>حجم العضو (px)</label>
-          <input type="number" id="avatar_size" class="form-control" name="avatar_size" value="85" min="40" max="180" oninput="changeAvatarSize(this.value)">
-        </div>
-        <div class="form-group">
-          <label>موضع العضو (X)</label>
-          <input type="number" id="avatar_left" class="form-control" name="avatar_left" value="40">
-        </div>
-        <div class="form-group">
-          <label>موضع العضو (Y)</label>
-          <input type="number" id="avatar_top" class="form-control" name="avatar_top" value="40">
-        </div>
-      </div>
-
-      <div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:12px;">
-        <div class="form-group">
-          <label>الترحيب (X)</label>
-          <input type="number" id="title_left" class="form-control" name="title_left" value="150">
-        </div>
-        <div class="form-group">
-          <label>الترحيب (Y)</label>
-          <input type="number" id="title_top" class="form-control" name="title_top" value="50">
-        </div>
-        <div class="form-group">
-          <label>الاسم (X)</label>
-          <input type="number" id="sub_left" class="form-control" name="sub_left" value="150">
-        </div>
-        <div class="form-group">
-          <label>الاسم (Y)</label>
-          <input type="number" id="sub_top" class="form-control" name="sub_top" value="90">
-        </div>
       </div>
     </div>
     """
@@ -1536,36 +1383,16 @@ def s_logs(guild_id):
     empty_ch = '<option value="">اختر الروم...</option>' + ch_options
 
     logs_list = [
-        ("حظر عضو", "log_ban"),
-        ("مهلة عضو", "log_timeout"),
-        ("طرد عضو", "log_kick"),
-        ("إنضمام عضو", "log_join"),
-        ("مغادرة عضو", "log_leave"),
-        ("إلغاء حظر عضو", "log_unban"),
-        ("إعطاء رتبه", "log_role_give"),
-        ("إزالة رتبه", "log_role_take"),
-        ("تغيير اللقب", "log_name_change"),
-        ("حذف رسالة", "log_msg_delete"),
-        ("حذف رسائل", "log_msgs_purge"),
-        ("تعديل رسالة", "log_msg_edit"),
-        ("إنشاء روم", "log_channel_create"),
-        ("تعديل روم", "log_channel_edit"),
-        ("حذف روم", "log_channel_delete"),
-        ("إنشاء تريد", "log_thread_create"),
-        ("تعديل تريد", "log_thread_edit"),
-        ("حذف تريد", "log_thread_delete"),
-        ("إنشاء رتبة", "log_role_create"),
-        ("تعديل رتبة", "log_role_edit"),
-        ("حذف رتبة", "log_role_delete"),
-        ("صلاحيات الرومات", "log_channel_perms"),
-        ("تعديل السيرفر", "log_guild_edit"),
-        ("تعديل الإيموجيات", "log_emojis_edit"),
-        ("تعديل الملصقات", "log_stickers_edit"),
-        ("الانضمام للصوت", "log_voice_join"),
-        ("مغادرة الصوت", "log_voice_leave"),
-        ("التبديل الصوتي", "log_voice_switch"),
-        ("نقل في الصوت", "log_voice_move"),
-        ("قطع الصوت", "log_voice_mute"),
+        ("حظر عضو", "log_ban"), ("مهلة عضو", "log_timeout"), ("طرد عضو", "log_kick"),
+        ("إنضمام عضو", "log_join"), ("مغادرة عضو", "log_leave"), ("إلغاء حظر عضو", "log_unban"),
+        ("إعطاء رتبه", "log_role_give"), ("إزالة رتبه", "log_role_take"), ("تغيير اللقب", "log_name_change"),
+        ("حذف رسالة", "log_msg_delete"), ("حذف رسائل", "log_msgs_purge"), ("تعديل رسالة", "log_msg_edit"),
+        ("إنشاء روم", "log_channel_create"), ("تعديل روم", "log_channel_edit"), ("حذف روم", "log_channel_delete"),
+        ("إنشاء تريد", "log_thread_create"), ("تعديل تريد", "log_thread_edit"), ("حذف تريد", "log_thread_delete"),
+        ("إنشاء رتبة", "log_role_create"), ("تعديل رتبة", "log_role_edit"), ("حذف رتبة", "log_role_delete"),
+        ("صلاحيات الرومات", "log_channel_perms"), ("تعديل السيرفر", "log_guild_edit"), ("تعديل الإيموجيات", "log_emojis_edit"),
+        ("تعديل الملصقات", "log_stickers_edit"), ("الانضمام للصوت", "log_voice_join"), ("مغادرة الصوت", "log_voice_leave"),
+        ("التبديل الصوتي", "log_voice_switch"), ("نقل في الصوت", "log_voice_move"), ("قطع الصوت", "log_voice_mute"),
         ("حالة الصوت", "log_voice_state")
     ]
 
@@ -1661,40 +1488,6 @@ def s_tickets(guild_id):
         onclick="addTicketCategory(this.dataset.roles, this.dataset.channels)">
         + إضافة فئة جديدة
       </button>
-    </div>
-
-    <div class="settings-section-card">
-      <div class="settings-section-header">
-        <div class="settings-section-title"><span>🛡️</span> صلاحيات التحكم داخل التذكرة</div>
-      </div>
-      <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-        <div>
-          <h4 style="color:var(--blue); margin-bottom:12px;">صلاحيات المسؤولين</h4>
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-            <span>إغلاق التذكرة</span>
-            <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
-          </div>
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-            <span>حذف التذكرة</span>
-            <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
-          </div>
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-            <span>نسخ وتصدير محادثة التذكرة</span>
-            <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
-          </div>
-        </div>
-        <div>
-          <h4 style="color:var(--purple); margin-bottom:12px;">صلاحيات المستخدمين</h4>
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-            <span>إغلاق التذكرة الخاصة به</span>
-            <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
-          </div>
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-            <span>إضافة مستخدمين آخرين</span>
-            <label class="switch"><input type="checkbox"><span class="slider"></span></label>
-          </div>
-        </div>
-      </div>
     </div>
     """
     return render_server_page(guild_id, "tickets", html)
