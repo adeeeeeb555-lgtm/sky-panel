@@ -721,11 +721,6 @@ def home():
             مرحباً بك في Sky Universe، لوحة تحكم متطورة بتصميم فضي ومجرات فريد، تتيح لك إدارة سيرفر البوت واختيار الرتب المتعددة وإعدادات التذاكر والترحيب بكل احترافية.
           </p>
           <div class="actions">{actions}</div>
-          <div class="features">
-            <div class="feature"><b>✦</b> واجهة زجاجية متجاوبة</div>
-            <div class="feature"><b>✦</b> كوكب وبطاقات دائرية موزعة بدقة</div>
-            <div class="feature"><b>✦</b> ربط مباشر مع Discord OAuth2</div>
-          </div>
         </div>
         <div class="space-art">
           <div class="planet-system">
