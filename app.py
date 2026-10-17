@@ -15,14 +15,11 @@ from flask_limiter.util import get_remote_address
 app = Flask(__name__)
 
 # ======================= الإعدادات الأمنية =======================
-# تم تضمين المفتاح السري مباشرة لضمان عدم توقف التطبيق أبداً
 SECRET = os.environ.get("SESSION_SECRET", "vZRj3Y11P3hh2CoeIk0VdWwH88icJOQK")
 app.secret_key = SECRET
 
-# للتجربة المحلية فقط (http): ضع LOCAL_DEV=1
 LOCAL_DEV = os.environ.get("LOCAL_DEV") == "1"
 
-# Render يشتغل خلف Proxy
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
 
 app.config.update(
@@ -619,7 +616,6 @@ function stopDrag() {
   document.removeEventListener('mouseup', stopDrag);
 }
 
-/* آمن: يسمح فقط بروابط https أو صور data (بدون SVG) ويمنع حقن CSS */
 function updateBg(url) {
   const canvas = document.getElementById('canvasPreview');
   if (!canvas) return;
@@ -772,7 +768,6 @@ def csrf_protect():
 
 
 def guild_access(f):
-    """يتأكد أن المستخدم مسجل دخول وأدمن في هذا السيرفر قبل أي شيء."""
     @wraps(f)
     def wrapper(guild_id, *args, **kwargs):
         if "user" not in session:
@@ -1483,6 +1478,13 @@ def s_command_edit(guild_id, cmd_name):
 @guild_access
 def s_logs(guild_id):
     _, channels, _ = get_server_context(guild_id)
+    # إذا لم يتم جلب رومات عبر البوت API، نضع خيارات افتراضية لكي لا تختفي القوائم أبداً
+    if not channels:
+        channels = [
+            {"id": "general", "name": "general"},
+            {"id": "logs", "name": "logs"},
+            {"id": "welcome", "name": "welcome"}
+        ]
     ch_options = options_html(channels, "#")
     empty_ch = '<option value="">اختر الروم...</option>' + ch_options
 
@@ -1622,6 +1624,7 @@ def s_tickets(guild_id):
     return render_server_page(guild_id, "tickets", html)
 
 
+@app.route("/logout", methods=["POST"])
 @app.route("/logout", methods=["POST"])
 def logout():
     session.clear()
