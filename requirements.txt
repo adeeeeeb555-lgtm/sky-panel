@@ -1,4 +1,6 @@
-flask>=3.0
-requests>=2.31
-flask-limiter>=3.5
-gunicorn>=21.2
+Flask
+requests
+Werkzeug
+Flask-Limiter
+markupsafe
+gunicorn
