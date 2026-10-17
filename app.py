@@ -65,8 +65,8 @@ CMD_NAMES = {
     "setnick", "timeout", "untimeout", "vkick", "warn", "unwarn", "warns", "vmute"
 }
 
-SERVER_SETTINGS_DB = {}
-COMMITTED_SETTINGS_DB = {}  # قاعدة البيانات الرسمية لآخر حفظ
+# قاعدة بيانات الحفظ الرسمية
+COMMITTED_SETTINGS_DB = {}
 
 STYLE = r"""
 <!DOCTYPE html>
@@ -450,13 +450,12 @@ function triggerChange() {
   if (bar) bar.classList.add('visible');
 }
 
-/* زر عدم الحفظ / إلغاء التعديلات: يرجع كل شيء لآخر نسخة محفوظة */
+/* زر عدم الحفظ / إلغاء التعديلات: يرجع كل شيء لآخر نسخة محفوظة رسمياً */
 function revertToLastSaved() {
   hasUnsavedChanges = false;
   const bar = document.getElementById('saveBar');
   if (bar) bar.classList.remove('visible');
   
-  // إعادة تحميل البيانات الأصلية التي تم جلبها من السيرفر
   const committedData = window.COMMITTED_SETTINGS || {};
   const form = document.getElementById('mainForm');
   if (!form) return;
@@ -1026,9 +1025,7 @@ def get_server_context(guild_id):
 def handle_form_post(guild_id):
     if request.method == "POST":
         form_data = request.form.to_dict(flat=False)
-        # تحويل القيم من لستة إلى قيمة مفردة لتسهيل العرض
         clean_data = {k: v[0] if len(v) == 1 else v for k, v in form_data.items() if k != "csrf_token"}
-        SERVER_SETTINGS_DB[guild_id] = clean_data
         if request.form.get("action_type") == "save":
             COMMITTED_SETTINGS_DB[guild_id] = clean_data
 
@@ -1042,7 +1039,6 @@ def render_server_page(guild_id, active_tab, tab_content_html):
     icon = target_guild.get("icon")
     icon_url = f"https://cdn.discordapp.com/icons/{guild_id}/{escape(str(icon))}.png" if icon else "https://cdn.discordapp.com/embed/avatars/0.png"
 
-    # جلب بيانات آخر حفظ لملئها بالنموذج
     current_settings = COMMITTED_SETTINGS_DB.get(guild_id, {})
     import json
     committed_json = json.dumps(current_settings)
