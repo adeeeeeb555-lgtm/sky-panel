@@ -1,11 +1,45 @@
 import os
+import re
+import hmac
+import secrets
 import requests
+from datetime import timedelta
+from functools import wraps
 from urllib.parse import urlencode
-from flask import Flask, redirect, request, session, render_template_string
+from flask import Flask, redirect, request, session, render_template_string, abort
 from markupsafe import escape
+from werkzeug.middleware.proxy_fix import ProxyFix
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("SESSION_SECRET", "dev-only-change-this-secret")
+
+# ======================= الإعدادات الأمنية =======================
+SECRET = os.environ.get("SESSION_SECRET", "")
+if len(SECRET) < 32:
+    raise RuntimeError("اضبط SESSION_SECRET (32 حرف أو أكثر) في متغيرات البيئة")
+app.secret_key = SECRET
+
+# للتجربة المحلية فقط (http): ضع LOCAL_DEV=1
+LOCAL_DEV = os.environ.get("LOCAL_DEV") == "1"
+
+# Render يشتغل خلف Proxy
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
+
+app.config.update(
+    SESSION_COOKIE_SECURE=not LOCAL_DEV,
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE="Lax",
+    PERMANENT_SESSION_LIFETIME=timedelta(hours=2),
+    MAX_CONTENT_LENGTH=5 * 1024 * 1024,
+)
+
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["300 per hour"],
+    storage_uri="memory://",
+)
 
 CLIENT_ID = os.environ.get("DISCORD_CLIENT_ID", "").strip()
 CLIENT_SECRET = os.environ.get("DISCORD_CLIENT_SECRET", "").strip()
@@ -17,17 +51,29 @@ REDIRECT_URI = os.environ.get(
 BOT_TOKEN = os.environ.get("DISCORD_TOKEN", "").strip()
 
 API_ENDPOINT = "https://discord.com/api/v10"
+
+# بدّل الصلاحيات بالقيمة اللي يحتاجها بوتك فقط (من Developer Portal > OAuth2 > URL Generator)
+# 8 = Administrator (خطيرة، الأفضل تقليلها)
+BOT_PERMISSIONS = os.environ.get("BOT_PERMISSIONS", "8")
+
 BOT_INVITE_URL = (
     "https://discord.com/oauth2/authorize?"
     + urlencode({
         "client_id": CLIENT_ID,
-        "permissions": "8",
+        "permissions": BOT_PERMISSIONS,
         "integration_type": "0",
         "scope": "bot"
     })
 )
 
-STYLE = """
+GUILD_ID_RE = re.compile(r"^\d{15,25}$")
+SEC_KEYS = {"bad_words", "spam", "links", "mention_spam"}
+CMD_NAMES = {
+    "ban", "unban", "clear", "hide", "show", "lock", "unlock", "move", "role",
+    "setnick", "timeout", "untimeout", "vkick", "warn", "unwarn", "warns", "vmute"
+}
+
+STYLE = r"""
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -450,7 +496,7 @@ function saveState() {
   const avatarLeft = document.getElementById('avatar_left');
   const avatarTop = document.getElementById('avatar_top');
   const avatarSize = document.getElementById('avatar_size');
-  
+
   const titleText = document.getElementById('welcome_img_title');
   const titleLeft = document.getElementById('title_left');
   const titleTop = document.getElementById('title_top');
@@ -548,7 +594,7 @@ function doDrag(e) {
   const parent = activeDrag.parentElement;
   let x = e.clientX - offsetX;
   let y = e.clientY - offsetY;
-  
+
   if (x < 0) x = 0;
   if (y < 0) y = 0;
   if (x > parent.clientWidth - activeDrag.clientWidth) x = parent.clientWidth - activeDrag.clientWidth;
@@ -576,11 +622,12 @@ function stopDrag() {
   document.removeEventListener('mouseup', stopDrag);
 }
 
+/* آمن: يسمح فقط بروابط https أو صور data (بدون SVG) ويمنع حقن CSS */
 function updateBg(url) {
   const canvas = document.getElementById('canvasPreview');
-  if (canvas) {
-    canvas.style.backgroundImage = 'url(' + url + ')';
-  }
+  if (!canvas) return;
+  const ok = /^(https:\/\/|data:image\/(png|jpeg|gif|webp);base64,)/i.test(url || '');
+  canvas.style.backgroundImage = ok ? 'url("' + url.replace(/["\\\n\r]/g, '') + '")' : 'none';
 }
 
 function changeAvatarSize(size) {
@@ -680,7 +727,7 @@ function addTicketCategory(roleOptionsHTML, channelOptionsHTML) {
   <div>✦ SKY UNIVERSE · لوحة تحكم البوت الاحترافية ✦</div>
   <div class="footer-links">
     <span>تحتاج مساعدة؟ تواصل معنا فوراً:</span>
-    <a href="https://discord.gg/HuH8TtmGA" target="_blank" class="btn btn-discord" style="padding: 8px 18px; font-size: 13px;">
+    <a href="https://discord.gg/HuH8TtmGA" target="_blank" rel="noopener noreferrer" class="btn btn-discord" style="padding: 8px 18px; font-size: 13px;">
       💬 دعم البوت (Discord)
     </a>
   </div>
@@ -689,10 +736,70 @@ function addTicketCategory(roleOptionsHTML, channelOptionsHTML) {
 </html>
 """
 
+
+# ======================= أدوات الحماية =======================
+@app.after_request
+def security_headers(resp):
+    resp.headers["Content-Security-Policy"] = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline'; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+        "font-src https://fonts.gstatic.com; "
+        "img-src 'self' data: https:; "
+        "frame-ancestors 'none'; base-uri 'none'; form-action 'self'"
+    )
+    resp.headers["X-Frame-Options"] = "DENY"
+    resp.headers["X-Content-Type-Options"] = "nosniff"
+    resp.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    resp.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+    if not LOCAL_DEV:
+        resp.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    if "user" in session:
+        resp.headers["Cache-Control"] = "no-store"
+    return resp
+
+
+def csrf_token():
+    if "csrf" not in session:
+        session["csrf"] = secrets.token_urlsafe(32)
+    return session["csrf"]
+
+
+@app.before_request
+def csrf_protect():
+    if request.method in ("POST", "PUT", "PATCH", "DELETE"):
+        expected = session.get("csrf")
+        sent = request.form.get("csrf_token") or request.headers.get("X-CSRF-Token", "")
+        if not expected or not hmac.compare_digest(sent, expected):
+            abort(403)
+
+
+def guild_access(f):
+    """يتأكد أن المستخدم مسجل دخول وأدمن في هذا السيرفر قبل أي شيء."""
+    @wraps(f)
+    def wrapper(guild_id, *args, **kwargs):
+        if "user" not in session:
+            return redirect("/login")
+        if not GUILD_ID_RE.match(guild_id):
+            abort(404)
+        if guild_id not in session.get("guilds", {}):
+            abort(403)
+        return f(guild_id, *args, **kwargs)
+    return wrapper
+
+
+def options_html(items, prefix=""):
+    return "".join(
+        f'<option value="{escape(str(i["id"]))}">{prefix}{escape(str(i["name"]))}</option>'
+        for i in items
+    )
+
+
 def page(title, content, header_auth=""):
     return render_template_string(
         STYLE, page_title=title, content=content, header_auth=header_auth
     )
+
 
 def discord_get(path, token, token_type="Bearer"):
     try:
@@ -704,6 +811,8 @@ def discord_get(path, token, token_type="Bearer"):
     except requests.RequestException:
         return None
 
+
+# ======================= الصفحات العامة =======================
 @app.route("/")
 def home():
     user = session.get("user")
@@ -721,6 +830,10 @@ def home():
           <img src="{avatar_url}" alt="Avatar">
           <span>{username}</span>
         </div>
+        <form method="POST" action="/logout" style="margin:0;">
+          <input type="hidden" name="csrf_token" value="{csrf_token()}">
+          <button type="submit" class="btn btn-secondary" style="padding: 8px 16px;">خروج</button>
+        </form>
         """
         actions = """
         <a class="btn btn-primary" href="/dashboard">⚙️ لوحة التحكم</a>
@@ -816,7 +929,7 @@ def home():
                   <p>تعديل رسائل ومظهر البوت</p>
                 </div>
               </div>
-              <div class="orbit-node node-10" style="cursor: pointer;" onclick="window.open('https://discord.gg/HuH8TtmGA', '_blank')">
+              <div class="orbit-node node-10" style="cursor: pointer;" onclick="window.open('https://discord.gg/HuH8TtmGA', '_blank', 'noopener')">
                 <div class="orbit-card">
                   <span class="icon">💬</span>
                   <strong>الدعم الفني</strong>
@@ -831,32 +944,44 @@ def home():
     """
     return page("الرئيسية", content, header_auth)
 
+
 @app.route("/invite")
 def invite():
     if not CLIENT_ID:
         return "يرجى ضبط DISCORD_CLIENT_ID في متغيرات البيئة.", 500
     return redirect(BOT_INVITE_URL)
 
+
 @app.route("/login")
+@limiter.limit("10 per minute")
 def login():
     if not CLIENT_ID or not CLIENT_SECRET:
         return "يرجى ضبط DISCORD_CLIENT_ID و DISCORD_CLIENT_SECRET.", 500
+
+    state = secrets.token_urlsafe(24)
+    session["oauth_state"] = state
 
     params = urlencode({
         "client_id": CLIENT_ID,
         "redirect_uri": REDIRECT_URI,
         "response_type": "code",
-        "scope": "identify guilds"
+        "scope": "identify guilds",
+        "state": state,
     })
     return redirect(f"https://discord.com/oauth2/authorize?{params}")
 
-@app.route("/callback")
-def callback():
-    error = request.args.get("error")
-    code = request.args.get("code")
 
-    if error:
+@app.route("/callback")
+@limiter.limit("10 per minute")
+def callback():
+    expected = session.pop("oauth_state", None)
+    got = request.args.get("state", "")
+    if not expected or not hmac.compare_digest(got, expected):
+        return "طلب غير صالح (state). حاول تسجيل الدخول من جديد.", 400
+
+    if request.args.get("error"):
         return "تم إلغاء تسجيل الدخول أو رفضه من Discord.", 400
+    code = request.args.get("code")
     if not code:
         return "لم يتم استلام كود التحقق من Discord.", 400
 
@@ -881,46 +1006,67 @@ def callback():
             return "لم يتم استلام رمز الدخول.", 502
 
         user_res = discord_get("/users/@me", access_token)
-        if not user_res or user_res.status_code != 200:
+        guilds_res = discord_get("/users/@me/guilds", access_token)
+        if (not user_res or user_res.status_code != 200
+                or not guilds_res or guilds_res.status_code != 200):
             return "تعذر جلب بيانات حساب Discord.", 502
 
-        session.clear()
-        session["user"] = user_res.json()
-        session["token"] = access_token
+        u = user_res.json()
+        admin_guilds = {
+            g["id"]: {"name": g.get("name", ""), "icon": g.get("icon")}
+            for g in guilds_res.json()
+            if (int(g.get("permissions", 0)) & 0x8) == 0x8 or g.get("owner", False)
+        }
+
+        # إلغاء التوكن فوراً، ما نحتاجه بعد جلب البيانات
+        try:
+            requests.post(
+                f"{API_ENDPOINT}/oauth2/token/revoke",
+                data={
+                    "client_id": CLIENT_ID,
+                    "client_secret": CLIENT_SECRET,
+                    "token": access_token,
+                    "token_type_hint": "access_token",
+                },
+                timeout=10
+            )
+        except requests.RequestException:
+            pass
+
+        session.clear()  # يمنع Session Fixation
+        session.permanent = True
+        session["user"] = {
+            "id": u.get("id"),
+            "username": u.get("username"),
+            "avatar": u.get("avatar"),
+        }
+        session["guilds"] = admin_guilds
+        session["csrf"] = secrets.token_urlsafe(32)
         return redirect("/")
 
     except (requests.RequestException, ValueError):
         return "تعذر الاتصال بـ Discord حالياً. حاول مجدداً.", 502
 
+
 @app.route("/dashboard")
 def dashboard():
-    token = session.get("token")
-    if not token:
+    if "user" not in session:
         return redirect("/login")
 
-    user_res = discord_get("/users/@me/guilds", token)
-    if not user_res or user_res.status_code != 200:
-        session.clear()
-        return redirect("/login")
-
-    user_guilds = user_res.json()
     bot_guilds = set()
-
     if BOT_TOKEN:
         bot_res = discord_get("/users/@me/guilds", BOT_TOKEN, "Bot")
         if bot_res and bot_res.status_code == 200:
             bot_guilds = {g["id"] for g in bot_res.json()}
 
-    valid_guilds = [
-        g for g in user_guilds
-        if ((int(g.get("permissions", 0)) & 0x8) == 0x8 or g.get("owner", False))
-        and g.get("id") in bot_guilds
-    ]
+    valid = {
+        gid: g for gid, g in session.get("guilds", {}).items()
+        if gid in bot_guilds
+    }
 
     cards = []
-    for g in valid_guilds:
-        gid = str(g.get("id", ""))
-        name = escape(str(g.get("name", "سيرفر Discord")))
+    for gid, g in valid.items():
+        name = escape(str(g.get("name") or "سيرفر Discord"))
         icon = g.get("icon")
         if icon:
             icon_url = f"https://cdn.discordapp.com/icons/{gid}/{escape(str(icon))}.png"
@@ -939,6 +1085,12 @@ def dashboard():
         </article>
         """)
 
+    grid = (
+        "<div class='server-grid'>" + "".join(cards) + "</div>"
+        if cards else
+        "<div class='empty'><span>🌌</span>ما لقينا سيرفرات فيها البوت وأنت أدمن فيها.<br>أضف البوت للسيرفر أولاً ثم حدّث الصفحة.</div>"
+    )
+
     content = f"""
     <main class="page">
       <div class="page-head">
@@ -946,54 +1098,37 @@ def dashboard():
           <p>السيرفرات التي تمتلك فيها صلاحية Administrator والبوت مضاف إليها.</p></div>
         <a class="btn btn-secondary" href="/">⌂ الرئيسية</a>
       </div>
-      {"<div class='server-grid'>" + "".join(cards) + "</div>" if cards else
-       "<div class='empty'><span>🌌</span>ما لقينا سيرفرات فيها البوت وأنت أدمن فيها.<br>أضف البوت للسيرفر أولاً ثم حدّث الصفحة.</div>"}
+      {grid}
     </main>
     """
     return page("اختيار السيرفر", content)
 
+
+# ======================= صفحات إدارة السيرفر =======================
 def get_server_context(guild_id):
-    token = session.get("token")
-    if not token:
-        return None, None, None
-    user_res = discord_get("/users/@me/guilds", token)
-    if not user_res or user_res.status_code != 200:
-        return None, None, None
-    
-    target_guild = None
-    for g in user_res.json():
-        if str(g.get("id")) == str(guild_id):
-            if (int(g.get("permissions", 0)) & 0x8) == 0x8 or g.get("owner", False):
-                target_guild = g
-            break
-    if not target_guild:
-        return None, None, None
-        
-    channels = []
-    roles = []
+    """يُستدعى فقط بعد @guild_access."""
+    channels, roles = [], []
     if BOT_TOKEN:
         ch_res = discord_get(f"/guilds/{guild_id}/channels", BOT_TOKEN, "Bot")
         if ch_res and ch_res.status_code == 200:
             channels = [c for c in ch_res.json() if c.get("type") == 0]
-            
+
         role_res = discord_get(f"/guilds/{guild_id}/roles", BOT_TOKEN, "Bot")
         if role_res and role_res.status_code == 200:
             roles = role_res.json()
-            
-    return target_guild, channels, roles
+
+    return session["guilds"][guild_id], channels, roles
+
 
 def render_server_page(guild_id, active_tab, tab_content_html):
-    target_guild, _, _ = get_server_context(guild_id)
-    if not target_guild:
-        return "عذراً، ليس لديك صلاحية أو أن السيرفر غير صالح.", 403
-        
+    target_guild = session["guilds"][guild_id]
     guild_name = escape(str(target_guild.get("name", "السيرفر")))
     icon = target_guild.get("icon")
     if icon:
         icon_url = f"https://cdn.discordapp.com/icons/{guild_id}/{escape(str(icon))}.png"
     else:
         icon_url = "https://cdn.discordapp.com/embed/avatars/0.png"
-        
+
     sidebar_html = f"""
     <aside class="sidebar">
       <div class="sidebar-header">
@@ -1014,8 +1149,8 @@ def render_server_page(guild_id, active_tab, tab_content_html):
       </div>
     </aside>
     """
-    
-    floating_bar = f"""
+
+    floating_bar = """
     <div id="saveBar" class="floating-save-bar">
       <div class="save-bar-info">
         <span class="save-dot"></span>
@@ -1027,12 +1162,13 @@ def render_server_page(guild_id, active_tab, tab_content_html):
       </div>
     </div>
     """
-    
+
     layout_content = f"""
     <div class="dashboard-layout">
       {sidebar_html}
       <main class="content-panel">
         <form id="mainForm" method="POST" enctype="multipart/form-data">
+          <input type="hidden" name="csrf_token" value="{csrf_token()}">
           {tab_content_html}
         </form>
       </main>
@@ -1041,9 +1177,11 @@ def render_server_page(guild_id, active_tab, tab_content_html):
     """
     return page(f"إدارة {guild_name}", layout_content)
 
+
 @app.route("/server/<guild_id>/settings", methods=["GET", "POST"])
+@guild_access
 def s_settings(guild_id):
-    html = f"""
+    html = """
     <div class="page-head" style="margin-bottom:25px;">
       <div><h1>⚙️ إعدادات السيرفر واللغة</h1><p>اختر لغة البوت الأساسية وبادئة الأوامر.</p></div>
     </div>
@@ -1058,15 +1196,17 @@ def s_settings(guild_id):
     <div class="form-group">
       <label>بادئة الأوامر (Prefix)</label>
       <div class="field-desc">الرمز أو الحرف الذي يبدأ به استخدام أوامر البوت التقليدية (مثال: ! أو ?).</div>
-      <input type="text" class="form-control" name="prefix" value="!">
+      <input type="text" class="form-control" name="prefix" value="!" maxlength="3">
     </div>
     """
     return render_server_page(guild_id, "settings", html)
 
+
 @app.route("/server/<guild_id>/welcome", methods=["GET", "POST"])
+@guild_access
 def s_welcome(guild_id):
     _, channels, _ = get_server_context(guild_id)
-    ch_options = "".join([f'<option value="{c["id"]}">#{c["name"]}</option>' for c in channels])
+    ch_options = options_html(channels, "#")
 
     html = f"""
     <div class="page-head" style="margin-bottom:25px;">
@@ -1093,7 +1233,7 @@ def s_welcome(guild_id):
       </div>
       <div class="form-group">
         <label>نص رسالة الترحيب</label>
-        <textarea class="form-control" name="welcome_msg" style="min-height: 90px;">مرحباً بك {{user}} في سيرفر {{server}}! 🌸 أنت العضو رقم {{membercount}}</textarea>
+        <textarea class="form-control" name="welcome_msg" maxlength="1000" style="min-height: 90px;">مرحباً بك {{user}} في سيرفر {{server}}! 🌸 أنت العضو رقم {{membercount}}</textarea>
       </div>
       <div class="form-group">
         <label>طريقة التوصيل</label>
@@ -1143,17 +1283,17 @@ def s_welcome(guild_id):
       <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:15px;">
         <div class="form-group">
           <label>كلام الترحيب في الصورة</label>
-          <input type="text" id="welcome_img_title" class="form-control" name="welcome_img_title" value="Welcome to the server" oninput="updateWelcomeTitle(this.value)">
+          <input type="text" id="welcome_img_title" class="form-control" name="welcome_img_title" value="Welcome to the server" maxlength="100" oninput="updateWelcomeTitle(this.value)">
         </div>
         <div class="form-group">
           <label>اسم العضو (نص تجريبي)</label>
-          <input type="text" id="welcome_img_sub" class="form-control" name="welcome_img_sub" value="Username" oninput="updateWelcomeSub(this.value)">
+          <input type="text" id="welcome_img_sub" class="form-control" name="welcome_img_sub" value="Username" maxlength="100" oninput="updateWelcomeSub(this.value)">
         </div>
       </div>
 
       <div class="form-group">
         <label>رفع صورة خلفية من جهازك</label>
-        <input type="file" class="form-control" accept="image/*" onchange="previewLocalImage(this)">
+        <input type="file" class="form-control" accept="image/png,image/jpeg,image/gif,image/webp" onchange="previewLocalImage(this)">
       </div>
 
       <div class="form-group">
@@ -1198,7 +1338,9 @@ def s_welcome(guild_id):
     """
     return render_server_page(guild_id, "welcome", html)
 
+
 @app.route("/server/<guild_id>/security", methods=["GET", "POST"])
+@guild_access
 def s_security(guild_id):
     sec_items = [
         ("كشف الكلمات السيئة", "bad_words", "كشف ومعالجة الرسائل التي تحتوي على كلمات أو عبارات سيئة محددة"),
@@ -1233,15 +1375,20 @@ def s_security(guild_id):
     """
     return render_server_page(guild_id, "security", html)
 
+
 @app.route("/server/<guild_id>/security-edit/<sec_key>", methods=["GET", "POST"])
+@guild_access
 def s_security_edit(guild_id, sec_key):
+    if sec_key not in SEC_KEYS:
+        abort(404)
+
     _, channels, roles = get_server_context(guild_id)
-    ch_options = "".join([f'<option value="{c["id"]}">#{c["name"]}</option>' for c in channels])
-    role_options = "".join([f'<option value="{r["id"]}">@{r["name"]}</option>' for r in roles])
+    ch_options = options_html(channels, "#")
+    role_options = options_html(roles, "@")
 
     html = f"""
     <div class="page-head" style="margin-bottom:25px;">
-      <div><h1>✎ تخصيص حماية: {sec_key}</h1><p>تحديد الاستثناءات من رومات ورتب، واختيار إجراءات العقوبة.</p></div>
+      <div><h1>✎ تخصيص حماية: {escape(sec_key)}</h1><p>تحديد الاستثناءات من رومات ورتب، واختيار إجراءات العقوبة.</p></div>
       <a class="btn btn-secondary" href="/server/{guild_id}/security">← عودة</a>
     </div>
     <div class="form-group">
@@ -1267,7 +1414,9 @@ def s_security_edit(guild_id, sec_key):
     """
     return render_server_page(guild_id, "security", html)
 
+
 @app.route("/server/<guild_id>/commands", methods=["GET", "POST"])
+@guild_access
 def s_commands(guild_id):
     cmds = [
         ("ban", "حظر عضو من السيرفر"), ("unban", "إلغاء حظر عضو"), ("clear", "مسح الرسائل في روم"),
@@ -1299,20 +1448,25 @@ def s_commands(guild_id):
     """
     return render_server_page(guild_id, "commands", html)
 
+
 @app.route("/server/<guild_id>/command-edit/<cmd_name>", methods=["GET", "POST"])
+@guild_access
 def s_command_edit(guild_id, cmd_name):
+    if cmd_name not in CMD_NAMES:
+        abort(404)
+
     _, channels, roles = get_server_context(guild_id)
-    ch_options = "".join([f'<option value="{c["id"]}">#{c["name"]}</option>' for c in channels])
-    role_options = "".join([f'<option value="{r["id"]}">@{r["name"]}</option>' for r in roles])
+    ch_options = options_html(channels, "#")
+    role_options = options_html(roles, "@")
 
     html = f"""
     <div class="page-head" style="margin-bottom:25px;">
-      <div><h1>✎ تعديل أمر: /{cmd_name}</h1><p>إعداد الأسماء البديلة، الرتب المسموحة، والرومات المفعلة.</p></div>
+      <div><h1>✎ تعديل أمر: /{escape(cmd_name)}</h1><p>إعداد الأسماء البديلة، الرتب المسموحة، والرومات المفعلة.</p></div>
       <a class="btn btn-secondary" href="/server/{guild_id}/commands">← عودة</a>
     </div>
     <div class="form-group">
       <label>الأسماء البديلة للأمر</label>
-      <input type="text" class="form-control" value="{cmd_name}">
+      <input type="text" class="form-control" name="aliases" value="{escape(cmd_name)}" maxlength="100">
     </div>
     <div class="form-group">
       <label>الرتب المفعلة لاستخدام الأمر (اختر عدة رتب بالضغط على Ctrl)</label>
@@ -1329,10 +1483,12 @@ def s_command_edit(guild_id, cmd_name):
     """
     return render_server_page(guild_id, "commands", html)
 
+
 @app.route("/server/<guild_id>/logs", methods=["GET", "POST"])
+@guild_access
 def s_logs(guild_id):
     _, channels, _ = get_server_context(guild_id)
-    ch_options = "".join([f'<option value="{c["id"]}">#{c["name"]}</option>' for c in channels])
+    ch_options = options_html(channels, "#")
     empty_ch = '<option value="">اختر الروم...</option>' + ch_options
 
     logs_list = [
@@ -1367,13 +1523,17 @@ def s_logs(guild_id):
     """
     return render_server_page(guild_id, "logs", html)
 
+
 @app.route("/server/<guild_id>/tickets", methods=["GET", "POST"])
+@guild_access
 def s_tickets(guild_id):
     _, channels, roles = get_server_context(guild_id)
-    ch_options = "".join([f'<option value="{c["id"]}">#{c["name"]}</option>' for c in channels])
-    role_options = "".join([f'<option value="{r["id"]}">@{r["name"]}</option>' for r in roles])
-    role_options_js = role_options.replace('"', '\\"').replace('\n', '')
-    ch_options_js = ch_options.replace('"', '\\"').replace('\n', '')
+    ch_options = options_html(channels, "#")
+    role_options = options_html(roles, "@")
+
+    # الخيارات تنمرر عبر data-attributes بعد escape (آمنة من كسر الـ JS/HTML)
+    roles_attr = escape(role_options if role_options else '<option value="">لا توجد رتب</option>')
+    chans_attr = escape(ch_options if ch_options else '<option value="">لا توجد رومات</option>')
 
     html = f"""
     <div class="page-head" style="margin-bottom:25px;">
@@ -1387,7 +1547,7 @@ def s_tickets(guild_id):
         </div>
         <div class="form-group">
           <label>اسم الفئة *</label>
-          <input type="text" class="form-control" name="cat_name_1" placeholder="أدخل اسم الفئة...">
+          <input type="text" class="form-control" name="cat_name_1" maxlength="100" placeholder="أدخل اسم الفئة...">
         </div>
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 15px;">
           <div class="form-group">
@@ -1424,7 +1584,9 @@ def s_tickets(guild_id):
     </div>
 
     <div style="margin-bottom: 25px;">
-      <button type="button" class="btn btn-secondary" style="width: 100%; border: 2px dashed var(--blue); padding: 16px;" onclick="addTicketCategory('{role_options_js}', '{ch_options_js}')">
+      <button type="button" class="btn btn-secondary" style="width: 100%; border: 2px dashed var(--blue); padding: 16px;"
+        data-roles="{roles_attr}" data-channels="{chans_attr}"
+        onclick="addTicketCategory(this.dataset.roles, this.dataset.channels)">
         + إضافة فئة جديدة
       </button>
     </div>
@@ -1465,11 +1627,14 @@ def s_tickets(guild_id):
     """
     return render_server_page(guild_id, "tickets", html)
 
-@app.route("/logout")
+
+@app.route("/logout", methods=["POST"])
 def logout():
     session.clear()
     return redirect("/")
 
+
 if __name__ == "__main__":
+    # للتجربة المحلية فقط. على Render استخدم: gunicorn app:app
     port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    app.run(host="127.0.0.1" if LOCAL_DEV else "0.0.0.0", port=port, debug=False)
