@@ -1478,21 +1478,50 @@ def s_command_edit(guild_id, cmd_name):
 @guild_access
 def s_logs(guild_id):
     _, channels, _ = get_server_context(guild_id)
-    # إذا لم يتم جلب رومات عبر البوت API، نضع خيارات افتراضية لكي لا تختفي القوائم أبداً
     if not channels:
         channels = [
-            {"id": "general", "name": "general"},
-            {"id": "logs", "name": "logs"},
-            {"id": "welcome", "name": "welcome"}
+            {"id": "general", "name": "عام"},
+            {"id": "logs", "name": "لوق"},
+            {"id": "welcome", "name": "دخول و خروج"}
         ]
     ch_options = options_html(channels, "#")
     empty_ch = '<option value="">اختر الروم...</option>' + ch_options
 
+    # قائمة اللوقات الكاملة الشاملة لجميع الأقسام
     logs_list = [
-        ("حظر عضو", "log_ban"), ("مهلة عضو", "log_timeout"), ("طرد عضو", "log_kick"),
-        ("إنضمام عضو", "log_join"), ("مغادرة عضو", "log_leave"), ("إلغاء حظر عضو", "log_unban"),
-        ("إعطاء رتبه", "log_role_give"), ("إزالة رتبه", "log_role_take"), ("تغيير اللقب", "log_name_change")
+        ("حظر عضو", "log_ban"),
+        ("مهلة عضو", "log_timeout"),
+        ("طرد عضو", "log_kick"),
+        ("إنضمام عضو", "log_join"),
+        ("مغادرة عضو", "log_leave"),
+        ("إلغاء حظر عضو", "log_unban"),
+        ("إعطاء رتبه", "log_role_give"),
+        ("إزالة رتبه", "log_role_take"),
+        ("تغيير اللقب", "log_name_change"),
+        ("حذف رسالة", "log_msg_delete"),
+        ("حذف رسائل", "log_msgs_purge"),
+        ("تعديل رسالة", "log_msg_edit"),
+        ("إنشاء روم", "log_channel_create"),
+        ("تعديل روم", "log_channel_edit"),
+        ("حذف روم", "log_channel_delete"),
+        ("إنشاء تريد", "log_thread_create"),
+        ("تعديل تريد", "log_thread_edit"),
+        ("حذف تريد", "log_thread_delete"),
+        ("إنشاء رتبة", "log_role_create"),
+        ("تعديل رتبة", "log_role_edit"),
+        ("حذف رتبة", "log_role_delete"),
+        ("صلاحيات الرومات", "log_channel_perms"),
+        ("تعديل السيرفر", "log_guild_edit"),
+        ("تعديل الإيموجيات", "log_emojis_edit"),
+        ("تعديل الملصقات", "log_stickers_edit"),
+        ("الانضمام للصوت", "log_voice_join"),
+        ("مغادرة الصوت", "log_voice_leave"),
+        ("التبديل الصوتي", "log_voice_switch"),
+        ("نقل في الصوت", "log_voice_move"),
+        ("قطع الصوت", "log_voice_mute"),
+        ("حالة الصوت", "log_voice_state")
     ]
+
     cards_html = ""
     for title, prefix in logs_list:
         cards_html += f"""
@@ -1624,7 +1653,6 @@ def s_tickets(guild_id):
     return render_server_page(guild_id, "tickets", html)
 
 
-@app.route("/logout", methods=["POST"])
 @app.route("/logout", methods=["POST"])
 def logout():
     session.clear()
