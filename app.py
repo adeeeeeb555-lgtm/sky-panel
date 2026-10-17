@@ -368,12 +368,12 @@ select.form-control {
 }
 
 select[multiple].form-control {
-  height: 180px; background-image: none; padding: 10px; overflow-y: auto; overflow-x: hidden;
+  height: 140px; background-image: none; padding: 10px; overflow-y: auto; overflow-x: hidden;
   direction: rtl; text-align: right;
 }
 select[multiple].form-control option {
-  padding: 10px 14px; margin-bottom: 6px; border-radius: 8px; background: rgba(12, 19, 39, 0.9);
-  color: var(--text); font-size: 13px; font-weight: 600; cursor: pointer; white-space: normal; word-break: break-all;
+  padding: 8px 12px; margin-bottom: 4px; border-radius: 6px; background: rgba(12, 19, 39, 0.9);
+  color: var(--text); font-size: 13px; font-weight: 600; cursor: pointer;
 }
 select[multiple].form-control option:checked {
   background: linear-gradient(115deg, #64caff, #9b8cff) !important; color: #06101f !important; font-weight: 800;
@@ -389,7 +389,7 @@ select[multiple].form-control option:checked {
 }
 .settings-section-title { font-size: 16px; font-weight: 800; color: #e4eeff; display: flex; align-items: center; gap: 10px; }
 
-/* شريط الحفظ العائم بالألوان الأخضر والأحمر والنقطة الخضراء */
+/* شريط الحفظ العائم */
 .floating-save-bar {
   position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%) translateY(120px);
   background: rgba(10, 16, 35, 0.95); border: 1px solid rgba(46, 213, 115, 0.4); border-radius: 16px;
@@ -1107,6 +1107,9 @@ def get_server_context(guild_id):
         if role_res and role_res.status_code == 200:
             roles = role_res.json()
 
+    if not roles:
+        roles = [{"id": "members", "name": "MEMBERS"}]
+
     return session["guilds"][guild_id], channels, roles
 
 
@@ -1127,7 +1130,7 @@ def render_server_page(guild_id, active_tab, tab_content_html):
         <p>لوحة التحكم الشاملة</p>
       </div>
       <div class="menu-list">
-        <a class="menu-item {'active' if active_tab=='settings' else ''}" href="/server/{guild_id}/settings"><span>⚙️</span> الإعدادات العامة</a>
+        <a class="menu-item {'active' if active_tab=='settings' else ''}" href="/server/{guild_id}/settings"><span>⚙️</span> الأساسيات</a>
         <a class="menu-item {'active' if active_tab=='welcome' else ''}" href="/server/{guild_id}/welcome"><span>👋</span> نظام الترحيب</a>
         <a class="menu-item {'active' if active_tab=='security' else ''}" href="/server/{guild_id}/security"><span>🛡️</span> الحماية والأمان</a>
         <a class="menu-item {'active' if active_tab=='commands' else ''}" href="/server/{guild_id}/commands"><span>🤖</span> أوامر الإشراف</a>
@@ -1171,22 +1174,67 @@ def render_server_page(guild_id, active_tab, tab_content_html):
 @app.route("/server/<guild_id>/settings", methods=["GET", "POST"])
 @guild_access
 def s_settings(guild_id):
-    html = """
-    <div class="page-head" style="margin-bottom:25px;">
-      <div><h1>⚙️ إعدادات السيرفر واللغة</h1><p>اختر لغة البوت الأساسية وبادئة الأوامر.</p></div>
+    _, _, roles = get_server_context(guild_id)
+    role_options = options_html(roles, "@")
+
+    html = f"""
+    <div class="settings-section-card">
+      <div class="settings-section-header">
+        <div class="settings-section-title"><span>⚙️</span> الأساسيات</div>
+        <p style="color:var(--muted); font-size:12px; margin:0;">إعدادات أساسية للسيرفر</p>
+      </div>
+
+      <div class="form-group">
+        <label>لغة البوت</label>
+        <select class="form-control" name="bot_lang">
+          <option value="ar">🇸🇦 العربية</option>
+          <option value="en">🇺🇸 English</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>لون الامبد الافتراضي</label>
+        <div class="field-desc">هذا اللون سيستخدم في جميع رسائل الامبد الافتراضية من البوت</div>
+        <div style="background: rgba(6,10,23,0.9); border: 1px solid var(--line); border-radius: 12px; padding: 15px; display: flex; align-items: center; justify-content: space-between;">
+          <div style="border-right: 4px solid var(--blue); padding-right: 12px;">
+            <div style="font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 4px;">مثال على عنوان الامبد</div>
+            <div style="font-size: 12px; color: var(--muted);">مثال على وصف الامبد</div>
+          </div>
+          <div style="width: 24px; height: 24px; border-radius: 6px; background: var(--blue);"></div>
+        </div>
+      </div>
     </div>
-    <div class="form-group">
-      <label>لغة البوت (Bot Language)</label>
-      <div class="field-desc">حدد اللغة التي سيتفاعل بها البوت مع الأعضاء داخل سيرفرك (عربي / إنجليزي).</div>
-      <select class="form-control" name="bot_lang">
-        <option value="ar">العربية (Arabic) 🇸🇦</option>
-        <option value="en">الإنجليزية (English) 🇺🇸</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label>بادئة الأوامر (Prefix)</label>
-      <div class="field-desc">الرمز أو الحرف الذي يبدأ به استخدام أوامر البوت التقليدية (مثال: ! أو ?).</div>
-      <input type="text" class="form-control" name="prefix" value="!" maxlength="3">
+
+    <div class="settings-section-card">
+      <div class="settings-section-header">
+        <div class="settings-section-title"><span>🤖</span> الرتب التلقائية</div>
+        <p style="color:var(--muted); font-size:12px; margin:0;">رتب تمنح تلقائياً للأعضاء الجدد</p>
+      </div>
+
+      <div class="form-group">
+        <label>👥 رتب المستخدمين</label>
+        <div class="field-desc">الرتب التي سيحصل عليها المستخدمون الجدد تلقائياً</div>
+        <select class="form-control" name="auto_roles_users" multiple>
+          {role_options}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>🤖 رتب البوتات</label>
+        <div class="field-desc">الرتب التي ستحصل عليها البوتات الجديدة تلقائياً</div>
+        <select class="form-control" name="auto_roles_bots" multiple>
+          <option value="">اختر الرتب...</option>
+          {role_options}
+        </select>
+      </div>
+
+      <div style="background: rgba(240, 180, 41, 0.1); border: 1px solid rgba(240, 180, 41, 0.3); border-radius: 12px; padding: 14px; display: flex; gap: 12px; align-items: center;">
+        <span style="font-size: 20px;">⚠️</span>
+        <div style="font-size: 13px; color: #f0b429; line-height: 1.6;">
+          <strong>ملاحظة مهمة</strong><br>
+          تأكد من أن البوت لديه صلاحيات كافية لمنح هذه الرتب. يجب أن تكون رتبة البوت أعلى من الرتب التي يريد منحها.
+        </div>
+      </div>
     </div>
     """
     return render_server_page(guild_id, "settings", html)
@@ -1487,7 +1535,6 @@ def s_logs(guild_id):
     ch_options = options_html(channels, "#")
     empty_ch = '<option value="">اختر الروم...</option>' + ch_options
 
-    # قائمة اللوقات الكاملة الشاملة لجميع الأقسام
     logs_list = [
         ("حظر عضو", "log_ban"),
         ("مهلة عضو", "log_timeout"),
