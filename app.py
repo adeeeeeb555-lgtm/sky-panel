@@ -352,7 +352,7 @@ select.form-control {
   background-repeat: no-repeat; background-position: left 14px center; background-size: 16px; cursor: pointer;
 }
 
-/* تنسيق الـ Tag */
+/* تنسيق الـ Tag لمنع التداخل تماماً */
 .tag-input-container {
   background: rgba(6, 10, 23, 0.85); border: 1px solid var(--line); border-radius: 12px;
   padding: 8px 12px; min-height: 50px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; cursor: pointer; position: relative;
@@ -366,8 +366,8 @@ select.form-control {
   cursor: pointer; font-size: 14px; font-weight: 900; color: #06101f;
 }
 .tag-select-dropdown {
-  width: 100%; margin-top: 6px; background: rgba(12, 19, 39, 0.95); border: 1px solid var(--line);
-  border-radius: 10px; padding: 8px; max-height: 150px; overflow-y: auto; display: none; position: absolute; top: 100%; right: 0; z-index: 100;
+  width: 100%; margin-top: 6px; background: rgba(12, 19, 39, 0.98); border: 1px solid var(--line);
+  border-radius: 10px; padding: 8px; max-height: 180px; overflow-y: auto; display: none; position: relative; z-index: 50; box-shadow: 0 10px 30px rgba(0,0,0,0.6);
 }
 .tag-select-dropdown.show { display: block; }
 .tag-option {
@@ -490,7 +490,6 @@ function loadFromLocalStorage() {
         }
       }
     }
-    // تحديث المعاينة لو وجدت إحداثيات أو نصوص محفظة
     updateCardPreview();
   } catch(e) {}
 }
@@ -527,14 +526,7 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // ربط أحداث تغيير الإحداثيات والحجم لتحديث المعاينة الفورية
-  const inputsToTrack = ['card_avatar_x', 'card_avatar_y', 'card_avatar_size', 'card_name_x', 'card_name_y', 'card_name_size', 'card_msg_x', 'card_msg_y', 'card_msg_size', 'welcome_bg_url'];
-  inputsToTrack.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.addEventListener('input', updateCardPreview);
-    }
-  });
+  setupDraggableElements();
 });
 
 function updateCardPreview() {
@@ -568,6 +560,56 @@ function updateCardPreview() {
   }
 }
 
+/* تفعيل السحب والإفلات بالماوس داخل بطاقة المعاينة */
+function setupDraggableElements() {
+  const box = document.getElementById('previewBox');
+  if (!box) return;
+
+  const items = [
+    { el: document.getElementById('previewAvatar'), xId: 'card_avatar_x', yId: 'card_avatar_y' },
+    { el: document.getElementById('previewName'), xId: 'card_name_x', yId: 'card_name_y' },
+    { el: document.getElementById('previewMsg'), xId: 'card_msg_x', yId: 'card_msg_y' }
+  ];
+
+  items.forEach(item => {
+    if (!item.el) return;
+    let isDragging = false;
+
+    item.el.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      e.stopPropagation();
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      const rect = box.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      let pctX = Math.round((x / rect.width) * 100);
+      let pctY = Math.round((y / rect.height) * 100);
+
+      pctX = Math.max(5, Math.min(95, pctX));
+      pctY = Math.max(10, Math.min(90, pctY));
+
+      document.getElementById(item.xId).value = pctX;
+      document.getElementById(item.yId).value = pctY;
+      updateCardPreview();
+      triggerChange();
+    });
+
+    window.addEventListener('mouseup', () => {
+      isDragging = false;
+    });
+  });
+
+  const inputs = ['card_avatar_x', 'card_avatar_y', 'card_avatar_size', 'card_name_x', 'card_name_y', 'card_name_size', 'card_msg_x', 'card_msg_y', 'card_msg_size', 'card_bg_input'];
+  inputs.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', () => { updateCardPreview(); triggerChange(); });
+  });
+}
+
 function setupTagSelector(containerId, hiddenInputId, dropdownId) {
   const container = document.getElementById(containerId);
   const dropdown = document.getElementById(dropdownId);
@@ -593,7 +635,8 @@ function setupTagSelector(containerId, hiddenInputId, dropdownId) {
     } catch(e) {}
   }
 
-  container.addEventListener('click', () => {
+  container.addEventListener('click', (e) => {
+    e.stopPropagation();
     dropdown.classList.toggle('show');
   });
 
@@ -1109,15 +1152,15 @@ def s_welcome(guild_id):
     ch_options = options_html(channels, "#")
     html = f"""
     <div class="page-head" style="margin-bottom:25px;">
-      <div><h1>👋 نظام الترحيب</h1><p>قم بتكوين رسائل الترحيب المخصصة للأعضاء المنضمين وتصميم بطاقة الصور.</p></div>
+      <div><h1>👋 نظام الترحيب</h1><p>قم بتكوين رسائل الترحيب وتصميم بطاقة الصور مع إمكانية السحب والإفلات بالماوس.</p></div>
     </div>
     <div class="settings-section-card">
       <div class="settings-section-header">
-        <div class="settings-section-title"><span>👋</span> رسالة الترحيب النصية مع الصورة</div>
+        <div class="settings-section-title"><span>👋</span> رسالة الترحيب النصية (ترسل مع الصورة)</div>
         <label class="switch"><input type="checkbox" name="welcome_enabled" checked><span class="slider"></span></label>
       </div>
       <div class="form-group">
-        <label>نص رسالة الترحيب (ترسل مع الصورة)</label>
+        <label>نص رسالة الترحيب</label>
         <textarea class="form-control" name="welcome_msg" rows="3" placeholder="مرحباً بك {{user}} في سيرفرنا!">مرحباً بك {{user}} في خادمنا الرائع! 🎉</textarea>
         <div class="field-desc" style="margin-top:6px;">
           ✨ الاختصارات: <code>{{user}}</code> للإشارة إلى العضو، <code>{{username}}</code> لاسم العضو، <code>{{server}}</code> لاسم السيرفر، <code>{{membercount}}</code> لعدد الأعضاء.
@@ -1134,42 +1177,42 @@ def s_welcome(guild_id):
 
     <div class="settings-section-card">
       <div class="settings-section-header">
-        <div class="settings-section-title"><span>🎨</span> مصمم وتخصيص بطاقة الترحيب</div>
+        <div class="settings-section-title"><span>🎨</span> مصمم بطاقة الترحيب (اسحب العناصر بالماوس)</div>
         <label class="switch"><input type="checkbox" name="welcome_image_enabled" checked><span class="slider"></span></label>
       </div>
 
-      <!-- نافذة المعاينة التفاعلية -->
-      <div id="previewBox" style="background: rgba(6, 10, 23, 0.9); border: 1px solid var(--line); border-radius: 16px; height: 280px; margin-bottom: 20px; position: relative; overflow: hidden;">
-        <div id="previewAvatar" style="position: absolute; left: 50%; top: 35%; transform: translate(-50%, -50%); width: 80px; height: 80px; border-radius: 50%; background: #5865F2; display: grid; place-items: center; font-size: 28px; border: 3px solid #73dcff; box-shadow: 0 0 20px rgba(100,186,255,0.4);">🎮</div>
-        <div id="previewName" style="position: absolute; left: 50%; top: 62%; transform: translate(-50%, -50%); font-size: 18px; font-weight: 800; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">Username</div>
-        <div id="previewMsg" style="position: absolute; left: 50%; top: 78%; transform: translate(-50%, -50%); font-size: 13px; font-weight: 600; color: var(--blue); text-shadow: 0 2px 4px rgba(0,0,0,0.8);">Welcome to the server!</div>
+      <!-- صندوق المعاينة التفاعلية مع السحب والإفلات -->
+      <div id="previewBox" style="background: rgba(6, 10, 23, 0.9); border: 1px solid var(--line); border-radius: 16px; height: 300px; margin-bottom: 20px; position: relative; overflow: hidden; user-select: none;">
+        <div id="previewAvatar" style="position: absolute; left: 50%; top: 35%; transform: translate(-50%, -50%); width: 80px; height: 80px; border-radius: 50%; background: #5865F2; display: grid; place-items: center; font-size: 28px; border: 3px solid #73dcff; box-shadow: 0 0 20px rgba(100,186,255,0.4); cursor: grab;">🎮</div>
+        <div id="previewName" style="position: absolute; left: 50%; top: 62%; transform: translate(-50%, -50%); font-size: 18px; font-weight: 800; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.8); cursor: grab;">Username</div>
+        <div id="previewMsg" style="position: absolute; left: 50%; top: 78%; transform: translate(-50%, -50%); font-size: 13px; font-weight: 600; color: var(--blue); text-shadow: 0 2px 4px rgba(0,0,0,0.8); cursor: grab;">Welcome to the server!</div>
       </div>
 
       <div class="form-group">
         <label>رابط صورة الخلفية (Background URL)</label>
-        <input type="url" class="form-control" id="card_bg_input" name="welcome_bg_url" placeholder="https://..." oninput="updateCardPreview()">
+        <input type="url" class="form-control" id="card_bg_input" name="welcome_bg_url" placeholder="https://...">
       </div>
 
-      <!-- أدوات التحكم بإحداثيات وأحجام العناصر -->
+      <!-- لوحة التحكم بالإحداثيات والأحجام -->
       <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 15px;">
         <div style="background: rgba(255,255,255,0.02); padding: 14px; border-radius: 12px; border: 1px solid var(--line);">
           <label style="color:var(--blue); font-weight:800; margin-bottom:10px; display:block;">👤 صورة العضو</label>
-          <div class="form-group" style="margin-bottom:10px;"><label style="font-size:12px;">الموقع الأفقي (X):</label><input type="number" class="form-control" id="card_avatar_x" name="card_avatar_x" value="50"></div>
-          <div class="form-group" style="margin-bottom:10px;"><label style="font-size:12px;">الموقع الرأسي (Y):</label><input type="number" class="form-control" id="card_avatar_y" name="card_avatar_y" value="35"></div>
-          <div class="form-group" style="margin-bottom:0;"><label style="font-size:12px;">الحجم (بكسل):</label><input type="number" class="form-control" id="card_avatar_size" name="card_avatar_size" value="80"></div>
+          <div class="form-group" style="margin-bottom:10px;"><label style="font-size:12px;">موقع X (%):</label><input type="number" class="form-control" id="card_avatar_x" name="card_avatar_x" value="50"></div>
+          <div class="form-group" style="margin-bottom:10px;"><label style="font-size:12px;">موقع Y (%):</label><input type="number" class="form-control" id="card_avatar_y" name="card_avatar_y" value="35"></div>
+          <div class="form-group" style="margin-bottom:0;"><label style="font-size:12px;">الحجم (px):</label><input type="number" class="form-control" id="card_avatar_size" name="card_avatar_size" value="80"></div>
         </div>
 
         <div style="background: rgba(255,255,255,0.02); padding: 14px; border-radius: 12px; border: 1px solid var(--line);">
           <label style="color:var(--blue); font-weight:800; margin-bottom:10px; display:block;">🏷️ اسم العضو</label>
-          <div class="form-group" style="margin-bottom:10px;"><label style="font-size:12px;">الموقع الأفقي (X):</label><input type="number" class="form-control" id="card_name_x" name="card_name_x" value="50"></div>
-          <div class="form-group" style="margin-bottom:10px;"><label style="font-size:12px;">الموقع الرأسي (Y):</label><input type="number" class="form-control" id="card_name_y" name="card_name_y" value="62"></div>
+          <div class="form-group" style="margin-bottom:10px;"><label style="font-size:12px;">موقع X (%):</label><input type="number" class="form-control" id="card_name_x" name="card_name_x" value="50"></div>
+          <div class="form-group" style="margin-bottom:10px;"><label style="font-size:12px;">موقع Y (%):</label><input type="number" class="form-control" id="card_name_y" name="card_name_y" value="62"></div>
           <div class="form-group" style="margin-bottom:0;"><label style="font-size:12px;">حجم الخط:</label><input type="number" class="form-control" id="card_name_size" name="card_name_size" value="18"></div>
         </div>
 
         <div style="background: rgba(255,255,255,0.02); padding: 14px; border-radius: 12px; border: 1px solid var(--line);">
           <label style="color:var(--blue); font-weight:800; margin-bottom:10px; display:block;">💬 نص الترحيب في البطاقة</label>
-          <div class="form-group" style="margin-bottom:10px;"><label style="font-size:12px;">الموقع الأفقي (X):</label><input type="number" class="form-control" id="card_msg_x" name="card_msg_x" value="50"></div>
-          <div class="form-group" style="margin-bottom:10px;"><label style="font-size:12px;">الموقع الرأسي (Y):</label><input type="number" class="form-control" id="card_msg_y" name="card_msg_y" value="78"></div>
+          <div class="form-group" style="margin-bottom:10px;"><label style="font-size:12px;">موقع X (%):</label><input type="number" class="form-control" id="card_msg_x" name="card_msg_x" value="50"></div>
+          <div class="form-group" style="margin-bottom:10px;"><label style="font-size:12px;">موقع Y (%):</label><input type="number" class="form-control" id="card_msg_y" name="card_msg_y" value="78"></div>
           <div class="form-group" style="margin-bottom:0;"><label style="font-size:12px;">حجم الخط:</label><input type="number" class="form-control" id="card_msg_size" name="card_msg_size" value="13"></div>
         </div>
       </div>
