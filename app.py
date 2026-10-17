@@ -352,10 +352,10 @@ select.form-control {
   background-repeat: no-repeat; background-position: left 14px center; background-size: 16px; cursor: pointer;
 }
 
-/* تعديل شكل التاغ ليكون النص على اليمين وعلامة الـ X على اليسار */
+/* تنسيق الـ Tag */
 .tag-input-container {
   background: rgba(6, 10, 23, 0.85); border: 1px solid var(--line); border-radius: 12px;
-  padding: 8px 12px; min-height: 50px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; cursor: pointer;
+  padding: 8px 12px; min-height: 50px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; cursor: pointer; position: relative;
 }
 .tag-badge {
   background: linear-gradient(115deg, #64caff, #9b8cff); color: #06101f;
@@ -367,7 +367,7 @@ select.form-control {
 }
 .tag-select-dropdown {
   width: 100%; margin-top: 6px; background: rgba(12, 19, 39, 0.95); border: 1px solid var(--line);
-  border-radius: 10px; padding: 8px; max-height: 150px; overflow-y: auto; display: none; position: absolute; z-index: 100;
+  border-radius: 10px; padding: 8px; max-height: 150px; overflow-y: auto; display: none; position: absolute; top: 100%; right: 0; z-index: 100;
 }
 .tag-select-dropdown.show { display: block; }
 .tag-option {
@@ -458,7 +458,6 @@ function resetFormValues() {
   const form = document.getElementById('mainForm');
   if (form) form.reset();
   localStorage.removeItem(window.location.pathname + '_form');
-  // مسح التاغات الظاهرة
   document.querySelectorAll('.tag-input-container').forEach(c => c.innerHTML = 'اختر الرتب...');
   document.querySelectorAll('input[type="hidden"][id^="input_"]').forEach(i => i.value = '');
 }
@@ -488,17 +487,11 @@ function loadFromLocalStorage() {
           field.checked = (field.value === value);
         } else {
           field.value = value;
-          // لو حقل مخفي خاص بالرتب، نقوم بإعادة بناء التاغات تلقائياً
-          if (key.includes('roles') || key.includes('auto_roles')) {
-            try {
-              const vals = JSON.parse(value);
-              const containerId = 'container_' + key.replace('auto_roles_', '').replace('cat_staff_roles_', 'staff_');
-              // سيتم معالجتها عبر setupTagSelector
-            } catch(e) {}
-          }
         }
       }
     }
+    // تحديث المعاينة لو وجدت إحداثيات أو نصوص محفظة
+    updateCardPreview();
   } catch(e) {}
 }
 
@@ -512,7 +505,6 @@ window.addEventListener('DOMContentLoaded', () => {
     
     form.addEventListener('submit', () => {
       hasUnsavedChanges = false;
-      localStorage.removeItem(window.location.pathname + '_form');
       const bar = document.getElementById('saveBar');
       if (bar) bar.classList.remove('visible');
     });
@@ -534,7 +526,47 @@ window.addEventListener('DOMContentLoaded', () => {
       }
     });
   });
+
+  // ربط أحداث تغيير الإحداثيات والحجم لتحديث المعاينة الفورية
+  const inputsToTrack = ['card_avatar_x', 'card_avatar_y', 'card_avatar_size', 'card_name_x', 'card_name_y', 'card_name_size', 'card_msg_x', 'card_msg_y', 'card_msg_size', 'welcome_bg_url'];
+  inputsToTrack.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('input', updateCardPreview);
+    }
+  });
 });
+
+function updateCardPreview() {
+  const avatar = document.getElementById('previewAvatar');
+  const nameEl = document.getElementById('previewName');
+  const msgEl = document.getElementById('previewMsg');
+  const previewBox = document.getElementById('previewBox');
+
+  if (avatar && document.getElementById('card_avatar_x')) {
+    avatar.style.left = document.getElementById('card_avatar_x').value + '%';
+    avatar.style.top = document.getElementById('card_avatar_y').value + '%';
+    const sz = document.getElementById('card_avatar_size').value + 'px';
+    avatar.style.width = sz;
+    avatar.style.height = sz;
+  }
+  if (nameEl && document.getElementById('card_name_x')) {
+    nameEl.style.left = document.getElementById('card_name_x').value + '%';
+    nameEl.style.top = document.getElementById('card_name_y').value + '%';
+    nameEl.style.fontSize = document.getElementById('card_name_size').value + 'px';
+  }
+  if (msgEl && document.getElementById('card_msg_x')) {
+    msgEl.style.left = document.getElementById('card_msg_x').value + '%';
+    msgEl.style.top = document.getElementById('card_msg_y').value + '%';
+    msgEl.style.fontSize = document.getElementById('card_msg_size').value + 'px';
+  }
+  const bgInput = document.getElementById('card_bg_input');
+  if (bgInput && bgInput.value && previewBox) {
+    previewBox.style.backgroundImage = `url(${bgInput.value})`;
+    previewBox.style.backgroundSize = 'cover';
+    previewBox.style.backgroundPosition = 'center';
+  }
+}
 
 function setupTagSelector(containerId, hiddenInputId, dropdownId) {
   const container = document.getElementById(containerId);
@@ -544,7 +576,16 @@ function setupTagSelector(containerId, hiddenInputId, dropdownId) {
 
   let selectedValues = [];
   
-  // استرجاع القيم الم حفظة محلياً لوجدت
+  const savedData = localStorage.getItem(window.location.pathname + '_form');
+  if (savedData) {
+    try {
+      const parsed = JSON.parse(savedData);
+      if (parsed[hiddenInput.name]) {
+        hiddenInput.value = parsed[hiddenInput.name];
+      }
+    } catch(e) {}
+  }
+
   if (hiddenInput.value) {
     try {
       selectedValues = JSON.parse(hiddenInput.value);
@@ -1068,33 +1109,22 @@ def s_welcome(guild_id):
     ch_options = options_html(channels, "#")
     html = f"""
     <div class="page-head" style="margin-bottom:25px;">
-      <div><h1>👋 نظام الترحيب</h1><p>قم بتكوين رسائل الترحيب المخصصة للأعضاء المنضمين إلى سيرفرك.</p></div>
+      <div><h1>👋 نظام الترحيب</h1><p>قم بتكوين رسائل الترحيب المخصصة للأعضاء المنضمين وتصميم بطاقة الصور.</p></div>
     </div>
     <div class="settings-section-card">
       <div class="settings-section-header">
-        <div class="settings-section-title"><span>👋</span> رسالة الترحيب</div>
+        <div class="settings-section-title"><span>👋</span> رسالة الترحيب النصية مع الصورة</div>
         <label class="switch"><input type="checkbox" name="welcome_enabled" checked><span class="slider"></span></label>
       </div>
       <div class="form-group">
-        <label>نص رسالة الترحيب</label>
-        <textarea class="form-control" name="welcome_msg" rows="4" placeholder="مرحباً بك {{user}} في سيرفرنا!">مرحباً بك {{user}} في خادمنا الرائع! 🎉</textarea>
+        <label>نص رسالة الترحيب (ترسل مع الصورة)</label>
+        <textarea class="form-control" name="welcome_msg" rows="3" placeholder="مرحباً بك {{user}} في سيرفرنا!">مرحباً بك {{user}} في خادمنا الرائع! 🎉</textarea>
         <div class="field-desc" style="margin-top:6px;">
-          ✨ الاختصارات المتاحة: <code>{{user}}</code> للإشارة إلى العضو، <code>{{username}}</code> لاسم العضو، <code>{{server}}</code> لاسم السيرفر، <code>{{membercount}}</code> لعدد الأعضاء.
+          ✨ الاختصارات: <code>{{user}}</code> للإشارة إلى العضو، <code>{{username}}</code> لاسم العضو، <code>{{server}}</code> لاسم السيرفر، <code>{{membercount}}</code> لعدد الأعضاء.
         </div>
       </div>
       <div class="form-group">
-        <label>طريقة التوصيل</label>
-        <div style="display: flex; gap: 20px; align-items: center; margin-top: 8px;">
-          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; font-weight: normal;">
-            <input type="radio" name="welcome_delivery" value="dm"> إرسال كرسالة خاصة (DM)
-          </label>
-          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; font-weight: normal;">
-            <input type="radio" name="welcome_delivery" value="channel" checked> إرسال إلى روم
-          </label>
-        </div>
-      </div>
-      <div class="form-group">
-        <label>اختر الروم</label>
+        <label>اختر الروم لإرسال الترحيب</label>
         <select class="form-control" name="welcome_channel">
           <option value="">اختر الرومات...</option>
           {ch_options}
@@ -1104,19 +1134,44 @@ def s_welcome(guild_id):
 
     <div class="settings-section-card">
       <div class="settings-section-header">
-        <div class="settings-section-title"><span>🖼️</span> مصمم صورة الترحيب</div>
+        <div class="settings-section-title"><span>🎨</span> مصمم وتخصيص بطاقة الترحيب</div>
         <label class="switch"><input type="checkbox" name="welcome_image_enabled" checked><span class="slider"></span></label>
       </div>
-      <div style="background: rgba(6, 10, 23, 0.9); border: 1px solid var(--line); border-radius: 16px; padding: 40px 20px; text-align: center; margin-bottom: 20px; position: relative;">
-        <div style="width: 90px; height: 90px; border-radius: 50%; background: #5865F2; margin: 0 auto 15px; display: grid; place-items: center; font-size: 32px; border: 3px solid #73dcff; box-shadow: 0 0 25px rgba(100,186,255,0.4);">
-          🎮
-        </div>
-        <h3 style="margin: 0; font-size: 20px; color: #fff;">Welcome Username</h3>
-        <p style="color: var(--muted); font-size: 13px; margin: 5px 0 0;">معاينة بطاقة الترحيب الافتراضية</p>
+
+      <!-- نافذة المعاينة التفاعلية -->
+      <div id="previewBox" style="background: rgba(6, 10, 23, 0.9); border: 1px solid var(--line); border-radius: 16px; height: 280px; margin-bottom: 20px; position: relative; overflow: hidden;">
+        <div id="previewAvatar" style="position: absolute; left: 50%; top: 35%; transform: translate(-50%, -50%); width: 80px; height: 80px; border-radius: 50%; background: #5865F2; display: grid; place-items: center; font-size: 28px; border: 3px solid #73dcff; box-shadow: 0 0 20px rgba(100,186,255,0.4);">🎮</div>
+        <div id="previewName" style="position: absolute; left: 50%; top: 62%; transform: translate(-50%, -50%); font-size: 18px; font-weight: 800; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">Username</div>
+        <div id="previewMsg" style="position: absolute; left: 50%; top: 78%; transform: translate(-50%, -50%); font-size: 13px; font-weight: 600; color: var(--blue); text-shadow: 0 2px 4px rgba(0,0,0,0.8);">Welcome to the server!</div>
       </div>
+
       <div class="form-group">
-        <label>صورة الخلفية (Background Image URL أو رفع ملف)</label>
-        <input type="url" class="form-control" name="welcome_bg_url" placeholder="https://...">
+        <label>رابط صورة الخلفية (Background URL)</label>
+        <input type="url" class="form-control" id="card_bg_input" name="welcome_bg_url" placeholder="https://..." oninput="updateCardPreview()">
+      </div>
+
+      <!-- أدوات التحكم بإحداثيات وأحجام العناصر -->
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 15px;">
+        <div style="background: rgba(255,255,255,0.02); padding: 14px; border-radius: 12px; border: 1px solid var(--line);">
+          <label style="color:var(--blue); font-weight:800; margin-bottom:10px; display:block;">👤 صورة العضو</label>
+          <div class="form-group" style="margin-bottom:10px;"><label style="font-size:12px;">الموقع الأفقي (X):</label><input type="number" class="form-control" id="card_avatar_x" name="card_avatar_x" value="50"></div>
+          <div class="form-group" style="margin-bottom:10px;"><label style="font-size:12px;">الموقع الرأسي (Y):</label><input type="number" class="form-control" id="card_avatar_y" name="card_avatar_y" value="35"></div>
+          <div class="form-group" style="margin-bottom:0;"><label style="font-size:12px;">الحجم (بكسل):</label><input type="number" class="form-control" id="card_avatar_size" name="card_avatar_size" value="80"></div>
+        </div>
+
+        <div style="background: rgba(255,255,255,0.02); padding: 14px; border-radius: 12px; border: 1px solid var(--line);">
+          <label style="color:var(--blue); font-weight:800; margin-bottom:10px; display:block;">🏷️ اسم العضو</label>
+          <div class="form-group" style="margin-bottom:10px;"><label style="font-size:12px;">الموقع الأفقي (X):</label><input type="number" class="form-control" id="card_name_x" name="card_name_x" value="50"></div>
+          <div class="form-group" style="margin-bottom:10px;"><label style="font-size:12px;">الموقع الرأسي (Y):</label><input type="number" class="form-control" id="card_name_y" name="card_name_y" value="62"></div>
+          <div class="form-group" style="margin-bottom:0;"><label style="font-size:12px;">حجم الخط:</label><input type="number" class="form-control" id="card_name_size" name="card_name_size" value="18"></div>
+        </div>
+
+        <div style="background: rgba(255,255,255,0.02); padding: 14px; border-radius: 12px; border: 1px solid var(--line);">
+          <label style="color:var(--blue); font-weight:800; margin-bottom:10px; display:block;">💬 نص الترحيب في البطاقة</label>
+          <div class="form-group" style="margin-bottom:10px;"><label style="font-size:12px;">الموقع الأفقي (X):</label><input type="number" class="form-control" id="card_msg_x" name="card_msg_x" value="50"></div>
+          <div class="form-group" style="margin-bottom:10px;"><label style="font-size:12px;">الموقع الرأسي (Y):</label><input type="number" class="form-control" id="card_msg_y" name="card_msg_y" value="78"></div>
+          <div class="form-group" style="margin-bottom:0;"><label style="font-size:12px;">حجم الخط:</label><input type="number" class="form-control" id="card_msg_size" name="card_msg_size" value="13"></div>
+        </div>
       </div>
     </div>
     """
