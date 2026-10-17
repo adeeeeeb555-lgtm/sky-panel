@@ -66,7 +66,7 @@ CMD_NAMES = {
 }
 
 SERVER_SETTINGS_DB = {}
-PENDING_SETTINGS_DB = {}
+COMMITTED_SETTINGS_DB = {}  # قاعدة البيانات الرسمية لآخر حفظ
 
 STYLE = r"""
 <!DOCTYPE html>
@@ -448,55 +448,33 @@ function triggerChange() {
   hasUnsavedChanges = true;
   const bar = document.getElementById('saveBar');
   if (bar) bar.classList.add('visible');
-  saveToLocalStorage();
 }
 
-function resetFormValues() {
+/* زر عدم الحفظ / إلغاء التعديلات: يرجع كل شيء لآخر نسخة محفوظة */
+function revertToLastSaved() {
   hasUnsavedChanges = false;
   const bar = document.getElementById('saveBar');
   if (bar) bar.classList.remove('visible');
-  const form = document.getElementById('mainForm');
-  if (form) form.reset();
-  localStorage.removeItem(window.location.pathname + '_form');
-  document.querySelectorAll('.tag-input-container').forEach(c => c.innerHTML = 'اختر الرتب...');
-  document.querySelectorAll('input[type="hidden"][id^="input_"]').forEach(i => i.value = '');
-}
-
-function saveToLocalStorage() {
+  
+  // إعادة تحميل البيانات الأصلية التي تم جلبها من السيرفر
+  const committedData = window.COMMITTED_SETTINGS || {};
   const form = document.getElementById('mainForm');
   if (!form) return;
-  const formData = new FormData(form);
-  const data = {};
-  formData.forEach((value, key) => {
-    if (key !== 'csrf_token') data[key] = value;
-  });
-  localStorage.setItem(window.location.pathname + '_form', JSON.stringify(data));
-}
 
-function loadFromLocalStorage() {
-  const saved = localStorage.getItem(window.location.pathname + '_form');
-  if (!saved) return;
-  try {
-    const data = JSON.parse(saved);
-    const form = document.getElementById('mainForm');
-    if (!form) return;
-    for (const [key, value] of Object.entries(data)) {
-      const field = form.elements[key];
-      if (field) {
-        if (field.type === 'checkbox' || field.type === 'radio') {
-          field.checked = (field.value === value);
-        } else {
-          field.value = value;
-        }
+  for (const [key, value] of Object.entries(committedData)) {
+    const field = form.elements[key];
+    if (field) {
+      if (field.type === 'checkbox' || field.type === 'radio') {
+        field.checked = (field.value === value);
+      } else {
+        field.value = value;
       }
     }
-    updateCardPreview();
-  } catch(e) {}
+  }
+  updateCardPreview();
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-  loadFromLocalStorage();
-
   const form = document.getElementById('mainForm');
   if (form) {
     form.addEventListener('input', triggerChange);
@@ -527,6 +505,7 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 
   setupDraggableElements();
+  updateCardPreview();
 });
 
 function updateCardPreview() {
@@ -560,7 +539,7 @@ function updateCardPreview() {
   }
 }
 
-/* تفعيل السحب والإفلات بالماوس داخل بطاقة المعاينة */
+/* تفعيل السحب والإفلات بالماوس داخل بطاقة المعاينة وتحديث الإحداثيات */
 function setupDraggableElements() {
   const box = document.getElementById('previewBox');
   if (!box) return;
@@ -617,17 +596,6 @@ function setupTagSelector(containerId, hiddenInputId, dropdownId) {
   if (!container || !dropdown || !hiddenInput) return;
 
   let selectedValues = [];
-  
-  const savedData = localStorage.getItem(window.location.pathname + '_form');
-  if (savedData) {
-    try {
-      const parsed = JSON.parse(savedData);
-      if (parsed[hiddenInput.name]) {
-        hiddenInput.value = parsed[hiddenInput.name];
-      }
-    } catch(e) {}
-  }
-
   if (hiddenInput.value) {
     try {
       selectedValues = JSON.parse(hiddenInput.value);
@@ -859,7 +827,7 @@ def api_get_guild_settings(guild_id):
     auth_header = request.headers.get("Authorization", "")
     if BOT_TOKEN and auth_header != f"Bot {BOT_TOKEN}":
         return jsonify({"error": "Unauthorized"}), 401
-    settings = SERVER_SETTINGS_DB.get(guild_id, {})
+    settings = COMMITTED_SETTINGS_DB.get(guild_id, {})
     return jsonify({"guild_id": guild_id, "settings": settings}), 200
 
 
@@ -1058,18 +1026,26 @@ def get_server_context(guild_id):
 def handle_form_post(guild_id):
     if request.method == "POST":
         form_data = request.form.to_dict(flat=False)
-        PENDING_SETTINGS_DB[guild_id] = form_data
+        # تحويل القيم من لستة إلى قيمة مفردة لتسهيل العرض
+        clean_data = {k: v[0] if len(v) == 1 else v for k, v in form_data.items() if k != "csrf_token"}
+        SERVER_SETTINGS_DB[guild_id] = clean_data
         if request.form.get("action_type") == "save":
-            SERVER_SETTINGS_DB[guild_id] = form_data
+            COMMITTED_SETTINGS_DB[guild_id] = clean_data
 
 
 def render_server_page(guild_id, active_tab, tab_content_html):
     if request.method == "POST":
         handle_form_post(guild_id)
+    
     target_guild = session["guilds"][guild_id]
     guild_name = escape(str(target_guild.get("name", "السيرفر")))
     icon = target_guild.get("icon")
     icon_url = f"https://cdn.discordapp.com/icons/{guild_id}/{escape(str(icon))}.png" if icon else "https://cdn.discordapp.com/embed/avatars/0.png"
+
+    # جلب بيانات آخر حفظ لملئها بالنموذج
+    current_settings = COMMITTED_SETTINGS_DB.get(guild_id, {})
+    import json
+    committed_json = json.dumps(current_settings)
 
     sidebar_html = f"""
     <aside class="sidebar">
@@ -1088,12 +1064,13 @@ def render_server_page(guild_id, active_tab, tab_content_html):
     </aside>
     """
 
-    floating_bar = """
+    floating_bar = f"""
+    <script>window.COMMITTED_SETTINGS = {committed_json};</script>
     <div id="saveBar" class="floating-save-bar">
       <div class="save-bar-info"><span class="save-dot"></span><span>تم اكتشاف تغييرات غير محفوظة!</span></div>
       <div style="display:flex; gap:10px;">
         <button type="submit" name="action_type" value="save" form="mainForm" class="btn btn-green" style="padding: 8px 22px;">حفظ</button>
-        <button type="button" form="mainForm" onclick="resetFormValues()" class="btn btn-red" style="padding: 8px 20px;">إلغاء</button>
+        <button type="button" onclick="revertToLastSaved()" class="btn btn-red" style="padding: 8px 20px;">عدم حفظ (إلغاء)</button>
       </div>
     </div>
     """
