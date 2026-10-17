@@ -149,7 +149,7 @@ h1 {
 .subtitle { color: var(--muted); font-size: 15px; line-height: 2.0; max-width: 480px; }
 .actions { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 22px; }
 
-/* تصميم الفضاء والكوكب والمدار الدائري الهندسي الموزع */
+/* الكوكب والمدار الدائري الهندسي */
 .space-art {
   height: 580px; position: relative; display: grid; place-items: center;
 }
@@ -158,7 +158,6 @@ h1 {
   position: relative; width: 520px; height: 520px; display: grid; place-items: center;
 }
 
-/* الكوكب في المنتصف */
 .planet-core {
   width: 150px; height: 150px; border-radius: 50%;
   background:
@@ -175,7 +174,6 @@ h1 {
   transform: rotate(-22deg); box-shadow: 0 0 22px rgba(109, 175, 255, 0.4);
 }
 
-/* حركة الدوران الكلية للمدار */
 @keyframes mainOrbit {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
@@ -195,13 +193,11 @@ h1 {
   animation-play-state: paused;
 }
 
-/* المسار الدائري الشفاف الخفيف كدليل للمدار */
 .orbit-container::before {
   content: ""; position: absolute; inset: 50px; border-radius: 50%;
   border: 1px dashed rgba(120, 170, 255, 0.15); pointer-events: none;
 }
 
-/* بطاقة المدار المحتواه داخل العقد الدائرية */
 .orbit-node {
   position: absolute; top: 50%; left: 50%; width: 130px; height: 75px;
   margin-top: -37.5px; margin-left: -65px;
@@ -226,7 +222,6 @@ h1 {
 .orbit-card strong { display: block; font-size: 11px; color: #fff; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 110px; }
 .orbit-card p { margin: 0; color: var(--muted); font-size: 9.5px; line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
-/* توزيع العقد دائرياً بقطر متناسق تماماً (210px من المركز) على زوايا دقيقة (36 درجة) */
 .node-1  { transform: rotate(0deg) translate(210px) rotate(0deg); }
 .node-2  { transform: rotate(36deg) translate(210px) rotate(-36deg); }
 .node-3  { transform: rotate(72deg) translate(210px) rotate(-72deg); }
@@ -238,8 +233,8 @@ h1 {
 .node-9  { transform: rotate(288deg) translate(210px) rotate(-288deg); }
 .node-10 { transform: rotate(324deg) translate(210px) rotate(-324deg); }
 
-/* لوحة التحكم والقوائم الجانبية */
-.page { width: min(1250px, 92%); margin: 40px auto 70px; }
+/* إعادة توزيع لوحة التحكم والقائمة الجانبية لتكون القائمة يميناً والمحتوى يساراً بوضوح وسعة */
+.page { width: min(1350px, 95%); margin: 40px auto 70px; }
 .page-head { display: flex; justify-content: space-between; align-items: center; gap: 20px; margin-bottom: 35px; }
 .page-head h1 { font-size: 30px; margin: 0 0 6px; }
 .page-head p { color: var(--muted); margin: 0; font-size: 14px; }
@@ -267,20 +262,23 @@ h1 {
 }
 .empty span { display: block; font-size: 40px; margin-bottom: 12px; }
 
+/* التوزيع الهيكلي: القائمة يميناً والمحتوى يساراً وسيع وبدون حشر */
 .dashboard-layout {
-  display: grid; grid-template-columns: 1fr 310px; gap: 30px;
-  width: min(1480px, 97%); margin: 40px auto 70px; align-items: start;
+  display: grid; grid-template-columns: 300px 1fr; gap: 30px;
+  width: 100%; margin: 40px auto 70px; align-items: start; direction: rtl;
 }
-.content-panel {
-  background: var(--panel); border: 1px solid var(--line); border-radius: 24px; padding: 40px;
-  backdrop-filter: blur(16px); min-height: 700px;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.4); order: 1;
-}
+
 .sidebar {
   background: linear-gradient(155deg, rgba(18, 28, 56, 0.9), rgba(8, 13, 31, 0.95));
   border: 1px solid var(--line); border-radius: 24px; padding: 26px;
   display: flex; flex-direction: column; gap: 18px; backdrop-filter: blur(16px);
-  position: sticky; top: 25px; order: 2;
+  position: sticky; top: 25px; order: 1;
+}
+
+.content-panel {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 24px; padding: 35px;
+  backdrop-filter: blur(16px); min-height: 700px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.4); order: 2; width: 100%; overflow: hidden;
 }
 
 .sidebar-header { text-align: center; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
@@ -301,18 +299,19 @@ h1 {
 .menu-item:hover, .menu-item.active {
   background: linear-gradient(115deg, rgba(91, 191, 255, 0.12), rgba(143, 130, 255, 0.12));
   color: var(--text); border-color: rgba(122, 203, 255, 0.3);
-  box-shadow: 0 4px 18px rgba(88, 186, 255, 0.1); transform: translateX(3px);
+  box-shadow: 0 4px 18px rgba(88, 186, 255, 0.1); transform: translateX(-3px);
 }
 .menu-item span { font-size: 18px; }
 
-.form-group { margin-bottom: 22px; }
+.form-group { margin-bottom: 22px; width: 100%; }
 .form-group label { display: block; font-size: 14px; font-weight: 700; color: #cedbfa; margin-bottom: 8px; text-align: right; }
 .field-desc { font-size: 12px; color: var(--muted); margin-bottom: 6px; text-align: right; line-height: 1.6; }
+
 .form-control {
   width: 100%; padding: 12px 16px; border-radius: 12px;
-  background: rgba(6, 10, 23, 0.8); border: 1px solid var(--line); color: var(--text);
+  background: rgba(6, 10, 23, 0.85); border: 1px solid var(--line); color: var(--text);
   font-family: inherit; font-size: 14px; outline: none; transition: border-color .2s;
-  text-align: right;
+  text-align: right; direction: rtl;
 }
 .form-control:focus { border-color: var(--blue); box-shadow: 0 0 15px rgba(100, 186, 255, 0.2); }
 
@@ -327,20 +326,24 @@ select.form-control {
   cursor: pointer;
 }
 
+/* حل مشكلة طفح القائمة متعددة الاختيارات والخروج من الشاشة */
 select[multiple].form-control {
-  height: 140px; background-image: none; padding: 8px; overflow-y: auto;
+  height: 180px; background-image: none; padding: 10px; overflow-y: auto; overflow-x: hidden;
+  direction: rtl; text-align: right;
 }
 select[multiple].form-control option {
-  padding: 8px 12px; margin-bottom: 4px; border-radius: 6px; background: #0c1327;
+  padding: 10px 14px; margin-bottom: 6px; border-radius: 8px; background: rgba(12, 19, 39, 0.9);
+  color: var(--text); font-size: 13px; font-weight: 600; cursor: pointer;
+  white-space: normal; word-break: break-all;
 }
 select[multiple].form-control option:checked {
-  background: linear-gradient(115deg, #64caff, #9b8cff); color: #06101f; font-weight: 700;
+  background: linear-gradient(115deg, #64caff, #9b8cff) !important; color: #06101f !important; font-weight: 800;
 }
 
 .settings-section-card {
   background: rgba(8, 13, 31, 0.7); border: 1px solid var(--line); border-radius: 18px;
   padding: 26px; margin-bottom: 24px; box-shadow: 0 8px 25px rgba(0,0,0,0.25);
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px); width: 100%;
 }
 .settings-section-header {
   display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--line);
@@ -720,7 +723,6 @@ def home():
         <div class="space-art">
           <div class="planet-system">
             <div class="planet-core"></div>
-            <!-- المدار الدائري الهندسي لجميع بطاقات المميزات العشرة -->
             <div class="orbit-container">
               <div class="orbit-node node-1">
                 <div class="orbit-card">
@@ -999,12 +1001,12 @@ def render_server_page(guild_id, active_tab, tab_content_html):
     
     layout_content = f"""
     <div class="dashboard-layout">
+      {sidebar_html}
       <main class="content-panel">
         <form id="mainForm" method="POST" enctype="multipart/form-data">
           {tab_content_html}
         </form>
       </main>
-      {sidebar_html}
     </div>
     {floating_bar}
     """
